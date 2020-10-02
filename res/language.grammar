@@ -1,0 +1,2 @@
+program = statements* EOF
+statements* = statement LF
