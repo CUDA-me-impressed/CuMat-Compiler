@@ -9,6 +9,7 @@ env:
 
 before_install:
   # Combine global build options with OS/compiler-dependent options
+  - export CXX=clang++-10
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
   - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
 
@@ -16,10 +17,12 @@ addons:
   apt:
     packages:
       - clang-10
+      - clang-tidy-10
 
 install:
   - echo ${PATH}
   - echo ${CXX}
+  - echo ${CMAKE_OPTIONS}
   - ${CXX} --version
 
 
@@ -28,3 +31,4 @@ script:
   - cd build
   - cmake ${CMAKE_OPTIONS} -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ../src
   - make
+  - clang-tidy-10 -p /home/travis/build/CUDA-me-impressed/CuMat-Compiler/build/compile_commands.json -checks=readability-*,bugprone-*,cppcoreguidelines-* -warnings-as-errors=readability-*,bugprone-*,cppcoreguidelines-* -header-filter=.* ./src/src/main.cpp
