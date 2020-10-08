@@ -31,4 +31,4 @@ script:
   - cd build
   - cmake ${CMAKE_OPTIONS} -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ../src
   - make
-  - clang-tidy-10 -p /home/travis/build/CUDA-me-impressed/CuMat-Compiler/build/compile_commands.json -checks=readability-*,bugprone-*,cppcoreguidelines-* -warnings-as-errors=readability-*,bugprone-*,cppcoreguidelines-* -header-filter=.* ./src/src/main.cpp
+  - clang-tidy-10 -p /home/travis/build/CUDA-me-impressed/CuMat-Compiler/build/compile_commands.json -checks=readability-*,bugprone-*,cppcoreguidelines-* -warnings-as-errors=readability-*,bugprone-*,cppcoreguidelines-* -header-filter=.* ../src/src/main.cpp
