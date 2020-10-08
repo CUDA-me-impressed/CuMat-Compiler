@@ -7,15 +7,15 @@ env:
     - DEPS_DIR=${TRAVIS_BUILD_DIR}/deps
     - CXX_FLAGS="-Wall -Werror"
 
-addons:
-  apt:
-    packages:
-      - clang-10
-
 before_install:
   # Combine global build options with OS/compiler-dependent options
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
   - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
+
+addons:
+  apt:
+    packages:
+      - clang-10
 
 install:
   - echo ${PATH}
