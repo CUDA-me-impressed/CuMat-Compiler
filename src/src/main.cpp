@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 #include <set>
-#include <ranges>
 #include <algorithm>
 
 #include "CompilerOptions.hpp"
