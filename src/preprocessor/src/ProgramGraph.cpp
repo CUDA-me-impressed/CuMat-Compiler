@@ -21,7 +21,7 @@ Preprocessor::ProgramGraph::ProgramGraph(std::shared_ptr<ProgramFileNode> root) 
 void Preprocessor::ProgramGraph::addInclude(std::unique_ptr<ProgramFileNode> src,
                                             std::unique_ptr<ProgramFileNode> dest) {
     // Ensure we have something to push back
-    if(!this->vertexEdges.contains(src)){
+    if(this->vertexEdges.find(src) != this->vertexEdges.end()){
         this->vertexEdges.insert(std::pair<std::unique_ptr<ProgramFileNode>,
                 std::vector<std::unique_ptr<ProgramFileNode>>>(
                         std::move(src),
