@@ -36,3 +36,4 @@
 
 # CMake caching
 */out
+CMakeSettings.*
