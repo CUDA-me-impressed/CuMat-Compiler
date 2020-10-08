@@ -1,3 +1,3 @@
-include_directories(${CS407}/inc)
+include_directories(${PROJECT_SOURCE_DIR}/inc)
 
-add_executable(CS407 "main.cpp")
+add_executable(CuMatComp "main.cpp")
