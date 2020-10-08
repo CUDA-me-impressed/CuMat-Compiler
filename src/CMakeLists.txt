@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.17)
-project(CS407)
+project(CuMat_Compiler)
 
-set(CMAKE_CXX_STANDARD 17)
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
-add_executable(CS407 main.cpp)
+add_subdirectory(preprocessor)
+add_subdirectory(compiler)
