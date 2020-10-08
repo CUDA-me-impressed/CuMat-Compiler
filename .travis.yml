@@ -29,6 +29,6 @@ install:
 script:
   - mkdir -p build
   - cd build
-  - cmake ${CMAKE_OPTIONS} -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ../src
+  - cmake ${CMAKE_OPTIONS} -DCMAKE_CXX_FLAGS=${CXX_FLAGS} -DCMAKE_CXX_STANDARD_INCUDE_DIRECTORIES=/lib/clang/10/include/ ../src
   - make
-  - clang-tidy-10 -p /home/travis/build/CUDA-me-impressed/CuMat-Compiler/build/compile_commands.json -checks=readability-*,bugprone-*,cppcoreguidelines-* -warnings-as-errors=readability-*,bugprone-*,cppcoreguidelines-* -header-filter=.* ./src/src/main.cpp
+  - clang-tidy-10 -p /home/travis/build/CUDA-me-impressed/CuMat-Compiler/build/compile_commands.json -checks=readability-*,bugprone-*,cppcoreguidelines-* -warnings-as-errors=readability-*,bugprone-*,cppcoreguidelines-* -header-filter=.* ../src/src/main.cpp
