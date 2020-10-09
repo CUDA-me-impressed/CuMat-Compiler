@@ -7,19 +7,23 @@ env:
     - DEPS_DIR=${TRAVIS_BUILD_DIR}/deps
     - CXX_FLAGS="-Wall -Werror"
 
+before_install:
+  # Combine global build options with OS/compiler-dependent options
+  - export CXX=clang++-10
+  - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
+  - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
+
 addons:
   apt:
     packages:
       - clang-10
-
-before_install:
-  # Combine global build options with OS/compiler-dependent options
-  - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
-  - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
+      - clang-tidy-10
+      - clang-format-10
 
 install:
   - echo ${PATH}
   - echo ${CXX}
+  - echo ${CMAKE_OPTIONS}
   - ${CXX} --version
 
 
@@ -28,3 +32,5 @@ script:
   - cd build
   - cmake ${CMAKE_OPTIONS} -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ../src
   - make
+  - clang-tidy-10 -p /home/travis/build/CUDA-me-impressed/CuMat-Compiler/build/compile_commands.json -checks=readability-*,bugprone-*,clang-analyzer-*,modernize-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,misc-redundant-expression,misc-misplaced-const,misc-new-delete-overloads,misc-definitions-in-headers,misc-non-copyable-objects,misc-static-assert,misc-throw-by-value-catch-by-reference,misc-unconventional-assign-operator,misc-unused-using-decls -warnings-as-errors=* -header-filter=.* ../src/src/main.cpp
+  - clang-format-10 -style=file -Werror -dry-run ../src/**/*.cpp ../src/**/*.hpp
