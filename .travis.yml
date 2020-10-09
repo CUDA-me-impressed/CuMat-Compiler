@@ -18,6 +18,7 @@ addons:
     packages:
       - clang-10
       - clang-tidy-10
+      - clang-format-10
 
 install:
   - echo ${PATH}
@@ -31,4 +32,5 @@ script:
   - cd build
   - cmake ${CMAKE_OPTIONS} -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ../src
   - make
-  - clang-tidy-10 -p /home/travis/build/CUDA-me-impressed/CuMat-Compiler/build/compile_commands.json -checks=readability-*,bugprone-*,cppcoreguidelines-* -warnings-as-errors=readability-*,bugprone-*,cppcoreguidelines-* -header-filter=.* ../src/src/main.cpp
+  - clang-tidy-10 -p /home/travis/build/CUDA-me-impressed/CuMat-Compiler/build/compile_commands.json -checks=readability-*,bugprone-*,clang-analyzer-*,modernize-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,misc-redundant-expression,misc-misplaced-const,misc-new-delete-overloads,misc-definitions-in-headers,misc-non-copyable-objects,misc-static-assert,misc-throw-by-value-catch-by-reference,misc-unconventional-assign-operator,misc-unused-using-decls -warnings-as-errors=* -header-filter=.* ../src/src/main.cpp
+  - clang-format-10 -style=file -Werror -dry-run ../src/**/*.cpp ../src/**/*.hpp
