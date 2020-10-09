@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# IDE specific folders
+.vs
+
+# CMake caching
+*/out
+CMakeSettings.*
