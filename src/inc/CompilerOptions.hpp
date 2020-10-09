@@ -3,32 +3,23 @@
 #include <string>
 #include <utility>
 
-enum class WARNINGS
-{
-	ALL,
-	INFO,
-	NONE
-};
+enum class WARNINGS { ALL, INFO, NONE };
 
-enum class OPTIMISATION
-{
-	NONE,
-	ALL,
-	EXPERIMENTAL
-};
+enum class OPTIMISATION { NONE, ALL, EXPERIMENTAL };
 
-class CompilerOptions
-{
-public:
-	WARNINGS warningVerbosity = WARNINGS::NONE;
+class CompilerOptions {
+   public:
+    WARNINGS warningVerbosity = WARNINGS::NONE;
 
-	OPTIMISATION optimisationLevel = OPTIMISATION::ALL;
+    OPTIMISATION optimisationLevel = OPTIMISATION::ALL;
 
-	std::string inputFile;
+    std::string inputFile;
 
-	std::string outputFile; //Default to name of file
+    std::string outputFile;  // Default to name of file
 
-	CompilerOptions() {}
-	CompilerOptions(const std::string& inpFile) : inputFile(inpFile), outputFile(inpFile) {}
-	CompilerOptions(std::string inpFile, std::string outFile) : inputFile(std::move(inpFile)), outputFile(std::move(outFile)) {}
+    CompilerOptions() = default;
+    explicit CompilerOptions(const std::string& inpFile)
+        : inputFile(inpFile), outputFile(inpFile) {}
+    CompilerOptions(std::string inpFile, std::string outFile)
+        : inputFile(std::move(inpFile)), outputFile(std::move(outFile)) {}
 };
