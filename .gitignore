@@ -38,4 +38,5 @@
 # CMake caching
 */out
 CMakeSettings.*
-cmake-*
+
+_local_*.*
