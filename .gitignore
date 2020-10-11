@@ -33,9 +33,11 @@
 
 # IDE specific folders
 .vs
+.idea
 
 # CMake caching
 */out
 CMakeSettings.*
+cmake-build*
 
 _local_*.*
