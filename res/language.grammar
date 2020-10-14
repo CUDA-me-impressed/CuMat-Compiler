@@ -19,6 +19,10 @@ typespec ::= typename (dimentionspec)?
 dimentionspec ::= "[" dimention ("," dimention)* "]"
 dimention ::= integer | "*"
 
+block ::= "{" EOL (assignment EOL)* EOL? "}"
+assignment ::= varname "=" expression
+
+expression ::=
 
 typename ::= identifier
 varname ::= identifier
