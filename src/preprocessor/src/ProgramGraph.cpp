@@ -1,9 +1,10 @@
 #include "ProgramGraph.h"
-#include "Preprocesor.h"
+#include "Preprocessor.h"
 #include <deque>
 #include <algorithm>
 #include <regex>
 #include <iostream>
+#include <set>
 
 /**
  * Constructor for the Program Graph class
@@ -25,6 +26,7 @@ void Preprocessor::ProgramGraph::addInclude(std::shared_ptr<ProgramFileNode> src
                                             std::shared_ptr<ProgramFileNode> dest) {
     // operator[] applied to map auto creates the vector if it does not exist
     this->vertexEdges[src].push_back(dest);
+    this->vertexEdgesReverse[dest].push_back(src);
 }
 
 /**
@@ -89,17 +91,22 @@ void Preprocessor::ProgramGraph::generateCompileUnits(std::vector<std::vector<st
     std::reverse(sortedProgram.begin(), sortedProgram.end());
     int i = 0;
     int layer = 0;
-    std::vector<std::shared_ptr<ProgramFileNode>> addedNodes;
+    std::set<std::shared_ptr<ProgramFileNode>> addedNodes;
     // Continue until we have each node added into our compile units
+    compileUnits.emplace_back();
     while(i != sortedProgram.size()){
-        if(std::find(addedNodes.begin(), addedNodes.end(), sortedProgram.at(i)) == addedNodes.end()) {
-            compileUnits.push_back(std::vector<std::shared_ptr<ProgramFileNode>>());
-            compileUnits[layer].push_back(sortedProgram.at(i));
+        // Push back any node to store for later
+        for(auto n : vertexEdgesReverse[sortedProgram.at(i)]){
+            addedNodes.emplace(n);
+        }
+        if(std::find(addedNodes.begin(), addedNodes.end(), sortedProgram.at(i)) != addedNodes.end()) {
+            compileUnits.emplace_back();
             layer++;
+            compileUnits[layer].push_back(sortedProgram.at(i));
+
         }else{
             compileUnits[layer].push_back(sortedProgram.at(i));
         }
-        addedNodes.push_back(sortedProgram.at(i));
         i++;
     }
 }

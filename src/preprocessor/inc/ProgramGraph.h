@@ -37,6 +37,7 @@ namespace Preprocessor {
     private:
         std::vector<std::shared_ptr<ProgramFileNode>> unexpandedNodes;
         std::map<std::shared_ptr<ProgramFileNode>, std::vector<std::shared_ptr<ProgramFileNode>>> vertexEdges;
+        std::map<std::shared_ptr<ProgramFileNode>, std::vector<std::shared_ptr<ProgramFileNode>>> vertexEdgesReverse;
         std::map<std::string, std::shared_ptr<ProgramFileNode>> fileTable;
         // Variables for the graph
         std::shared_ptr<ProgramFileNode> root;
