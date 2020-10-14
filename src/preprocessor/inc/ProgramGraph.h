@@ -32,7 +32,8 @@ namespace Preprocessor {
         // Operations on the graph
         void expandAllUnexpanded();
         void addInclude(std::shared_ptr<ProgramFileNode> src, std::shared_ptr<ProgramFileNode> dest);
-        std::vector<std::unique_ptr<ProgramFileNode>> topologicalSort();
+        std::vector<std::shared_ptr<ProgramFileNode>> topologicalSort();
+        void generateCompileUnits(std::vector<std::vector<std::shared_ptr<ProgramFileNode>>> & compileUnits);
     private:
         std::vector<std::shared_ptr<ProgramFileNode>> unexpandedNodes;
         std::map<std::shared_ptr<ProgramFileNode>, std::vector<std::shared_ptr<ProgramFileNode>>> vertexEdges;

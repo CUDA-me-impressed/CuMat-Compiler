@@ -32,7 +32,7 @@ void Preprocessor::ProgramGraph::addInclude(std::shared_ptr<ProgramFileNode> src
  * Nodes are merged when they have a single connection to at most one left node
  * @returns An ordered list of the program topology
  */
-std::vector<std::unique_ptr<Preprocessor::ProgramFileNode>> Preprocessor::ProgramGraph::topologicalSort() {
+std::vector<std::shared_ptr<Preprocessor::ProgramFileNode>> Preprocessor::ProgramGraph::topologicalSort() {
     // Implementation of Kahns algorithm
     std::deque<std::shared_ptr<ProgramFileNode>> s;
     std::vector<std::shared_ptr<ProgramFileNode>> l;
@@ -47,8 +47,8 @@ std::vector<std::unique_ptr<Preprocessor::ProgramFileNode>> Preprocessor::Progra
             s.push_back(m);
         }
     }
-
-    return std::vector<std::unique_ptr<ProgramFileNode>>();
+    // Return a value, its just a vector of pointers, should be light weight enough
+    return l;
 }
 
 /**
@@ -67,7 +67,6 @@ void Preprocessor::ProgramGraph::expandAllUnexpanded() {
             std::smatch matches;
             std::string line = node->fileContents.at(it - node->fileContents.begin());
             if (!std::regex_search(line, matches, rgx)) break;
-
             // Our regex splits the import into a number of capture groups
             // Group 1 consists of the full path file, minus the extension
             // Nice and simple, let us now find and iteratively add the
@@ -76,7 +75,7 @@ void Preprocessor::ProgramGraph::expandAllUnexpanded() {
             // If we have already added, don't bother doing again (guarantees no cycles)
             if(fileTable.count(included)) continue;
             auto newFileLines = Preprocessor::SourceFileLoader::load(included);
-            std::shared_ptr<ProgramFileNode> newFileNode = std::make_shared<ProgramFileNode>("", *newFileLines.get());
+            std::shared_ptr<ProgramFileNode> newFileNode = std::make_shared<ProgramFileNode>(included, *newFileLines.get());
             fileTable[included] = newFileNode;
             // We need to handle this new node by adding it to the program graph
             this->addInclude(node, newFileNode);
@@ -85,6 +84,22 @@ void Preprocessor::ProgramGraph::expandAllUnexpanded() {
     }
 }
 
-void Preprocessor::ProgramFileNode::expand(std::unique_ptr<ProgramGraph> graph) {
-
+void Preprocessor::ProgramGraph::generateCompileUnits(std::vector<std::vector<std::shared_ptr<ProgramFileNode>>> &compileUnits) {
+    auto sortedProgram = topologicalSort();
+    std::reverse(sortedProgram.begin(), sortedProgram.end());
+    int i = 0;
+    int layer = 0;
+    std::vector<std::shared_ptr<ProgramFileNode>> addedNodes;
+    // Continue until we have each node added into our compile units
+    while(i != sortedProgram.size()){
+        if(std::find(addedNodes.begin(), addedNodes.end(), sortedProgram.at(i)) == addedNodes.end()) {
+            compileUnits.push_back(std::vector<std::shared_ptr<ProgramFileNode>>());
+            compileUnits[layer].push_back(sortedProgram.at(i));
+            layer++;
+        }else{
+            compileUnits[layer].push_back(sortedProgram.at(i));
+        }
+        addedNodes.push_back(sortedProgram.at(i));
+        i++;
+    }
 }

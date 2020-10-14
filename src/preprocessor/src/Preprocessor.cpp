@@ -23,6 +23,9 @@ std::vector<std::string> Preprocessor::SourceFileLoader::load() {
         // files. This allows for us to compile each unit in parallel which will assist in the overall compile speed
         std::shared_ptr<ProgramFileNode> rootNode = std::make_shared<ProgramFileNode>(rootFile, *fileLines.get());
         std::unique_ptr<ProgramGraph> program = std::make_unique<ProgramGraph>(rootNode);
+        // We should have the entire program loaded into memory now, let us sort the graph
+        std::vector<std::vector<std::shared_ptr<ProgramFileNode>>> compileUnits;
+        program->generateCompileUnits(compileUnits);
     }else{
         // Assume we have a lookup of the various file paths
     }
