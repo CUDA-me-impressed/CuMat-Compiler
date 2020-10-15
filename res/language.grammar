@@ -24,9 +24,17 @@ assignment ::= varname "=" expression
 
 expression ::=
 
-typename ::= identifier
+typedef ::= "type" typename "{" EOL? attrblock "}" EOL
+attrblock ::= attr attr*
+attr ::= attrname ":" typespec EOL
+
+typename ::= identifier | primitive
 varname ::= identifier
 funcname ::= identifier
+attrname ::= identifier
+
+primitive ::= "int" | "bool" | "string" | "float" | functype
+functype ::= "(" typespec ("," typespec)* ")" "->" typespec
 
 // The list of characters considered line terminators in the unicode spec:
 EOL ::= ("\r\n" | "\n" | "\r" | 'U+000B' | 'U+000C' | 'U+000D' | 'U+0085' | 'U+2028' | 'U+2029')+
