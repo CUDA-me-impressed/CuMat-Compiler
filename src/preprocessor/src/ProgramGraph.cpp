@@ -1,5 +1,5 @@
-#include "ProgramGraph.h"
-#include "Preprocessor.h"
+#include "ProgramGraph.hpp"
+#include "Preprocessor.hpp"
 #include <deque>
 #include <algorithm>
 #include <regex>

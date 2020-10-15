@@ -1,5 +1,5 @@
-#include "Preprocessor.h"
-#include "ProgramGraph.h"
+#include "Preprocessor.hpp"
+#include "ProgramGraph.hpp"
 
 #include <fstream>
 #include <iostream>

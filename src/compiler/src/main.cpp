@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "CompilerOptions.hpp"
+#include "Preprocessor.hpp"
 
 void printArgumentError(std::string message, std::string arg) {
     const std::string helpText =
@@ -102,5 +103,9 @@ int main(int argc, char* argv[], char* envp[]) {
     for (auto arg : args) {
         std::cout << arg << " argument applied" << std::endl;
     }
+
+    Preprocessor::SourceFileLoader loader(inputFileName);
+    auto files = loader.load();
+
     return 0;
 }
