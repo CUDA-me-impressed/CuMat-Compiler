@@ -15,9 +15,9 @@ funcdef ::= "func" signature EOL? block EOL
 signature ::= typespec funcname ("(" arguments ")")?
 arguments ::= (argument ("," argument)* )?
 argument ::= typespec varname
-typespec ::= typename (dimentionspec)?
-dimentionspec ::= "[" dimention ("," dimention)* "]"
-dimention ::= integer | "*"
+typespec ::= typename (dimensionspec)?
+dimensionspec ::= "[" dimension ("," dimension)* "]"
+dimension ::= integer | "*"
 
 block ::= "{" EOL (assignment EOL)* EOL? "}"
 assignment ::= varname "=" expression
