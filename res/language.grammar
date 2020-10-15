@@ -24,13 +24,14 @@ assignment ::= varname "=" expression
 
 expression ::=
 
-typedef ::= "type" typename "{" EOL? attrblock "}" EOL
+typedef ::= "type" newtype "{" EOL? attrblock "}" EOL
 attrblock ::= attr attr*
 attr ::= attrname ":" typespec EOL
 
 typename ::= identifier | primitive
 varname ::= identifier
 funcname ::= identifier
+newtype ::= identifier
 attrname ::= identifier
 
 primitive ::= "int" | "bool" | "string" | "float" | functype
