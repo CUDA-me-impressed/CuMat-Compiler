@@ -11,7 +11,7 @@ definitions ::= definition*
 definition ::= (funcdef | typedef | assignment) EOL
 
 
-funcdef ::= "func" signature EOL? block EOL
+funcdef ::= "func" signature EOL? (block|match) EOL
 signature ::= typespec funcname ("(" arguments ")")?
 arguments ::= (argument ("," argument)* )?
 argument ::= typespec varname
@@ -22,7 +22,22 @@ dimension ::= integer | "*"
 block ::= "{" EOL (assignment EOL)* EOL? "}"
 assignment ::= varname "=" expression
 
-expression ::=
+//  ! R->L
+//  .* . L->R
+//  ^ L->R
+//  * / (%) L->R
+//  + - L->R
+//  | & L->R
+
+expression ::= exp_logic
+exp_logic ::= exp_bit op_logic exp_logic
+exp_bit ::= exp_sum op_bit exp_bit
+exp_sum ::= exp_mult op_sum exp_sum
+exp_mult ::= exp_pow op_mult exp_mult
+exp_pow ::= exp_mat op_pow exp_pow // rtol
+exp_mat ::= exp_not op_mat exp_mat
+exp_not ::= op_not exp_not | exp_func
+exp_func ::= funcname 
 
 typedef ::= "type" newtype "{" EOL? attrblock "}" EOL
 attrblock ::= attr attr*
