@@ -30,14 +30,15 @@ assignment ::= varname "=" expression
 //  | & L->R
 
 expression ::= exp_logic
-exp_logic ::= exp_bit op_logic exp_logic
-exp_bit ::= exp_sum op_bit exp_bit
-exp_sum ::= exp_mult op_sum exp_sum
-exp_mult ::= exp_pow op_mult exp_mult
-exp_pow ::= exp_mat op_pow exp_pow // rtol
-exp_mat ::= exp_not op_mat exp_mat
-exp_not ::= op_not exp_not | exp_func
-exp_func ::= funcname 
+exp_logic ::= exp_bit (op_logic exp_bit)*
+exp_bit ::= exp_sum (op_bit exp_sum)*
+exp_sum ::= exp_mult (op_sum exp_mult)*
+exp_mult ::= exp_pow (op_mult exp_pow)*
+exp_pow ::= (exp_mat op_pow)* exp_mat // rtol
+exp_mat ::= exp_not (op_mat exp_not)*
+exp_not ::= op_not* exp_func
+exp_func ::= funcname literal | literal
+literal ::= string | number | "(" expression ")" | variable
 
 typedef ::= "type" newtype "{" EOL? attrblock "}" EOL
 attrblock ::= attr attr*
