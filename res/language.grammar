@@ -20,7 +20,7 @@ dimensionspec ::= "[" dimension ("," dimension)* "]"
 dimension ::= integer | "*"
 
 block ::= "{" EOL (assignment EOL)* EOL? "}"
-assignment ::= varname "=" expression
+assignment ::= varname ("="|"≔") (expression | lambda)
 
 //  ! R->L
 //  .* . L->R
@@ -29,19 +29,26 @@ assignment ::= varname "=" expression
 //  + - L->R
 //  | & L->R
 
-expression ::= exp_logic
-exp_logic ::= exp_bit (op_logic exp_bit)*
+expression ::= exp_logic | lambda
+exp_logic ::= exp_comp (op_logic exp_comp)*
+exp_comp ::= exp_bit (op_comp exp_bit)*
 exp_bit ::= exp_sum (op_bit exp_sum)*
 exp_sum ::= exp_mult (op_sum exp_mult)*
 exp_mult ::= exp_pow (op_mult exp_pow)*
 exp_pow ::= (exp_mat op_pow)* exp_mat // rtol
 exp_mat ::= exp_not (op_mat exp_not)*
 exp_not ::= op_not* exp_func
-exp_func ::= funcname literal | literal
+exp_func ::= funcname args | literal
 literal ::= string | number | "(" expression ")" | variable
 
-typedef ::= "type" newtype "{" EOL? attrblock "}" EOL
-attrblock ::= attr attr*
+string ::= "\"" '.*' "\""
+number ::= INT | FLOAT
+
+
+args ::= expression ("," expression)*
+
+typedef ::= "type" newtype attrblock EOL
+attrblock ::= "{" EOL? attr+ "}"
 attr ::= attrname ":" typespec EOL
 
 typename ::= identifier | primitive
@@ -50,8 +57,19 @@ funcname ::= identifier
 newtype ::= identifier
 attrname ::= identifier
 
+identifier ::= ID
+
 primitive ::= "int" | "bool" | "string" | "float" | functype
 functype ::= "(" typespec ("," typespec)* ")" "->" typespec
+
+op_logic ::= EOL? ("||" | "&&"| "><" | "⋁" | "⋀" | "⊻" | "∧" | "∨") EOL?
+op_comp ::= EOL? ("<" | ">" | "<=" | ">=" | "==" | "≤" | "≥" | "!=" | "≠") EOL?
+op_bit ::= EOL? ("|" | "&" | "~" | "") EOL?
+op_sum ::= EOL? ("+" | "-") EOL?
+op_mult ::= EOL? ("*" | "/" | "×" | "÷") EOL?
+op_pow ::= EOL? ("^" | "**") EOL?
+op_mat ::= EOL? (".*") EOL? // Dot product symbol??
+op_not ::= EOL? "!" | "¬"
 
 // The list of characters considered line terminators in the unicode spec:
 EOL ::= ("\r\n" | "\n" | "\r" | 'U+000B' | 'U+000C' | 'U+000D' | 'U+0085' | 'U+2028' | 'U+2029')+
@@ -61,6 +79,9 @@ EOL ::= ("\r\n" | "\n" | "\r" | 'U+000B' | 'U+000C' | 'U+000D' | 'U+0085' | 'U+2
 SPACE ::= " " | "\t" | 'U+00A0' | 'U+1680' | 'U+2000' | 'U+2001' | 'U+2002' | 'U+2003' | 'U+2004' | 'U+2005' | 'U+2006' | 'U+2007' | 'U+2008' | 'U+2009' | 'U+200A' | 'U+202F' | 'U+205F' | 'U+3000' | 'U+180E' | 'U+200B' | 'U+2060' | 'U+FEFF'
 
 SLUG ::= '[_a-zA-Z][_a-zA-Z0-9\-\.]*'
+ID ::= '[_a-zA-Z][_a-zA-Z0-9\_]*'
+INT ::= '(-?[1-9][0-9]*|0)'
+FLOAT ::= '[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?'
 
-
+L::=""
 _ignore ::= SPACE
