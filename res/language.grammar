@@ -20,7 +20,7 @@ dimensionspec ::= "[" dimension ("," dimension)* "]"
 dimension ::= integer | "*"
 
 block ::= "{" EOL (assignment EOL)* EOL? "}"
-assignment ::= varname ("="|"≔") (expression | lambda)
+assignment ::= varname ("="|"≔") expression
 
 //  ! R->L
 //  .* . L->R
@@ -41,7 +41,10 @@ exp_not ::= op_not* exp_func
 exp_func ::= funcname args | literal
 literal ::= string | number | "(" expression ")" | variable
 
-string ::= "\"" '.*' "\""
+variable ::= namespace? varname ("[" dimensionspec "]")?
+namespace ::= (file ".")? (typename ".")?
+
+string ::= "\"" '^[^\"\\]*(\\[\\|\"]?[^\"\\]+)*(\\[\\|\"]?)?$' "\"" // regexr.com/5faas
 number ::= INT | FLOAT
 
 
@@ -79,7 +82,7 @@ EOL ::= ("\r\n" | "\n" | "\r" | 'U+000B' | 'U+000C' | 'U+000D' | 'U+0085' | 'U+2
 SPACE ::= " " | "\t" | 'U+00A0' | 'U+1680' | 'U+2000' | 'U+2001' | 'U+2002' | 'U+2003' | 'U+2004' | 'U+2005' | 'U+2006' | 'U+2007' | 'U+2008' | 'U+2009' | 'U+200A' | 'U+202F' | 'U+205F' | 'U+3000' | 'U+180E' | 'U+200B' | 'U+2060' | 'U+FEFF'
 
 SLUG ::= '[_a-zA-Z][_a-zA-Z0-9\-\.]*'
-ID ::= '[_a-zA-Z][_a-zA-Z0-9\_]*'
+ID ::= '[_a-zA-Z][_a-zA-Z0-9]*'
 INT ::= '(-?[1-9][0-9]*|0)'
 FLOAT ::= '[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?'
 
