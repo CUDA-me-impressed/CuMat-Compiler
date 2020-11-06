@@ -17,14 +17,15 @@ arguments ::= (argument ("," argument)* )?
 argument ::= typespec varname
 typespec ::= typename (dimensionspec)?
 dimensionspec ::= "[" dimension ("," dimension)* "]"
-dimension ::= integer | "*"
+dimension ::= INT | "*"
 
 block ::= "{" EOL (assignment EOL)* EOL? "}"
 assignment ::= varname ("="|"≔") expression
 
-//  ! R->L
+//  |> R->L
+//  !
 //  .* . L->R
-//  ^ L->R
+//  ^ R->L
 //  * / (%) L->R
 //  + - L->R
 //  | & L->R
@@ -36,10 +37,14 @@ exp_bit ::= exp_sum (op_bit exp_sum)*
 exp_sum ::= exp_mult (op_sum exp_mult)*
 exp_mult ::= exp_pow (op_mult exp_pow)*
 exp_pow ::= (exp_mat op_pow)* exp_mat // rtol
-exp_mat ::= exp_not (op_mat exp_not)*
-exp_not ::= op_not* exp_func
-exp_func ::= funcname args | literal
-literal ::= string | number | "(" expression ")" | variable
+exp_mat ::= exp_neg (op_mat exp_neg)*
+exp_neg ::= op_neg* exp_not
+exp_not ::= op_not* exp_chain
+exp_chain ::= (exp_func op_chain)* exp_func
+exp_func ::= funcname args | value
+value ::= literal | "(" expression ")" | variable
+literal ::= ("[" lit_row ("\\"+ lit_row)* "]") | scalar
+lit_row ::= expression
 
 variable ::= namespace? varname ("[" dimensionspec "]")?
 namespace ::= (file ".")? (typename ".")?
@@ -72,7 +77,9 @@ op_sum ::= EOL? ("+" | "-") EOL?
 op_mult ::= EOL? ("*" | "/" | "×" | "÷") EOL?
 op_pow ::= EOL? ("^" | "**") EOL?
 op_mat ::= EOL? (".*") EOL? // Dot product symbol??
-op_not ::= EOL? "!" | "¬"
+op_neg ::= EOL? ("-")
+op_not ::= EOL? ("!" | "¬")
+op_chain ::= EOL? ("|>") EOL?
 
 // The list of characters considered line terminators in the unicode spec:
 EOL ::= ("\r\n" | "\n" | "\r" | 'U+000B' | 'U+000C' | 'U+000D' | 'U+0085' | 'U+2028' | 'U+2029')+
@@ -83,8 +90,8 @@ SPACE ::= " " | "\t" | 'U+00A0' | 'U+1680' | 'U+2000' | 'U+2001' | 'U+2002' | 'U
 
 SLUG ::= '[_a-zA-Z][_a-zA-Z0-9\-\.]*'
 ID ::= '[_a-zA-Z][_a-zA-Z0-9]*'
-INT ::= '(-?[1-9][0-9]*|0)'
-FLOAT ::= '[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?'
+INT ::= '([1-9][0-9]*|0)'
+FLOAT ::= '[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?'
 
 L::=""
 _ignore ::= SPACE
