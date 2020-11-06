@@ -39,8 +39,7 @@ std::vector<std::string> Preprocessor::SourceFileLoader::load() {
     return std::vector<std::string>();
 }
 
-std::unique_ptr<std::vector<std::string>> Preprocessor::SourceFileLoader::load(
-    std::string file) {
+std::unique_ptr<std::vector<std::string>> Preprocessor::SourceFileLoader::load(const std::string &file) {
     // We will load the files from the current directory
     std::ifstream fileStream(file);
     std::unique_ptr<std::vector<std::string>> fileLines =
@@ -48,8 +47,7 @@ std::unique_ptr<std::vector<std::string>> Preprocessor::SourceFileLoader::load(
     if (!fileStream.is_open()) {
         std::ostringstream ss;
         ss << "Could not find source file defined at [" << file << " ]";
-        throw std::filesystem::filesystem_error(
-            ss.str(), std::error_code(15, std::system_category()));
+        throw std::experimental::filesystem::filesystem_error(ss.str() , std::error_code(15, std::system_category()));
     }
 
     // Load in the root file into a vector
