@@ -33,7 +33,7 @@ std::vector<std::string> Preprocessor::SourceFileLoader::load() {
     return std::vector<std::string>();
 }
 
-std::unique_ptr<std::vector<std::string>> Preprocessor::SourceFileLoader::load(std::string file) {
+std::unique_ptr<std::vector<std::string>> Preprocessor::SourceFileLoader::load(const std::string &file) {
     // We will load the files from the current directory
     std::ifstream fileStream(file);
     std::unique_ptr<std::vector<std::string>> fileLines = std::make_unique<std::vector<std::string>>();
