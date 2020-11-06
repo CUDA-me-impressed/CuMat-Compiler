@@ -16,7 +16,7 @@ void printArgumentError(std::string message, std::string arg) {
 }
 
 int main(int argc, char* argv[], char* envp[]) {
-    std::vector<std::string> args{};
+    std::vector<std::string> args;
     std::string inputFileName;
     std::string outputFile;
 
