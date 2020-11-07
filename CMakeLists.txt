@@ -16,4 +16,5 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 20)
 endif()
 
+link_libraries(-lstdc++fs)
 add_subdirectory(src)
