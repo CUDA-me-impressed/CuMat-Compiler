@@ -9,7 +9,7 @@
 namespace Preprocessor {
 class SourceFileLoader {
    public:
-    SourceFileLoader(std::string rootFile) : rootFile(rootFile) {}
+    SourceFileLoader(std::string rootFile) : rootFile(std::move(rootFile)) {}
     SourceFileLoader(std::string rootFile,
                      std::experimental::filesystem::path path);
     std::vector<std::string> load();
