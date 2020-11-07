@@ -20,13 +20,6 @@ class SourceFileLoader {
     std::string rootFile;
     std::map<std::string, std::experimental::filesystem::path> lookupPath;
 };
-}
-
-private:
-std::string rootFile;
-std::map<std::string, std::filesystem::path> lookupPath;
-}
-;
 }  // namespace Preprocessor
 
 #endif
