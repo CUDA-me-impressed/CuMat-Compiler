@@ -43,8 +43,9 @@ jobs:
     - name: Clang-Format
       working-directory: ${{runner.workspace}}
       shell: bash
-      run: clang-format-10 -style=file -Werror -dry-run ${{runner.workspace}}/src/**/src/*.cpp ${{runner.workspace}}/src/**/inc/*.hpp
-
+      run: |
+              ls -r ${{runner.workspace}}
+              clang-format-10 -style=file -Werror -dry-run ${{runner.workspace}}/src/**/src/*.cpp ${{runner.workspace}}/src/**/inc/*.hpp
 
     - name: Clang-Tidy
       working-directory: ${{runner.workspace}}
