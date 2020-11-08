@@ -8,30 +8,21 @@ set(ANTLR4_TAG 4.8)
 include(ExternalAntlr4Cpp)
 find_package(ANTLR REQUIRED)
 
-set(lexer_srcs
-        TLexer.g4)
-
-set(parser_srcs
-        TParser.g4)
-
 set(cpp_srcs
         parser.cpp)
 
+set(grammar_srcs
+        CuMatGrammar.g4)
+
 # Add ANTLR targets to build the .g4 files
-antlr_target(A4Lexer ${lexer_srcs} LEXER)
-antlr_target(A4Parser ${parser_srcs}
-        DEPENDS_ANTLR A4Lexer
-        COMPILE_FLAGS -lib ${ANTLR_A4Lexer_OUTPUT_DIR}
-        PARSER)
+antlr_target(A4Grammar ${grammar_srcs} LEXER PARSER)
 
 # Create a library for the generated sources
 add_library(parser_gen STATIC
-        ${ANTLR_A4Lexer_CXX_OUTPUTS}
-        ${ANTLR_A4Parser_CXX_OUTPUTS})
+        ${ANTLR_A4Grammar_CXX_OUTPUTS})
 set_property(TARGET parser_gen PROPERTY CXX_STANDARD 11)
 target_include_directories(parser_gen PUBLIC
-        ${ANTLR_A4Lexer_OUTPUT_DIR}
-        ${ANTLR_A4Parser_OUTPUT_DIR})
+        ${ANTLR_A4Grammar_OUTPUT_DIR})
 
 # link it to the runtime
 target_compile_definitions(parser_gen PUBLIC
