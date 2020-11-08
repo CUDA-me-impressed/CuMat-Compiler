@@ -40,81 +40,82 @@ POW                         : '**' | '^' ;
 DOTP                        : '.*' ;
 CHAIN                       : '|>' ;
 ARROW                       : '->' ;
+ASSIGN                      : '=' | '≔' ;
 
-program                 : EOL* imports definitions EOF ;
+program                     : EOL* imports definitions EOF ;
 
-imports                 : cmimport* ;
-cmimport                : 'import' path EOL ;
-path                    : (directorylist '/')? file ;
-directorylist           : (directory '/')* ;
-directory               : SLUG ;
-file                    : SLUG ;
+imports                     : cmimport* ;
+cmimport                    : 'import' path EOL ;
+path                        : (directorylist '/')? file ;
+directorylist               : (directory '/')* ;
+directory                   : SLUG ;
+file                        : SLUG ;
 
-definitions             : definition* ;
-definition              : (funcdef | cmtypedef | assignment) EOL ;
+definitions                 : definition* ;
+definition                  : (funcdef | cmtypedef | assignment) EOL ;
 
-funcdef                 : 'func' signature EOL? block EOL ;
-signature               : typespec funcname ('(' arguments ')')? ;
-arguments               : (argument (',' argument)* )? ;
-argument                : typespec varname ;
-typespec                : cmtypename dimensionspec? ;
-dimensionspec           : '[' dimension (',' dimension)* ']' ;
-dimension               : INT | '*' ;
+funcdef                     : 'func' signature EOL? block EOL ;
+signature                   : typespec funcname ('(' arguments ')')? ;
+arguments                   : (argument (',' argument)* )? ;
+argument                    : typespec varname ;
+typespec                    : cmtypename dimensionspec? ;
+dimensionspec               : '[' dimension (',' dimension)* ']' ;
+dimension                   : INT | '*' ;
 
-block                   : '{' EOL? (assignment EOL)* assignment? EOL? '}' ;
-assignment              : varname ('=' | '≔') expression ;
+block                       : '{' EOL? (assignment EOL)* assignment? EOL? '}' ;
+assignment                  : varname ASSIGN expression ;
 
-expression              :
-                        // Function Call
-                          funcname '(' args ')'
-                        // Chain operator
-                        | <assoc=left> expression op=CHAIN expression
-                        // Unary +/-
-                        | op=(PLUS | MINUS) expression
-                        // Unary logical/bitwise not
-                        | op=(LNOT | BNOT) expression
-                        // Multiplication family
-                        | <assoc=left> expression op=(MUL | DIV) expression
-                        // Addition family
-                        | <assoc=left> expression op=(PLUS | MINUS) expression
-                        // Relational Operators
-                        | <assoc=left> expression op=(LT | GT | LTE | GTE) expression
-                        // Equational Operations
-                        | <assoc=left> expression op=(EQ | NEQ) expression
-                        // Bitwise Operators
-                        | <assoc=left> expression op=BAND expression
-                        | <assoc=left> expression op=BOR expression
-                        // Logical Operators
-                        | <assoc=left> expression op=LAND expression
-                        | <assoc=left> expression op=LOR expression
-                     // | lambda
-                        | value;
+expression                  :
+                            // Function Call
+                              funcname '(' args ')'
+                            // Chain operator
+                            | <assoc=left> expression op=CHAIN expression
+                            // Unary +/-
+                            | op=(PLUS | MINUS) expression
+                            // Unary logical/bitwise not
+                            | op=(LNOT | BNOT) expression
+                            // Multiplication family
+                            | <assoc=left> expression op=(MUL | DIV) expression
+                            // Addition family
+                            | <assoc=left> expression op=(PLUS | MINUS) expression
+                            // Relational Operators
+                            | <assoc=left> expression op=(LT | GT | LTE | GTE) expression
+                            // Equational Operations
+                            | <assoc=left> expression op=(EQ | NEQ) expression
+                            // Bitwise Operators
+                            | <assoc=left> expression op=BAND expression
+                            | <assoc=left> expression op=BOR expression
+                            // Logical Operators
+                            | <assoc=left> expression op=LAND expression
+                            | <assoc=left> expression op=LOR expression
+                         // | lambda
+                            | value;
 
-value                   : literal | '(' expression ')' | variable ;
-literal                 : matrixliteral | scalarliteral ;
-matrixliteral           : '[' rowliteral ('\\'+ rowliteral)* ']' ;
-rowliteral              : expression* ;
-scalarliteral           : stringliteral | numliteral ;
-stringliteral           : STRING ;
-numliteral              : INT | FLOAT ;
+value                       : literal | '(' expression ')' | variable ;
+literal                     : matrixliteral | scalarliteral ;
+matrixliteral               : '[' rowliteral ('\\'+ rowliteral)* ']' ;
+rowliteral                  : expression* ;
+scalarliteral               : stringliteral | numliteral ;
+stringliteral               : STRING ;
+numliteral                  : INT | FLOAT ;
 
-variable                : cmnamespace varname ('[' dimensionspec ']')? ;
-cmnamespace             : (file '.')? (cmtypename '.')? ;
+variable                    : cmnamespace varname ('[' dimensionspec ']')? ;
+cmnamespace                 : (file '.')? (cmtypename '.')? ;
 
-args                    : expression (',' expression)* ;
+args                        : expression (',' expression)* ;
 
-cmtypedef               : 'type' newtype attrblock EOL ;
-attrblock               : '{' EOL? attr+ '}' ;
-attr                    : attrname ':' typespec EOL ;
+cmtypedef                   : 'type' newtype attrblock EOL ;
+attrblock                   : '{' EOL? attr+ '}' ;
+attr                        : attrname ':' typespec EOL ;
 
-cmtypename              : typeidentifier | primitive ;
-varname                 : identifier ;
-funcname                : identifier ;
-newtype                 : identifier ;
-attrname                : identifier ;
+cmtypename                  : typeidentifier | primitive ;
+varname                     : identifier ;
+funcname                    : identifier ;
+newtype                     : identifier ;
+attrname                    : identifier ;
 
-identifier              : ID ;
-typeidentifier          : TYPE_ID ;
+identifier                  : ID ;
+typeidentifier              : TYPE_ID ;
 
-primitive               : 'int' | 'bool' | 'string' | 'float' | functype ;
-functype                : '(' typespec (',' typespec)* ')' ARROW typespec ;
+primitive                   : 'int' | 'bool' | 'string' | 'float' | functype ;
+functype                    : '(' typespec (',' typespec)* ')' ARROW typespec ;
