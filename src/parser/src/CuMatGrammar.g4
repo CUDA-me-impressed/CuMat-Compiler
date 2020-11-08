@@ -1,6 +1,6 @@
 grammar CuMatGrammar;
 
-fragment NEWLINE            : '\r\n' | '\n' | '\r' | 'U+000B' | 'U+000C' | 'U+000D' | 'U+0085' | 'U+2028' | 'U+2029' ;
+fragment NEWLINE            : '\r\n' | '\n' | '\r' | '\u000B' | '\u000C' | '\u000D' | '\u0085' | '\u2028' | '\u2029' ;
 fragment ALPHA              : [a-zA-Z] ;
 fragment POSDIGIT           : [1-9] ;
 fragment DIGIT              : '0' | POSDIGIT ;
@@ -16,9 +16,9 @@ INT                         : '0' | (POSDIGIT DIGIT*) ;
 FLOAT                       : DIGIT+ ('.' DIGIT+)? ([eE][-+] DIGIT+)? ;
 STRING                      : '"' [^"\\]* ('\\'[\\|"]?[^"\\]+)*('\\'[\\|"]?)? '"' ;
 
-SPACE                       : (' ' | '\t' | 'U+00A0' | 'U+1680' | 'U+2000' | 'U+2001' | 'U+2002' | 'U+2003' | 'U+2004'
-                            | 'U+2005' | 'U+2006' | 'U+2007' | 'U+2008' | 'U+2009' | 'U+200A' | 'U+202F' | 'U+205F'
-                            | 'U+3000' | 'U+180E' | 'U+200B' | 'U+2060' | 'U+FEFF') -> skip ;
+SPACE                       : (' ' | '\t' | '\u00A0' | '\u1680' | '\u2000' | '\u2001' | '\u2002' | '\u2003' | '\u2004'
+                            | '\u2005' | '\u2006' | '\u2007' | '\u2008' | '\u2009' | '\u200A' | '\u202F' | '\u205F'
+                            | '\u3000' | '\u180E' | '\u200B' | '\u2060' | '\uFEFF') -> skip ;
 
 LOR                         : '||' | '⋁' | '∨';
 LAND                        : '&&' | '⋀' | '∧';
@@ -47,7 +47,7 @@ program                     : EOL* imports definitions EOF ;
 imports                     : cmimport* ;
 cmimport                    : 'import' path EOL ;
 path                        : (directorylist '/')? file ;
-directorylist               : (directory '/')* ;
+directorylist               : (directories+=directory '/')* ;
 directory                   : SLUG ;
 file                        : SLUG ;
 
@@ -62,7 +62,7 @@ typespec                    : cmtypename dimensionspec? ;
 dimensionspec               : '[' dimension (',' dimension)* ']' ;
 dimension                   : INT | '*' ;
 
-block                       : '{' EOL? (assignment EOL)* assignment? EOL? '}' ;
+block                       : '{' EOL? (assignments+=assignment EOL)* assignments+=assignment? EOL? '}' ;
 assignment                  : varname ASSIGN expression ;
 
 expression                  :
@@ -97,8 +97,8 @@ expression                  :
 
 value                       : literal | '(' expression ')' | variable ;
 literal                     : matrixliteral | scalarliteral ;
-matrixliteral               : '[' rowliteral ('\\'+ rowliteral)* ']' ;
-rowliteral                  : expression (',' expression)* ;
+matrixliteral               : '[' rows+=rowliteral ('\\'+ rows+=rowliteral)* ']' ;
+rowliteral                  : cols+=expression (',' cols+=expression)* ;
 scalarliteral               : stringliteral | numliteral ;
 stringliteral               : STRING ;
 numliteral                  : INT | FLOAT ;
@@ -109,7 +109,7 @@ cmnamespace                 : (file '.')? (cmtypename '.')? ;
 args                        : expression (',' expression)* ;
 
 cmtypedef                   : 'type' newtype attrblock EOL ;
-attrblock                   : '{' EOL? attr+ '}' ;
+attrblock                   : '{' EOL? attrs+=attr+ '}' ;
 attr                        : attrname ':' typespec EOL ;
 
 cmtypename                  : typeidentifier | primitive ;
@@ -122,4 +122,4 @@ identifier                  : ID ;
 typeidentifier              : TYPE_ID ;
 
 primitive                   : 'int' | 'bool' | 'string' | 'float' | functype ;
-functype                    : '(' typespec (',' typespec)* ')' ARROW typespec ;
+functype                    : '(' argspecs+=typespec (',' argspecs+=typespec)* ')' ARROW retspec=typespec ;
