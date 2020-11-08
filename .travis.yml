@@ -19,6 +19,9 @@ addons:
       - clang-10
       - clang-tidy-10
       - clang-format-10
+      - openjdk-8-jre
+      - pkg-config
+      - uuid-dev
 
 install:
   - echo ${PATH}
