@@ -44,9 +44,7 @@ jobs:
     - name: Clang-Format
       working-directory: ${{runner.workspace}}
       shell: bash
-      run: |
-              ls -AR ${{runner.workspace}}
-              clang-format-10 -style=file -Werror -dry-run ${{runner.workspace}}/CuMat-Compiler/src/**/src/*.cpp ${{runner.workspace}}/src/**/inc/*.hpp
+      run: clang-format-10 -style=file -Werror -dry-run ${{runner.workspace}}/CuMat-Compiler/src/**/src/*.cpp ${{runner.workspace}}/CuMat-Compiler/src/**/inc/*.hpp
 
     - name: Clang-Tidy
       working-directory: ${{runner.workspace}}
