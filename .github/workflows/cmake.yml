@@ -21,6 +21,7 @@ jobs:
       # Some projects don't allow in-source building, so create a separate build directory
       # We'll use this as our working directory for all subsequent commands
       run: |
+              sudo apt update
               sudo apt install clang-10 clang-tidy-10 clang-format-10 openjdk-8-jre pkg-config uuid-dev
               cmake -E make_directory ${{runner.workspace}}/build
 
@@ -44,13 +45,13 @@ jobs:
       working-directory: ${{runner.workspace}}
       shell: bash
       run: |
-              ls -r ${{runner.workspace}}
-              clang-format-10 -style=file -Werror -dry-run ${{runner.workspace}}/src/**/src/*.cpp ${{runner.workspace}}/src/**/inc/*.hpp
+              ls -AR ${{runner.workspace}}
+              clang-format-10 -style=file -Werror -dry-run ${{runner.workspace}}/CuMat-Compiler/src/**/src/*.cpp ${{runner.workspace}}/src/**/inc/*.hpp
 
     - name: Clang-Tidy
       working-directory: ${{runner.workspace}}
       shell: bash
-      run: clang-tidy-10 -p ${{runner.workspace}}/build/compile_commands.json -checks=readability-*,bugprone-*,clang-analyzer-*,modernize-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,misc-redundant-expression,misc-misplaced-const,misc-new-delete-overloads,misc-definitions-in-headers,misc-non-copyable-objects,misc-static-assert,misc-throw-by-value-catch-by-reference,misc-unconventional-assign-operator,misc-unused-using-decls -warnings-as-errors=* -header-filter=.* ${{runner.workspace}}/src/compiler/src/main.cpp
+      run: clang-tidy-10 -p ${{runner.workspace}}/build/compile_commands.json -checks=readability-*,bugprone-*,clang-analyzer-*,modernize-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,misc-redundant-expression,misc-misplaced-const,misc-new-delete-overloads,misc-definitions-in-headers,misc-non-copyable-objects,misc-static-assert,misc-throw-by-value-catch-by-reference,misc-unconventional-assign-operator,misc-unused-using-decls -warnings-as-errors=* -header-filter=.* ${{runner.workspace}}/CuMat-Compiler/src/compiler/src/main.cpp
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
