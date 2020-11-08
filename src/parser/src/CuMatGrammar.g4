@@ -20,15 +20,15 @@ SPACE                       : (' ' | '\t' | 'U+00A0' | 'U+1680' | 'U+2000' | 'U+
                             | 'U+2005' | 'U+2006' | 'U+2007' | 'U+2008' | 'U+2009' | 'U+200A' | 'U+202F' | 'U+205F'
                             | 'U+3000' | 'U+180E' | 'U+200B' | 'U+2060' | 'U+FEFF') -> skip ;
 
-LOR                         : '||' | '⋁' ;
-LAND                        : '&&' | '⋀' | '∧' | '∨' ;
+LOR                         : '||' | '⋁' | '∨';
+LAND                        : '&&' | '⋀' | '∧';
 LNOT                        : '!' | '¬' ;
 EQ                          : '==' ;
 NEQ                         : '!=' | '≠' ;
 LT                          : '<' ;
 GT                          : '>' ;
 LTE                         : '<=' | '≤' ;
-GTE                         : '≥' ;
+GTE                         : '>=' | '≥' ;
 BOR                         : '|' ;
 BAND                        : '&' ;
 BNOT                        : '~' ;
@@ -37,7 +37,7 @@ MINUS                       : '-' ;
 MUL                         : '*' | '×' ;
 DIV                         : '/' | '÷' ;
 POW                         : '**' | '^' ;
-DOTP                        : '.*' ;
+MATM                        : '.*' ;
 CHAIN                       : '|>' ;
 ARROW                       : '->' ;
 ASSIGN                      : '=' | '≔' ;
@@ -74,6 +74,10 @@ expression                  :
                             | op=(PLUS | MINUS) expression
                             // Unary logical/bitwise not
                             | op=(LNOT | BNOT) expression
+                            // Matrix family
+                            | <assoc=left> expression op=MATM expression
+                            // Exponentiation family
+                            | <assoc=left> expression op=POW expression
                             // Multiplication family
                             | <assoc=left> expression op=(MUL | DIV) expression
                             // Addition family
@@ -94,7 +98,7 @@ expression                  :
 value                       : literal | '(' expression ')' | variable ;
 literal                     : matrixliteral | scalarliteral ;
 matrixliteral               : '[' rowliteral ('\\'+ rowliteral)* ']' ;
-rowliteral                  : expression* ;
+rowliteral                  : expression (',' expression)* ;
 scalarliteral               : stringliteral | numliteral ;
 stringliteral               : STRING ;
 numliteral                  : INT | FLOAT ;
