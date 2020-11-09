@@ -6,6 +6,7 @@
 
 #include "CompilerOptions.hpp"
 #include "Preprocessor.hpp"
+#include "ParMat.hpp"
 
 void printArgumentError(std::string message, std::string arg) {
     const std::string helpText =
@@ -16,6 +17,9 @@ void printArgumentError(std::string message, std::string arg) {
 }
 
 int main(int argc, char* argv[], char* envp[]) {
+    Optimisations::Matrix<1,1> x;
+    int s = 1;
+
     std::vector<std::string> args;
     std::string inputFileName;
     std::string outputFile;
