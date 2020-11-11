@@ -14,6 +14,6 @@ class SimpleErrorListener : public antlr4::BaseErrorListener {
                      std::exception_ptr e) override;
 };
 
-int test_parser(const char* filename);
+int test_parser(const char *filename);
 
 #endif  // CUMAT_COMPILER_PARSER_HPP

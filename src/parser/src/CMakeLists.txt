@@ -1,8 +1,8 @@
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../antlr4")
 
-if(NOT ANTLR_EXECUTABLE)
+if (NOT ANTLR_EXECUTABLE)
     set(ANTLR_EXECUTABLE "${CMAKE_CURRENT_SOURCE_DIR}/../antlr4/antlr-4.8-complete.jar")
-endif()
+endif ()
 
 set(ANTLR4_TAG 4.8)
 include(ExternalAntlr4Cpp)

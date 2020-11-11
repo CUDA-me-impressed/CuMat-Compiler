@@ -3,9 +3,9 @@
 #include <iostream>
 #include <strstream>
 
-#include "antlr4-runtime.h"
 #include "CuMatGrammarLexer.h"
 #include "CuMatGrammarParser.h"
+#include "antlr4-runtime.h"
 
 int test_parser(const char* filename) {
     std::ifstream stream;
@@ -36,7 +36,7 @@ int test_parser(const char* filename) {
         antlr4::tree::ParseTree* tree = parser.program();
         std::cout << tree->toStringTree(true) << std::endl;
         return 0;
-    } catch (std::invalid_argument &e) {
+    } catch (std::invalid_argument& e) {
         std::cout << e.what() << std::endl;
         return 1;
     }
@@ -47,7 +47,6 @@ void SimpleErrorListener::syntaxError(antlr4::Recognizer* recognizer,
                                       size_t line, size_t charPositionInLine,
                                       const std::string& msg,
                                       std::exception_ptr e) {
-
     std::ostrstream s;
     s << "At " << line << ":" << charPositionInLine << ", error " << msg;
     throw std::invalid_argument(s.str());
