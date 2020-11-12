@@ -4,7 +4,3 @@
 #include "CuMatVisitor.hpp"
 
 
-antlrcpp::Any CuMatVisitor::visitProgram(
-    CuMatGrammarParser::ProgramContext *ctx) {
-    return CuMatGrammarBaseVisitor::visitProgram(ctx);
-}
