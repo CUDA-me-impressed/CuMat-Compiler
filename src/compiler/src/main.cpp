@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "CompilerOptions.hpp"
+#include "CuMatParser.hpp"
 #include "Preprocessor.hpp"
 
 void printArgumentError(std::string message, std::string arg) {
@@ -106,6 +107,20 @@ int main(int argc, char* argv[], char* envp[]) {
 
     Preprocessor::SourceFileLoader loader(inputFileName);
     auto files = loader.load();
+
+    std::vector<std::shared_ptr<ASTNode>> parseTrees;
+    for(const auto& file : files)
+    {
+        auto tree = runParser(file);
+        parseTrees.push_back(std::move(tree));
+    }
+
+    //Pretty printing for test
+    for(const auto& tree : parseTrees)
+    {
+        std::cout << "Program Tree: " << std::endl;
+        std::cout << tree->toString() << std::endl;
+    }
 
     return 0;
 }

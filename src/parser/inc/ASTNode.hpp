@@ -13,13 +13,17 @@ class ASTNode {
    public:
     std::string literalText;
 
-    std::shared_ptr<ASTNode> parent;
+    ASTNode* parent;
     std::vector<std::shared_ptr<ASTNode>> children;
 
-    ASTNode(std::shared_ptr<ASTNode> creator,std::string textRep);
+    explicit ASTNode(std::string textRep);
 
-    virtual std::shared_ptr<ASTNode> semanticPass();
-    virtual void codeGen();
+    void addChild(std::shared_ptr<ASTNode> n);
+
+    std::string toString();
+
+    virtual std::shared_ptr<ASTNode> semanticPass() {}
+    virtual void codeGen() {}
 };
 
 #endif  //_ASTNODE_HPP_

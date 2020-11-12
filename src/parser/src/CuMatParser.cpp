@@ -1,15 +1,14 @@
-#include "parser.hpp"
+#include "CuMatParser.hpp"
 
 #include <iostream>
-#include <strstream>
 #include <memory>
 #include <string>
+#include <strstream>
 
-#include "CuMatVisitor.hpp"
 #include "CuMatGrammarLexer.h"
 #include "CuMatGrammarParser.h"
+#include "CuMatVisitor.hpp"
 #include "antlr4-runtime.h"
-
 
 void SimpleErrorListener::syntaxError(antlr4::Recognizer* recognizer,
                                       antlr4::Token* offendingSymbol,
