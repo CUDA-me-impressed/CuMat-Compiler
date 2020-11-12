@@ -22,7 +22,7 @@ class ASTNode {
 
     std::string toString();
 
-    virtual std::shared_ptr<ASTNode> semanticPass() {}
+    virtual void semanticPass() {}
     virtual void codeGen() {}
 };
 
