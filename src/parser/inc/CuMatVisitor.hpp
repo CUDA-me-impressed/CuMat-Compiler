@@ -7,85 +7,85 @@
 
 #include <antlr4-runtime.h>
 
-#include "CuMatGrammarBaseVisitor.h"
+#include "CuMatParserBaseVisitor.h"
 
-class CuMatVisitor : public CuMatGrammarBaseVisitor {
+class CuMatVisitor : public CuMatParserBaseVisitor {
    public:
     antlrcpp::Any visitProgram(
-        CuMatGrammarParser::ProgramContext *ctx) override;
+        CuMatParser::ProgramContext *ctx) override;
 
     antlrcpp::Any visitImports(
-        CuMatGrammarParser::ImportsContext *ctx) override;
+        CuMatParser::ImportsContext *ctx) override;
     antlrcpp::Any visitCmimport(
-        CuMatGrammarParser::CmimportContext *ctx) override;
+        CuMatParser::CmimportContext *ctx) override;
 
     antlrcpp::Any visitDefinitions(
-        CuMatGrammarParser::DefinitionsContext *ctx) override;
+        CuMatParser::DefinitionsContext *ctx) override;
     antlrcpp::Any visitDefinition(
-        CuMatGrammarParser::DefinitionContext *ctx) override;
+        CuMatParser::DefinitionContext *ctx) override;
 
     antlrcpp::Any visitFuncdef(
-        CuMatGrammarParser::FuncdefContext *ctx) override;
+        CuMatParser::FuncdefContext *ctx) override;
     antlrcpp::Any visitSignature(
-        CuMatGrammarParser::SignatureContext *ctx) override;
+        CuMatParser::SignatureContext *ctx) override;
     antlrcpp::Any visitArguments(
-        CuMatGrammarParser::ArgumentsContext *ctx) override;
+        CuMatParser::ArgumentsContext *ctx) override;
     antlrcpp::Any visitArgument(
-        CuMatGrammarParser::ArgumentContext *ctx) override;
+        CuMatParser::ArgumentContext *ctx) override;
     antlrcpp::Any visitTypespec(
-        CuMatGrammarParser::TypespecContext *ctx) override;
+        CuMatParser::TypespecContext *ctx) override;
     antlrcpp::Any visitDimensionspec(
-        CuMatGrammarParser::DimensionspecContext *ctx) override;
+        CuMatParser::DimensionspecContext *ctx) override;
 
-    antlrcpp::Any visitBlock(CuMatGrammarParser::BlockContext *ctx) override;
+    antlrcpp::Any visitBlock(CuMatParser::BlockContext *ctx) override;
 
     antlrcpp::Any visitAssignment(
-        CuMatGrammarParser::AssignmentContext *ctx) override;
+        CuMatParser::AssignmentContext *ctx) override;
     antlrcpp::Any visitVarname(
-        CuMatGrammarParser::VarnameContext *ctx) override;
+        CuMatParser::VarnameContext *ctx) override;
 
     antlrcpp::Any visitExpression(
-        CuMatGrammarParser::ExpressionContext *ctx) override;
+        CuMatParser::ExpressionContext *ctx) override;
     antlrcpp::Any visitExp_logic(
-        CuMatGrammarParser::Exp_logicContext *ctx) override;
+        CuMatParser::Exp_logicContext *ctx) override;
     antlrcpp::Any visitExp_comp(
-        CuMatGrammarParser::Exp_compContext *ctx) override;
+        CuMatParser::Exp_compContext *ctx) override;
     antlrcpp::Any visitExp_bit(
-        CuMatGrammarParser::Exp_bitContext *ctx) override;
+        CuMatParser::Exp_bitContext *ctx) override;
     antlrcpp::Any visitExp_sum(
-        CuMatGrammarParser::Exp_sumContext *ctx) override;
+        CuMatParser::Exp_sumContext *ctx) override;
     antlrcpp::Any visitExp_mult(
-        CuMatGrammarParser::Exp_multContext *ctx) override;
+        CuMatParser::Exp_multContext *ctx) override;
     antlrcpp::Any visitExp_pow(
-        CuMatGrammarParser::Exp_powContext *ctx) override;
+        CuMatParser::Exp_powContext *ctx) override;
     antlrcpp::Any visitExp_mat(
-        CuMatGrammarParser::Exp_matContext *ctx) override;
+        CuMatParser::Exp_matContext *ctx) override;
     antlrcpp::Any visitExp_neg(
-        CuMatGrammarParser::Exp_negContext *ctx) override;
+        CuMatParser::Exp_negContext *ctx) override;
     antlrcpp::Any visitExp_not(
-        CuMatGrammarParser::Exp_notContext *ctx) override;
+        CuMatParser::Exp_notContext *ctx) override;
     antlrcpp::Any visitExp_chain(
-        CuMatGrammarParser::Exp_chainContext *ctx) override;
+        CuMatParser::Exp_chainContext *ctx) override;
     antlrcpp::Any visitExp_func(
-        CuMatGrammarParser::Exp_funcContext *ctx) override;
+        CuMatParser::Exp_funcContext *ctx) override;
 
-    antlrcpp::Any visitArgs(CuMatGrammarParser::ArgsContext *ctx) override;
+    antlrcpp::Any visitArgs(CuMatParser::ArgsContext *ctx) override;
 
-    antlrcpp::Any visitValue(CuMatGrammarParser::ValueContext *ctx) override;
+    antlrcpp::Any visitValue(CuMatParser::ValueContext *ctx) override;
     antlrcpp::Any visitMatrixliteral(
-        CuMatGrammarParser::MatrixliteralContext *ctx) override;
+        CuMatParser::MatrixliteralContext *ctx) override;
     antlrcpp::Any visitRowliteral(
-        CuMatGrammarParser::RowliteralContext *ctx) override;
+        CuMatParser::RowliteralContext *ctx) override;
     antlrcpp::Any visitScalarliteral(
-        CuMatGrammarParser::ScalarliteralContext *ctx) override;
+        CuMatParser::ScalarliteralContext *ctx) override;
 
     antlrcpp::Any visitVariable(
-        CuMatGrammarParser::VariableContext *ctx) override;
+        CuMatParser::VariableContext *ctx) override;
     antlrcpp::Any visitCmnamespace(
-        CuMatGrammarParser::CmnamespaceContext *ctx) override;
+        CuMatParser::CmnamespaceContext *ctx) override;
 
     antlrcpp::Any visitCmtypedef(
-        CuMatGrammarParser::CmtypedefContext *ctx) override;
+        CuMatParser::CmtypedefContext *ctx) override;
 
    protected:
     antlrcpp::Any defaultResult() override;

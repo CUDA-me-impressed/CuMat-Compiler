@@ -9,7 +9,7 @@ include(ExternalAntlr4Cpp)
 find_package(ANTLR REQUIRED)
 
 set(cpp_srcs
-        CuMatParser.cpp ASTNode.cpp CuMatVisitor.cpp)
+        CuMatASTGenerator.cpp ASTNode.cpp CuMatVisitor.cpp)
 
 set(lexer_srcs
         CuMatLexer.g4)

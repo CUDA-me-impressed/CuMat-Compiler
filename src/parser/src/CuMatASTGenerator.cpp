@@ -1,12 +1,12 @@
-#include "CuMatParser.hpp"
+#include "CuMatASTGenerator.hpp"
 
 #include <iostream>
 #include <memory>
 #include <string>
 #include <strstream>
 
-#include "CuMatGrammarLexer.h"
-#include "CuMatGrammarParser.h"
+#include "CuMatLexer.h"
+#include "CuMatParser.h"
 #include "CuMatVisitor.hpp"
 #include "antlr4-runtime.h"
 
@@ -24,9 +24,9 @@ std::shared_ptr<ASTNode> runParser(std::string fileName) {
     stream.open(fileName);
 
     antlr4::ANTLRInputStream input(stream);
-    CuMatGrammarLexer lexer(&input);
+    CuMatLexer lexer(&input);
     antlr4::CommonTokenStream tokens(&lexer);
-    CuMatGrammarParser parser(&tokens);
+    CuMatParser parser(&tokens);
 
     parser.removeErrorListeners();
     SimpleErrorListener el;
@@ -34,7 +34,7 @@ std::shared_ptr<ASTNode> runParser(std::string fileName) {
     CuMatVisitor visitor;
 
     try {
-        CuMatGrammarParser::ProgramContext* context = parser.program();
+        CuMatParser::ProgramContext* context = parser.program();
         auto tree = visitor.visitProgram(context);
         return std::move(tree.as<std::shared_ptr<ASTNode>>());
     } catch (std::invalid_argument& e) {

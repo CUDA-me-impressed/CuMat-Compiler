@@ -6,7 +6,7 @@
 #include "ASTNode.hpp"
 
 antlrcpp::Any CuMatVisitor::visitProgram(
-    CuMatGrammarParser::ProgramContext *ctx) {
+    CuMatParser::ProgramContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -17,7 +17,7 @@ antlrcpp::Any CuMatVisitor::visitProgram(
 }
 
 antlrcpp::Any CuMatVisitor::visitImports(
-    CuMatGrammarParser::ImportsContext *ctx) {
+    CuMatParser::ImportsContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -28,7 +28,7 @@ antlrcpp::Any CuMatVisitor::visitImports(
 }
 
 antlrcpp::Any CuMatVisitor::visitCmimport(
-    CuMatGrammarParser::CmimportContext *ctx) {
+    CuMatParser::CmimportContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -39,7 +39,7 @@ antlrcpp::Any CuMatVisitor::visitCmimport(
 }
 
 antlrcpp::Any CuMatVisitor::visitDefinitions(
-    CuMatGrammarParser::DefinitionsContext *ctx) {
+    CuMatParser::DefinitionsContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -50,7 +50,7 @@ antlrcpp::Any CuMatVisitor::visitDefinitions(
 }
 
 antlrcpp::Any CuMatVisitor::visitDefinition(
-    CuMatGrammarParser::DefinitionContext *ctx) {
+    CuMatParser::DefinitionContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -61,7 +61,7 @@ antlrcpp::Any CuMatVisitor::visitDefinition(
 }
 
 antlrcpp::Any CuMatVisitor::visitFuncdef(
-    CuMatGrammarParser::FuncdefContext *ctx) {
+    CuMatParser::FuncdefContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -72,7 +72,7 @@ antlrcpp::Any CuMatVisitor::visitFuncdef(
 }
 
 antlrcpp::Any CuMatVisitor::visitSignature(
-    CuMatGrammarParser::SignatureContext *ctx) {
+    CuMatParser::SignatureContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -83,7 +83,7 @@ antlrcpp::Any CuMatVisitor::visitSignature(
 }
 
 antlrcpp::Any CuMatVisitor::visitArguments(
-    CuMatGrammarParser::ArgumentsContext *ctx) {
+    CuMatParser::ArgumentsContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -94,7 +94,7 @@ antlrcpp::Any CuMatVisitor::visitArguments(
 }
 
 antlrcpp::Any CuMatVisitor::visitArgument(
-    CuMatGrammarParser::ArgumentContext *ctx) {
+    CuMatParser::ArgumentContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -105,7 +105,7 @@ antlrcpp::Any CuMatVisitor::visitArgument(
 }
 
 antlrcpp::Any CuMatVisitor::visitTypespec(
-    CuMatGrammarParser::TypespecContext *ctx) {
+    CuMatParser::TypespecContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -116,7 +116,7 @@ antlrcpp::Any CuMatVisitor::visitTypespec(
 }
 
 antlrcpp::Any CuMatVisitor::visitDimensionspec(
-    CuMatGrammarParser::DimensionspecContext *ctx) {
+    CuMatParser::DimensionspecContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -126,7 +126,7 @@ antlrcpp::Any CuMatVisitor::visitDimensionspec(
     return n;
 }
 
-antlrcpp::Any CuMatVisitor::visitBlock(CuMatGrammarParser::BlockContext *ctx) {
+antlrcpp::Any CuMatVisitor::visitBlock(CuMatParser::BlockContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -137,7 +137,7 @@ antlrcpp::Any CuMatVisitor::visitBlock(CuMatGrammarParser::BlockContext *ctx) {
 }
 
 antlrcpp::Any CuMatVisitor::visitAssignment(
-    CuMatGrammarParser::AssignmentContext *ctx) {
+    CuMatParser::AssignmentContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -148,7 +148,7 @@ antlrcpp::Any CuMatVisitor::visitAssignment(
 }
 
 antlrcpp::Any CuMatVisitor::visitVarname(
-    CuMatGrammarParser::VarnameContext *ctx) {
+    CuMatParser::VarnameContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -159,7 +159,7 @@ antlrcpp::Any CuMatVisitor::visitVarname(
 }
 
 antlrcpp::Any CuMatVisitor::visitExpression(
-    CuMatGrammarParser::ExpressionContext *ctx) {
+    CuMatParser::ExpressionContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -170,7 +170,7 @@ antlrcpp::Any CuMatVisitor::visitExpression(
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_logic(
-    CuMatGrammarParser::Exp_logicContext *ctx) {
+    CuMatParser::Exp_logicContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -181,7 +181,7 @@ antlrcpp::Any CuMatVisitor::visitExp_logic(
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_comp(
-    CuMatGrammarParser::Exp_compContext *ctx) {
+    CuMatParser::Exp_compContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -192,7 +192,7 @@ antlrcpp::Any CuMatVisitor::visitExp_comp(
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_bit(
-    CuMatGrammarParser::Exp_bitContext *ctx) {
+    CuMatParser::Exp_bitContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -203,7 +203,7 @@ antlrcpp::Any CuMatVisitor::visitExp_bit(
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_sum(
-    CuMatGrammarParser::Exp_sumContext *ctx) {
+    CuMatParser::Exp_sumContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -214,7 +214,7 @@ antlrcpp::Any CuMatVisitor::visitExp_sum(
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_mult(
-    CuMatGrammarParser::Exp_multContext *ctx) {
+    CuMatParser::Exp_multContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -225,7 +225,7 @@ antlrcpp::Any CuMatVisitor::visitExp_mult(
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_pow(
-    CuMatGrammarParser::Exp_powContext *ctx) {
+    CuMatParser::Exp_powContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -236,7 +236,7 @@ antlrcpp::Any CuMatVisitor::visitExp_pow(
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_mat(
-    CuMatGrammarParser::Exp_matContext *ctx) {
+    CuMatParser::Exp_matContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -247,7 +247,7 @@ antlrcpp::Any CuMatVisitor::visitExp_mat(
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_neg(
-    CuMatGrammarParser::Exp_negContext *ctx) {
+    CuMatParser::Exp_negContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -258,7 +258,7 @@ antlrcpp::Any CuMatVisitor::visitExp_neg(
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_not(
-    CuMatGrammarParser::Exp_notContext *ctx) {
+    CuMatParser::Exp_notContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -269,7 +269,7 @@ antlrcpp::Any CuMatVisitor::visitExp_not(
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_chain(
-    CuMatGrammarParser::Exp_chainContext *ctx) {
+    CuMatParser::Exp_chainContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -280,7 +280,7 @@ antlrcpp::Any CuMatVisitor::visitExp_chain(
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_func(
-    CuMatGrammarParser::Exp_funcContext *ctx) {
+    CuMatParser::Exp_funcContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -290,7 +290,7 @@ antlrcpp::Any CuMatVisitor::visitExp_func(
     return n;
 }
 
-antlrcpp::Any CuMatVisitor::visitArgs(CuMatGrammarParser::ArgsContext *ctx) {
+antlrcpp::Any CuMatVisitor::visitArgs(CuMatParser::ArgsContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -300,7 +300,7 @@ antlrcpp::Any CuMatVisitor::visitArgs(CuMatGrammarParser::ArgsContext *ctx) {
     return n;
 }
 
-antlrcpp::Any CuMatVisitor::visitValue(CuMatGrammarParser::ValueContext *ctx) {
+antlrcpp::Any CuMatVisitor::visitValue(CuMatParser::ValueContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -311,7 +311,7 @@ antlrcpp::Any CuMatVisitor::visitValue(CuMatGrammarParser::ValueContext *ctx) {
 }
 
 antlrcpp::Any CuMatVisitor::visitMatrixliteral(
-    CuMatGrammarParser::MatrixliteralContext *ctx) {
+    CuMatParser::MatrixliteralContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -322,7 +322,7 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(
 }
 
 antlrcpp::Any CuMatVisitor::visitRowliteral(
-    CuMatGrammarParser::RowliteralContext *ctx) {
+    CuMatParser::RowliteralContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -333,7 +333,7 @@ antlrcpp::Any CuMatVisitor::visitRowliteral(
 }
 
 antlrcpp::Any CuMatVisitor::visitScalarliteral(
-    CuMatGrammarParser::ScalarliteralContext *ctx) {
+    CuMatParser::ScalarliteralContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -344,7 +344,7 @@ antlrcpp::Any CuMatVisitor::visitScalarliteral(
 }
 
 antlrcpp::Any CuMatVisitor::visitVariable(
-    CuMatGrammarParser::VariableContext *ctx) {
+    CuMatParser::VariableContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -355,7 +355,7 @@ antlrcpp::Any CuMatVisitor::visitVariable(
 }
 
 antlrcpp::Any CuMatVisitor::visitCmnamespace(
-    CuMatGrammarParser::CmnamespaceContext *ctx) {
+    CuMatParser::CmnamespaceContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();
@@ -366,7 +366,7 @@ antlrcpp::Any CuMatVisitor::visitCmnamespace(
 }
 
 antlrcpp::Any CuMatVisitor::visitCmtypedef(
-    CuMatGrammarParser::CmtypedefContext *ctx) {
+    CuMatParser::CmtypedefContext *ctx) {
     auto n = std::make_shared<ASTNode>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<ASTNode>>>();

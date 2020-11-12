@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "CompilerOptions.hpp"
-#include "CuMatParser.hpp"
+#include "CuMatASTGenerator.hpp"
 #include "Preprocessor.hpp"
 
 void printArgumentError(std::string message, std::string arg) {
