@@ -7,14 +7,14 @@ options {
 program                     : EOL* imports definitions EOF ;
 
 imports                     : cmimport* ;
-cmimport                    : IMPORT path EOL ;
-path                        : (directorylist FSLASH)? file ;
-directorylist               : (directories+=directory FSLASH)* ;
+cmimport                    : IMPORT_OPEN path IMPORT_CLOSE ;
+path                        : (directorylist DIRSEP)? file ;
+directorylist               : (directories+=directory DIRSEP)* ;
 directory                   : SLUG ;
 file                        : SLUG ;
 
 definitions                 : definition* ;
-definition                  : (funcdef | cmtypedef | assignment) EOL ;
+definition                  : funcdef | cmtypedef | assignment ;
 
 funcdef                     : FUNC signature EOL? block EOL ;
 signature                   : typespec funcname (LPAR arguments RPAR)? ;
@@ -44,7 +44,7 @@ op_logic                    : EOL? op=(LOR | LAND) EOL? ;
 op_comp                     : EOL? op=(LT | GT | LTE | GTE | EQ | NEQ) EOL? ;
 op_bit                      : EOL? op=(BAND | BOR | BNOT) EOL? ;
 op_sum                      : EOL? op=(PLUS | MINUS) EOL? ;
-op_mult                     : EOL? op=(TIMES | STAR | DIV | FSLASH) EOL? ;
+op_mult                     : EOL? op=(TIMES | STAR | DIV ) EOL? ;
 op_pow                      : EOL? (POW) EOL? ;
 op_mat                      : EOL? (MATM) EOL? ; // Dot product symbol??
 op_neg                      : EOL? (MINUS) ;

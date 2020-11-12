@@ -9,13 +9,6 @@ fragment ID_INITIAL         : ALPHA | '_' ;
 fragment ID_TAIL            : ALPHA | DIGIT | '_' ;
 
 EOL                         : NEWLINE+ ;
-SLUG                        : (ALPHANUM | '-' | '.' )+ ;
-ID                          : ID_INITIAL (ID_TAIL*) ;
-TYPE_ID                     : ID_INITIAL (ID_TAIL*) ('\''?) ;
-INT                         : '0' | (POSDIGIT DIGIT*) ;
-FLOAT                       : DIGIT+ ('.' DIGIT+)? ([eE][-+] DIGIT+)? ;
-STRING                      : '"' [^"\\]* ('\\'[\\|"]?[^"\\]+)*('\\'[\\|"]?)? '"' ;
-
 SPACE                       : (' ' | '\t' | '\u00A0' | '\u1680' | '\u2000' | '\u2001' | '\u2002' | '\u2003' | '\u2004'
                             | '\u2005' | '\u2006' | '\u2007' | '\u2008' | '\u2009' | '\u200A' | '\u202F' | '\u205F'
                             | '\u3000' | '\u180E' | '\u200B' | '\u2060' | '\uFEFF') -> skip ;
@@ -31,15 +24,14 @@ COMMA                       : ',';
 DOT                         : '.';
 COLON                       : ':';
 BSLASH                      : '\\';
-FSLASH                      : '/';
 TYPE                        : 'type';
 T_INT                       : 'int';
 T_FLOAT                     : 'float';
 T_BOOL                      : 'bool';
 T_STRING                    : 'string';
 FUNC                        : 'func';
-IMPORT                      : 'import';
 
+IMPORT_OPEN                 : ('import' SPACE+) -> pushMode(IMPORT_MODE);
 
 LOR                         : '||' | '⋁' | '∨';
 LAND                        : '&&' | '⋀' | '∧';
@@ -57,9 +49,20 @@ PLUS                        : '+' ;
 MINUS                       : '-' ;
 TIMES                       : '×' ;
 STAR                        : '*' ;
-DIV                         : '÷' ;
+DIV                         : '÷' | '/' ;
 POW                         : '**' | '^' ;
 MATM                        : '.*' ;
 CHAIN                       : '|>' ;
 ARROW                       : '->' ;
 ASSIGN                      : '=' | '≔' ;
+
+ID                          : ID_INITIAL (ID_TAIL*) ;
+TYPE_ID                     : ID_INITIAL (ID_TAIL*) ('\''?) ;
+INT                         : '0' | (POSDIGIT DIGIT*) ;
+FLOAT                       : DIGIT+ ('.' DIGIT+)? ([eE][-+] DIGIT+)? ;
+STRING                      : '"' [^"\\]* ('\\'[\\|"]?[^"\\]+)*('\\'[\\|"]?)? '"' ;
+
+mode IMPORT_MODE;
+SLUG                        : (ALPHANUM | '-' | '.' )+ ;
+DIRSEP                      : '/' ;
+IMPORT_CLOSE                : (NEWLINE+) -> popMode;
