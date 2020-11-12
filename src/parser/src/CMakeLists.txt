@@ -9,7 +9,7 @@ include(ExternalAntlr4Cpp)
 find_package(ANTLR REQUIRED)
 
 set(cpp_srcs
-        parser.cpp)
+        parser.cpp CuMatParser.cpp)
 
 set(grammar_srcs
         CuMatGrammar.g4)
@@ -43,7 +43,7 @@ target_link_libraries(Parser PUBLIC
         parser_gen)
 
 # create a (temporary) test executable
-add_executable(Parser_test
-        parser_test.cpp)
-target_link_libraries(Parser_test PRIVATE
-        Parser)
+#add_executable(Parser_test
+#        parser_test.cpp)
+#target_link_libraries(Parser_test PRIVATE
+#        Parser)
