@@ -56,7 +56,7 @@ jobs:
       - name: Clang-Tidy
         working-directory: ${{runner.workspace}}
         shell: bash
-        run: clang-tidy-10 -p ${{runner.workspace}}/build/compile_commands.json -checks=readability-*,bugprone-*,clang-analyzer-*,modernize-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,misc-redundant-expression,misc-misplaced-const,misc-new-delete-overloads,misc-definitions-in-headers,misc-non-copyable-objects,misc-static-assert,misc-throw-by-value-catch-by-reference,misc-unconventional-assign-operator,misc-unused-using-decls -warnings-as-errors=* -header-filter=.* ${{runner.workspace}}/CuMat-Compiler/src/compiler/src/main.cpp
+        run: clang-tidy-10 -p ${{runner.workspace}}/build/compile_commands.json -checks=readability-*,bugprone-*,clang-analyzer-*,modernize-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,misc-redundant-expression,misc-misplaced-const,misc-new-delete-overloads,misc-definitions-in-headers,misc-non-copyable-objects,misc-static-assert,misc-throw-by-value-catch-by-reference,misc-unconventional-assign-operator,misc-unused-using-decls -warnings-as-errors=* -header-filter="${{runner.workspace}}/CuMat-Compiler/src/.*" ${{runner.workspace}}/CuMat-Compiler/src/compiler/src/main.cpp
 
       - name: Test
         working-directory: ${{runner.workspace}}/build
