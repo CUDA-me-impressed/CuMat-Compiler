@@ -65,35 +65,29 @@ dimension                   : INT | '*' ;
 block                       : '{' EOL? (assignments+=assignment EOL)* assignments+=assignment? EOL? '}' ;
 assignment                  : varname ASSIGN expression ;
 
-expression                  :
-                            // Function Call
-                              funcname '(' args ')'
-                            // Chain operator
-                            | <assoc=left> expression op=CHAIN expression
-                            // Unary +/-
-                            | op=(PLUS | MINUS) expression
-                            // Unary logical/bitwise not
-                            | op=(LNOT | BNOT) expression
-                            // Matrix family
-                            | <assoc=left> expression op=MATM expression
-                            // Exponentiation family
-                            | <assoc=left> expression op=POW expression
-                            // Multiplication family
-                            | <assoc=left> expression op=(MUL | DIV) expression
-                            // Addition family
-                            | <assoc=left> expression op=(PLUS | MINUS) expression
-                            // Relational Operators
-                            | <assoc=left> expression op=(LT | GT | LTE | GTE) expression
-                            // Equational Operations
-                            | <assoc=left> expression op=(EQ | NEQ) expression
-                            // Bitwise Operators
-                            | <assoc=left> expression op=BAND expression
-                            | <assoc=left> expression op=BOR expression
-                            // Logical Operators
-                            | <assoc=left> expression op=LAND expression
-                            | <assoc=left> expression op=LOR expression
-                         // | lambda
-                            | value;
+expression                  : exp_logic ; //| lambda ; TODO BE ADDED
+exp_logic                   : exp_comp (op_logic exp_comp)* ;
+exp_comp                    : exp_bit (op_comp exp_bit)* ;
+exp_bit                     : exp_sum (op_bit exp_sum)* ;
+exp_sum                     : exp_mult (op_sum exp_mult)* ;
+exp_mult                    : exp_pow (op_mult exp_pow)* ;
+exp_pow                     : (exp_mat op_pow)* exp_mat ; // rtol
+exp_mat                     : exp_neg (op_mat exp_neg)* ;
+exp_neg                     : op_neg* exp_not ;
+exp_not                     : op_not* exp_chain ;
+exp_chain                   : (exp_func op_chain)* exp_func ;
+exp_func                    : funcname args | value ;
+
+op_logic                    : EOL? op=(LOR | LAND) EOL? ;
+op_comp                     : EOL? op=(LT | GT | LTE | GTE | EQ | NEQ) EOL? ;
+op_bit                      : EOL? op=(BAND | BOR | BNOT) EOL? ;
+op_sum                      : EOL? op=(PLUS | MINUS) EOL? ;
+op_mult                     : EOL? op=(MUL | DIV) EOL? ;
+op_pow                      : EOL? (POW) EOL? ;
+op_mat                      : EOL? (MATM) EOL? ; // Dot product symbol??
+op_neg                      : EOL? (MINUS) ;
+op_not                      : EOL? (LNOT) ;
+op_chain                    : EOL? (CHAIN) EOL? ;
 
 value                       : literal | '(' expression ')' | variable ;
 literal                     : matrixliteral | scalarliteral ;
