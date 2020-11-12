@@ -3,8 +3,8 @@
 #include <iostream>
 #include <strstream>
 
-#include "CuMatGrammarLexer.h"
-#include "CuMatGrammarParser.h"
+#include "CuMatLexer.h"
+#include "CuMatParser.h"
 #include "antlr4-runtime.h"
 
 int test_parser(const char* filename) {
@@ -12,15 +12,15 @@ int test_parser(const char* filename) {
     stream.open(filename);
 
     antlr4::ANTLRInputStream input(stream);
-    CuMatGrammarLexer lexer(&input);
+    CuMatLexer lexer(&input);
     antlr4::CommonTokenStream tokens(&lexer);
-    CuMatGrammarParser parser(&tokens);
+    CuMatParser parser(&tokens);
 
     parser.removeErrorListeners();
     SimpleErrorListener el;
     parser.addErrorListener(&el);
 
-    CuMatGrammarParser::FileContext* tree = parser.file();
+    CuMatParser::FileContext* tree = parser.file();
 
     // Fill token buffer
     tokens.fill();
