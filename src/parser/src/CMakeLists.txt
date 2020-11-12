@@ -9,7 +9,7 @@ include(ExternalAntlr4Cpp)
 find_package(ANTLR REQUIRED)
 
 set(cpp_srcs
-        parser.cpp)
+        parser.cpp ASTNode.cpp CuMatVisitor.cpp)
 
 set(lexer_srcs
         CuMatLexer.g4)
@@ -21,7 +21,7 @@ antlr_target(A4Lexer ${lexer_srcs} LEXER)
 antlr_target(A4Parser ${parser_srcs}
         DEPENDS_ANTLR A4Lexer
         COMPILE_FLAGS -lib ${ANTLR_A4Lexer_OUTPUT_DIR}
-        PARSER)
+        PARSER VISITOR)
 
 # Create a library for the generated sources
 add_library(parser_gen STATIC
@@ -47,9 +47,3 @@ target_link_libraries(Parser PUBLIC
         parser_gen)
 target_link_libraries(Parser PUBLIC
         parser_gen)
-
-# create a (temporary) test executable
-add_executable(Parser_test
-        parser_test.cpp)
-target_link_libraries(Parser_test PRIVATE
-        Parser)

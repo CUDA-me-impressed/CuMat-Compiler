@@ -1,15 +1,28 @@
 #include "parser.hpp"
 
 #include <iostream>
-#include <strstream>
+#include <memory>
+#include <sstream>
+#include <string>
 
 #include "CuMatLexer.h"
 #include "CuMatParser.h"
+#include "CuMatVisitor.hpp"
 #include "antlr4-runtime.h"
 
-int test_parser(const char* filename) {
+void SimpleErrorListener::syntaxError(antlr4::Recognizer* recognizer,
+                                      antlr4::Token* offendingSymbol,
+                                      size_t line, size_t charPositionInLine,
+                                      const std::string& msg,
+                                      std::exception_ptr e) {
+    std::ostringstream s;
+    s << "At " << line << ":" << charPositionInLine << ", error " << msg;
+    throw std::invalid_argument(s.str());
+}
+
+std::shared_ptr<ASTNode> runParser(std::string fileName) {
     std::ifstream stream;
-    stream.open(filename);
+    stream.open(fileName);
 
     antlr4::ANTLRInputStream input(stream);
     CuMatLexer lexer(&input);
@@ -19,35 +32,14 @@ int test_parser(const char* filename) {
     parser.removeErrorListeners();
     SimpleErrorListener el;
     parser.addErrorListener(&el);
-
-    CuMatParser::FileContext* tree = parser.file();
-
-    // Fill token buffer
-    tokens.fill();
-
-    // Print Tokens
-    std::cout << "BEGIN TOKENS\n";
-    for (const auto& token : tokens.getTokens()) {
-        std::cout << token->toString() << "\n";
-    }
-    std::cout << "END TOKENS\n" << std::endl;
+    CuMatVisitor visitor;
 
     try {
-        antlr4::tree::ParseTree* tree = parser.program();
-        std::cout << tree->toStringTree(true) << std::endl;
-        return 0;
+        CuMatParser::ProgramContext* context = parser.program();
+        auto tree = visitor.visitProgram(context);
+        return std::move(tree.as<std::shared_ptr<ASTNode>>());
     } catch (std::invalid_argument& e) {
         std::cout << e.what() << std::endl;
-        return 1;
+        return nullptr;
     }
-}
-
-void SimpleErrorListener::syntaxError(antlr4::Recognizer* recognizer,
-                                      antlr4::Token* offendingSymbol,
-                                      size_t line, size_t charPositionInLine,
-                                      const std::string& msg,
-                                      std::exception_ptr e) {
-    std::ostrstream s;
-    s << "At " << line << ":" << charPositionInLine << ", error " << msg;
-    throw std::invalid_argument(s.str());
 }
