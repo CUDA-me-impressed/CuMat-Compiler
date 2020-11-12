@@ -109,15 +109,13 @@ int main(int argc, char* argv[], char* envp[]) {
     auto files = loader.load();
 
     std::vector<std::shared_ptr<ASTNode>> parseTrees;
-    for(const auto& file : files)
-    {
+    for (const auto& file : files) {
         auto tree = runParser(file);
         parseTrees.push_back(std::move(tree));
     }
 
-    //Pretty printing for test
-    for(const auto& tree : parseTrees)
-    {
+    // Pretty printing for test
+    for (const auto& tree : parseTrees) {
         std::cout << "Program Tree: " << std::endl;
         std::cout << tree->toString() << std::endl;
     }
