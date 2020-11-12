@@ -37,6 +37,7 @@
 
 # CMake caching
 */out
+gen/
 CMakeSettings.*
 cmake-build*
 
