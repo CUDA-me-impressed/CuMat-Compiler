@@ -2,14 +2,14 @@
 
 #include "ExprASTNode.hpp"
 
-enum class TYPE {
-    STRING, INT, FLOAT
-};
+enum class TYPE { STRING, INT, FLOAT };
 
-template<class T>
+namespace AST {
+template <class T>
 class LiteralASTNode : public ExprAST {
-public:
+   public:
     T value;
 
     void codegen();
 };
+}  // namespace AST

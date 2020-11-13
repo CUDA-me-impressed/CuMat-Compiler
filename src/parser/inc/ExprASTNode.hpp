@@ -2,8 +2,10 @@
 
 #include "ASTNode.hpp"
 
-class ExprAST : public ASTNode {
-public:
+namespace AST {
+class ExprAST : public Node {
+   public:
     virtual ~ExprAST() {}
     virtual void codegen();
 };
+}  // namespace AST
