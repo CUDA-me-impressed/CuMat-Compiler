@@ -36,12 +36,12 @@ exp_comp                    : exp_bit (op_comp exp_bit)* ;
 exp_bit                     : exp_sum (op_bit exp_sum)* ;
 exp_sum                     : exp_mult (op_sum exp_mult)* ;
 exp_mult                    : exp_pow (op_mult exp_pow)* ;
-exp_pow                     : (exp_mat op_pow)* exp_mat ; // rtol
+exp_pow                     : exp_mat (op_pow exp_mat)* ; // rtol
 exp_mat                     : exp_neg (op_mat exp_neg)* ;
 exp_neg                     : op_neg* exp_bnot ;
 exp_bnot                    : op_bnot* exp_not ;
 exp_not                     : op_not* exp_chain ;
-exp_chain                   : (exp_func op_chain)* exp_func ;
+exp_chain                   : exp_func (op_chain exp_func)* ; // rtol
 exp_func                    : value args* ;
 
 op_logic                    : EOL? op=(LOR | LAND) EOL? ;
