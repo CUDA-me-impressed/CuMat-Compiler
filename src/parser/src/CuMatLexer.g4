@@ -1,6 +1,6 @@
 lexer grammar CuMatLexer;
 
-fragment NEWLINE            : '\r\n' | '\n' | '\r' | '\u000B' | '\u000C' | '\u000D' | '\u0085' | '\u2028' | '\u2029' ;
+fragment NEWLINE            : '\r\n' | '\n' | '\r' | '\u000B' | '\u000C' | '\u0085' | '\u2028' | '\u2029' ;
 fragment ALPHA              : [a-zA-Z] ;
 fragment POSDIGIT           : [1-9] ;
 fragment DIGIT              : '0' | POSDIGIT ;
@@ -44,7 +44,7 @@ LTE                         : '<=' | '≤' ;
 GTE                         : '>=' | '≥' ;
 BOR                         : '|' ;
 BAND                        : '&' ;
-BNOT                        : '~' ;
+BNOT                        : '.!' ;
 PLUS                        : '+' ;
 MINUS                       : '-' ;
 TIMES                       : '×' ;
@@ -55,6 +55,11 @@ MATM                        : '.*' ;
 CHAIN                       : '|>' ;
 ARROW                       : '->' ;
 ASSIGN                      : '=' | '≔' ;
+
+LAMBDA                      : '~' | 'λ' ;
+IF                          : 'IF' ;
+THEN                        : 'THEN' ;
+ELSE                        : 'ELSE' ;
 
 ID                          : ID_INITIAL (ID_TAIL*) ;
 TYPE_ID                     : ID_INITIAL (ID_TAIL*) ('\''?) ;
