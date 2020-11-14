@@ -6,7 +6,7 @@
 namespace AST {
 Node::Node(std::string textRep) { this->literalText = std::move(textRep); }
 
-void Node::addChild(std::unique_ptr<Node> n) {
+void Node::addChild(std::shared_ptr<Node> n) {
     this->children.push_back(std::move(n));
 }
 

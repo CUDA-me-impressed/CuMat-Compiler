@@ -9,6 +9,6 @@ namespace AST {
     class FunctionExprASTNode : public ExprAST {
     public:
         const std::string funcName;
-        std::vector<std::unique_ptr<ExprAST>> args;
+        std::vector<std::shared_ptr<ExprAST>> args;
     };
 }
