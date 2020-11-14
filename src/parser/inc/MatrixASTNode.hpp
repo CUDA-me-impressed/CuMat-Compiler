@@ -2,14 +2,14 @@
 
 #include <vector>
 
-#include "ASTNode.hpp"
 #include "ExprASTNode.hpp"
 #include "LiteralASTNode.hpp"
+#include "Type.hpp"
 
 namespace AST {
-class MatrixASTNode : public Node {
+class MatrixASTNode : public ExprAST {
    public:
-    TYPE type;  // Namespace pls
+    std::unique_ptr<Typing::Type> type;
     std::vector<std::vector<ExprAST>> data;
     void codegen();
 };

@@ -6,7 +6,7 @@
 
 namespace AST {
     enum BIN_OPERATORS {
-        PLUS, MINUS, MUL, DIV, LOR, LAND, LT, GT, LTE, GTE, EQ, NEQ, BAND, BOR, POW, MATM
+        PLUS, MINUS, MUL, DIV, LOR, LAND, LT, GT, LTE, GTE, EQ, NEQ, BAND, BOR, POW, MATM, CHAIN
     };
 
     class BinaryExprASTNode : public ExprAST {
