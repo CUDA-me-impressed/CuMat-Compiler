@@ -22,7 +22,7 @@ class Node {
 
     std::string toString() const;
 
-    //Default implementations just call the function on their children
+    // Default implementations just call the function on their children
     virtual void semanticPass();
     virtual void codeGen();
 };
