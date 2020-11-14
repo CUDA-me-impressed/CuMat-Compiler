@@ -3,11 +3,11 @@
 #include "ExprASTNode.hpp"
 
 namespace AST {
-    template<class T>
-    class LiteralASTNode : public ExprAST {
-    public:
-        T value;
+template <class T>
+class LiteralASTNode : public ExprAST {
+   public:
+    T value;
 
-        void codegen();
-    };
+    void codegen();
+};
 }  // namespace AST

@@ -16,7 +16,7 @@ class Type {
     bool isFunction;
 
     std::string name;
-    //If !isPrimitive then NONE
+    // If !isPrimitive then NONE
     PRIMITIVE primType;
 };
 
@@ -30,4 +30,3 @@ class MatrixType : Type {
     std::vector<uint> dimensions;
 };
 }  // namespace Typing
-

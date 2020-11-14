@@ -4,12 +4,12 @@
 #include "Type.hpp"
 
 namespace AST {
-    class ExprAST : public Node {
-    public:
-        std::shared_ptr<Typing::Type> type;
+class ExprAST : public Node {
+   public:
+    std::shared_ptr<Typing::Type> type;
 
-        virtual ~ExprAST() {}
+    virtual ~ExprAST() {}
 
-        virtual void codegen();
-    };
-}
+    virtual void codegen();
+};
+}  // namespace AST
