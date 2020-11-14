@@ -12,11 +12,11 @@ class Node {
    public:
     std::string literalText;
 
-    std::vector<std::shared_ptr<Node>> children;
+    std::vector<std::unique_ptr<Node>> children;
 
     explicit Node(std::string textRep);
 
-    void addChild(std::shared_ptr<Node> n);
+    void addChild(std::unique_ptr<Node> n);
 
     std::string toString() const;
 

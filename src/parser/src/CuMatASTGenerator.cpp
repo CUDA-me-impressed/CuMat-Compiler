@@ -19,7 +19,7 @@ void SimpleErrorListener::syntaxError(antlr4::Recognizer* recognizer,
     s << "At " << line << ":" << charPositionInLine << ", error " << msg;
     throw std::invalid_argument(s.str());
 }
-std::shared_ptr<AST::Node> runParser(std::string fileName) {
+std::unique_ptr<AST::Node> runParser(std::string fileName) {
     std::ifstream stream;
     stream.open(fileName);
 
@@ -36,7 +36,7 @@ std::shared_ptr<AST::Node> runParser(std::string fileName) {
     try {
         CuMatParser::ProgramContext* context = parser.program();
         auto tree = visitor.visitProgram(context);
-        return std::move(tree.as<std::shared_ptr<AST::Node>>());
+        return std::move(tree.as<std::unique_ptr<AST::Node>>());
     } catch (std::invalid_argument& e) {
         std::cout << e.what() << std::endl;
         return nullptr;
