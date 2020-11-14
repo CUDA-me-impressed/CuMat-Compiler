@@ -39,7 +39,7 @@ exp_neg                     : op_neg* exp_bnot ;
 exp_bnot                    : op_bnot* exp_not ;
 exp_not                     : op_not* exp_chain ;
 exp_chain                   : (exp_func op_chain)* exp_func ;
-exp_func                    : value args* | exp_if ;
+exp_func                    : value params* | exp_if ;
 exp_if                      : IF EOL? expression EOL? THEN EOL? expression EOL? ELSE EOL? expression ;
 
 op_logic                    : EOL? op=(LOR | LAND) EOL? ;
@@ -68,7 +68,7 @@ variable                    : cmnamespace varname (LSQB dimensionspec RSQB)? ;
 cmnamespace                 : (identifier DOT)* ;
 nsfile                      : ID ;
 
-args                        : expression (COMMA expression)* ;
+params                      : (expression (COMMA expression)*)? ;
 
 cmtypedef                   : TYPE newtype attrblock EOL ;
 attrblock                   : LBRA EOL? attrs+=attr+ RBRA ;
