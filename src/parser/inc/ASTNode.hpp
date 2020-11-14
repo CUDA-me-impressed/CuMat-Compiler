@@ -18,7 +18,7 @@ class Node {
 
     void addChild(std::shared_ptr<Node> n);
 
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 
     // Default implementations just call the function on their children
     virtual void semanticPass();
