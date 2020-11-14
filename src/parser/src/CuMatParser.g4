@@ -24,7 +24,7 @@ typespec                    : cmtypename dimensionspec? ;
 dimensionspec               : LSQB dimension (COMMA dimension)* RSQB ;
 dimension                   : INT | STAR ;
 
-block                       : LBRA EOL? (assignments+=assignment (EOL assignments+=assignment)* EOL?)? RBRA ;
+block                       : LBRA EOL? ((assignments+=assignment EOL)* RETURN expression EOL?)? RBRA ;
 assignment                  : varname ASSIGN expression ;
 
 expression                  : exp_logic | lambda ;
@@ -66,7 +66,6 @@ numliteral                  : INT | FLOAT ;
 
 variable                    : cmnamespace varname (LSQB dimensionspec RSQB)? ;
 cmnamespace                 : (identifier DOT)* ;
-nsfile                      : ID ;
 
 args                        : LPAR (expression (COMMA expression)*)? RPAR ;
 
