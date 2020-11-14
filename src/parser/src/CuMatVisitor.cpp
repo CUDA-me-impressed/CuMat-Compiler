@@ -77,17 +77,8 @@ antlrcpp::Any CuMatVisitor::visitSignature(CuMatParser::SignatureContext *ctx) {
     return n;
 }
 
-antlrcpp::Any CuMatVisitor::visitArguments(CuMatParser::ArgumentsContext *ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto &child : children) {
-        n->addChild(std::move(child));
-    }
-    return n;
-}
-
-antlrcpp::Any CuMatVisitor::visitArgument(CuMatParser::ArgumentContext *ctx) {
+antlrcpp::Any CuMatVisitor::visitParameters(
+    CuMatParser::ParametersContext *ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();

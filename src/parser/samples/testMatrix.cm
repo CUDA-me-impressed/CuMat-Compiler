@@ -1,0 +1,24 @@
+func int head(int list) {
+    (x:_) = list
+    ret = x
+}
+
+func int[1] tail (int list {
+    (_:xs) = list
+    ret = xs
+}
+
+func int fold1((int,int) -> int folder, int state, int[1] foldable) {
+    ret = if foldable == [] then
+            state
+          else
+            fold1 (folder, folder(state,head(foldable)), tail(foldable))
+}
+
+func int add(int num1, int num2) {
+    ret = num1 + num2
+}
+
+func int main {
+    ret = fold1 (add) (0) (add ([1,2,3]) ([2,4,6]))
+}

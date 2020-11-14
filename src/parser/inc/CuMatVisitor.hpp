@@ -20,8 +20,7 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
 
     antlrcpp::Any visitFuncdef(CuMatParser::FuncdefContext *ctx) override;
     antlrcpp::Any visitSignature(CuMatParser::SignatureContext *ctx) override;
-    antlrcpp::Any visitArguments(CuMatParser::ArgumentsContext *ctx) override;
-    antlrcpp::Any visitArgument(CuMatParser::ArgumentContext *ctx) override;
+    antlrcpp::Any visitParameters(CuMatParser::ParametersContext *ctx) override;
     antlrcpp::Any visitTypespec(CuMatParser::TypespecContext *ctx) override;
     antlrcpp::Any visitDimensionspec(
         CuMatParser::DimensionspecContext *ctx) override;
