@@ -42,13 +42,13 @@ exp_func                    : funcname args | value ;
 
 op_logic                    : EOL? op=(LOR | LAND) EOL? ;
 op_comp                     : EOL? op=(LT | GT | LTE | GTE | EQ | NEQ) EOL? ;
-op_bit                      : EOL? op=(BAND | BOR | BNOT) EOL? ;
+op_bit                      : EOL? op=(BAND | BOR ) EOL? ;
 op_sum                      : EOL? op=(PLUS | MINUS) EOL? ;
 op_mult                     : EOL? op=(TIMES | STAR | DIV ) EOL? ;
 op_pow                      : EOL? (POW) EOL? ;
 op_mat                      : EOL? (MATM) EOL? ; // Dot product symbol??
 op_neg                      : EOL? (MINUS) ;
-op_not                      : EOL? (LNOT) ;
+op_not                      : EOL? (LNOT | BNOT) ;
 op_chain                    : EOL? (CHAIN) EOL? ;
 
 value                       : literal | LPAR expression RPAR | variable ;
