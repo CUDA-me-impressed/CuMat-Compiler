@@ -2,12 +2,7 @@
 
 #include "ExprASTNode.hpp"
 
-
 namespace AST {
-    enum class TYPE {
-        STRING, INT, FLOAT
-    };
-
     template<class T>
     class LiteralASTNode : public ExprAST {
     public:
