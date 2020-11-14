@@ -14,17 +14,17 @@ class Node {
    public:
     std::string literalText;
 
-    Node* parent;
     std::vector<std::shared_ptr<Node>> children;
 
     explicit Node(std::string textRep);
 
     void addChild(std::shared_ptr<Node> n);
 
-    std::string toString();
+    std::string toString() const;
 
-    virtual void semanticPass() {}
-    virtual void codeGen() {}
+    //Default implementations just call the function on their children
+    virtual void semanticPass();
+    virtual void codeGen();
 };
 }  // namespace AST
 
