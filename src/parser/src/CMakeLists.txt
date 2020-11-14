@@ -9,22 +9,28 @@ include(ExternalAntlr4Cpp)
 find_package(ANTLR REQUIRED)
 
 set(cpp_srcs
-        parser.cpp)
+        parser.cpp ASTNode.cpp CuMatVisitor.cpp)
 
-set(grammar_srcs
-        CuMatGrammar.g4)
+set(lexer_srcs
+        CuMatLexer.g4)
+set(parser_srcs
+        CuMatParser.g4)
 
 # Add ANTLR targets to build the .g4 files
-antlr_target(A4Grammar ${grammar_srcs} LEXER PARSER)
+antlr_target(A4Lexer ${lexer_srcs} LEXER)
+antlr_target(A4Parser ${parser_srcs}
+        DEPENDS_ANTLR A4Lexer
+        COMPILE_FLAGS -lib ${ANTLR_A4Lexer_OUTPUT_DIR}
+        PARSER VISITOR)
 
 # Create a library for the generated sources
 add_library(parser_gen STATIC
-        ${ANTLR_A4Grammar_CXX_OUTPUTS})
+        ${ANTLR_A4Lexer_CXX_OUTPUTS}
+        ${ANTLR_A4Parser_CXX_OUTPUTS})
 set_property(TARGET parser_gen PROPERTY CXX_STANDARD 11)
 target_include_directories(parser_gen PUBLIC
-        ${ANTLR_A4Grammar_OUTPUT_DIR})
-
-# link it to the runtime
+        ${ANTLR_A4Lexer_OUTPUT_DIR}
+        ${ANTLR_A4Parser_OUTPUT_DIR})
 target_compile_definitions(parser_gen PUBLIC
         -DANTLR4CPP_STATIC=1)
 target_include_directories(parser_gen PUBLIC
@@ -41,9 +47,3 @@ target_link_libraries(Parser PUBLIC
         parser_gen)
 target_link_libraries(Parser PUBLIC
         parser_gen)
-
-# create a (temporary) test executable
-add_executable(Parser_test
-        parser_test.cpp)
-target_link_libraries(Parser_test PRIVATE
-        Parser)
