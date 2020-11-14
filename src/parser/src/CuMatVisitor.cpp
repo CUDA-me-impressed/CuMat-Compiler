@@ -280,6 +280,16 @@ antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext *ctx) {
     return n;
 }
 
+antlrcpp::Any CuMatVisitor::visitExp_if(CuMatParser::Exp_ifContext *ctx) {
+    auto n = std::make_shared<AST::Node>(ctx->getText());
+    auto children =
+        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
+    for (auto &child : children) {
+        n->addChild(std::move(child));
+    }
+    return n;
+}
+
 antlrcpp::Any CuMatVisitor::visitArgs(CuMatParser::ArgsContext *ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
     auto children =
