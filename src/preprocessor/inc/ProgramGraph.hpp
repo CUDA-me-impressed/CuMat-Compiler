@@ -1,10 +1,9 @@
+#pragma once
+
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
-#ifndef PREPROCESSOR_PROGRAMGRAPH_H
-#define PREPROCESSOR_PROGRAMGRAPH_H
 
 #define DEFAULT_EXTENSION "cm"
 
@@ -52,5 +51,3 @@ class ProgramGraph {
     std::shared_ptr<ProgramFileNode> root;
 };
 }  // namespace Preprocessor
-
-#endif

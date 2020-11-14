@@ -1,9 +1,7 @@
 //
 // Created by tobyl on 12/11/2020.
 //
-
-#ifndef _ASTNODE_HPP_
-#define _ASTNODE_HPP_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -27,5 +25,3 @@ class Node {
     virtual void codeGen();
 };
 }  // namespace AST
-
-#endif  //_ASTNODE_HPP_

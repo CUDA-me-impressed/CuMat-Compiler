@@ -2,8 +2,7 @@
 // Created by tobyl on 14/11/2020.
 //
 
-#ifndef _TYPE_HPP_
-#define _TYPE_HPP_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -34,4 +33,3 @@ class PrimitiveType : Type {
 };
 }  // namespace Typing
 
-#endif  //_TYPE_HPP_
