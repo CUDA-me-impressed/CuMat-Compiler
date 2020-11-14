@@ -26,8 +26,8 @@ dimension                   : INT | STAR ;
 
 block                       : LBRA EOL? ((assignments+=assignment EOL)* RETURN expression EOL?)? RBRA ;
 assignment                  : asstarget ASSIGN expression ;
-asstarget                   : variable | decomp;
-decomp                      : LSQB variable COLON asstarget RSQB ;
+asstarget                   : varname | decomp;
+decomp                      : LSQB varname COLON asstarget RSQB ;
 
 expression                  : exp_logic | lambda | exp_if ;
 exp_if                      : IF EOL? expression EOL? THEN EOL? expression EOL? ELSE EOL? expression ;
@@ -66,7 +66,10 @@ scalarliteral               : stringliteral | numliteral ;
 stringliteral               : STRING ;
 numliteral                  : INT | FLOAT ;
 
-variable                    : cmnamespace varname (LSQB dimensionspec RSQB)? ;
+variable                    : cmnamespace varname (LSQB slice RSQB)? ;
+slice                       : sliceelement (COMMA sliceelement)* ;
+sliceelement                : INT? (COLON INT?)? | STAR ;
+
 cmnamespace                 : (identifier DOT)* ;
 
 args                        : LPAR (expression (COMMA expression)*)? RPAR ;
