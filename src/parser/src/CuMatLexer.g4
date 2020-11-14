@@ -30,6 +30,7 @@ T_FLOAT                     : 'float';
 T_BOOL                      : 'bool';
 T_STRING                    : 'string';
 FUNC                        : 'func';
+RETURN                      : 'return' ;
 
 IMPORT_OPEN                 : ('import' SPACE+) -> pushMode(IMPORT_MODE);
 
