@@ -58,9 +58,9 @@ ARROW                       : '->' ;
 ASSIGN                      : '=' | '≔' ;
 
 LAMBDA                      : '~' | 'λ' ;
-IF                          : 'IF' ;
-THEN                        : 'THEN' ;
-ELSE                        : 'ELSE' ;
+IF                          : 'if' ;
+THEN                        : 'then' ;
+ELSE                        : 'else' ;
 
 ID                          : ID_INITIAL (ID_TAIL*) ;
 TYPE_ID                     : ID_INITIAL (ID_TAIL*) '\'' ;
