@@ -1,9 +1,7 @@
 //
 // Created by tobyl on 12/11/2020.
 //
-
-#ifndef _CUMATPARSER_HPP_
-#define _CUMATPARSER_HPP_
+#pragma once
 
 #include <antlr4-runtime.h>
 
@@ -64,9 +62,7 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
    protected:
     antlrcpp::Any defaultResult() override;
     // Aggregate results use vectors of type:
-    // std::vector<std::shared_ptr<AST::Node>>
+    // std::vector<std::unique_ptr<AST::Node>>
     antlrcpp::Any aggregateResult(antlrcpp::Any aggregate,
                                   const antlrcpp::Any &nextResult) override;
 };
-
-#endif  //_CUMATPARSER_HPP_

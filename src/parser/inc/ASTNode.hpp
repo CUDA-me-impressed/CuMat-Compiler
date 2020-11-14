@@ -1,9 +1,7 @@
 //
 // Created by tobyl on 12/11/2020.
 //
-
-#ifndef _ASTNODE_HPP_
-#define _ASTNODE_HPP_
+#pragma once
 
 #include <memory>
 #include <string>
@@ -14,11 +12,11 @@ class Node {
    public:
     std::string literalText;
 
-    std::vector<std::shared_ptr<Node>> children;
+    std::vector<std::unique_ptr<Node>> children;
 
     explicit Node(std::string textRep);
 
-    void addChild(std::shared_ptr<Node> n);
+    void addChild(std::unique_ptr<Node> n);
 
     std::string toString() const;
 
@@ -27,5 +25,3 @@ class Node {
     virtual void codeGen();
 };
 }  // namespace AST
-
-#endif  //_ASTNODE_HPP_

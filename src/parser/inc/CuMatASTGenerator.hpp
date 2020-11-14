@@ -1,10 +1,7 @@
 //
 // Created by matt on 08/11/2020.
 //
-
-#ifndef CUMAT_COMPILER_PARSER_HPP
-#define CUMAT_COMPILER_PARSER_HPP
-
+#pragma once
 #include <antlr4-runtime.h>
 
 #include "ASTNode.hpp"
@@ -17,5 +14,3 @@ class SimpleErrorListener : public antlr4::BaseErrorListener {
 };
 
 std::shared_ptr<AST::Node> runParser(std::string fileName);
-
-#endif  // CUMAT_COMPILER_PARSER_HPP

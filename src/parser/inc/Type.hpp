@@ -2,14 +2,13 @@
 // Created by tobyl on 14/11/2020.
 //
 
-#ifndef _TYPE_HPP_
-#define _TYPE_HPP_
+#pragma once
 
 #include <string>
 #include <vector>
 
 namespace Typing {
-enum class PRIMITIVE { STRING, INT, FLOAT, NONE };
+enum class PRIMITIVE { STRING, INT, FLOAT, BOOL, NONE };
 
 class Type {
     bool isPrimitive;
@@ -17,6 +16,8 @@ class Type {
     bool isFunction;
 
     std::string name;
+    //If !isPrimitive then NONE
+    PRIMITIVE primType;
 };
 
 class FunctionType : Type {
@@ -28,10 +29,5 @@ class MatrixType : Type {
     uint rank;  // 1 = Vector, 2 = Matrix, 3 = 3D matrix...
     std::vector<uint> dimensions;
 };
-
-class PrimitiveType : Type {
-    PRIMITIVE prim;
-};
 }  // namespace Typing
 
-#endif  //_TYPE_HPP_
