@@ -9,7 +9,6 @@
 namespace AST {
 class MatrixASTNode : public ExprAST {
    public:
-    std::unique_ptr<Typing::Type> type;
     std::vector<std::vector<ExprAST>> data;
     void codegen();
 };
