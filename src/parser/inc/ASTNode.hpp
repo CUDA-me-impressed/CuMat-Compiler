@@ -16,7 +16,7 @@ class ASTNode {
     std::shared_ptr<ASTNode> parent;
     std::vector<std::shared_ptr<ASTNode>> children;
 
-    ASTNode(std::shared_ptr<ASTNode> creator,std::string textRep);
+    ASTNode(std::shared_ptr<ASTNode> creator, std::string textRep);
 
     virtual std::shared_ptr<ASTNode> semanticPass();
     virtual void codeGen();

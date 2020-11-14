@@ -6,6 +6,7 @@
 #define CUMAT_COMPILER_PARSER_HPP
 
 #include <antlr4-runtime.h>
+
 #include "ASTNode.hpp"
 
 class SimpleErrorListener : public antlr4::BaseErrorListener {
