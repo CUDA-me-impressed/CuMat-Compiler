@@ -9,7 +9,7 @@
 namespace AST {
 class MatrixASTNode : public ExprAST {
    public:
-    std::vector<std::vector<ExprAST>> data;
+    std::vector<std::vector<std::shared_ptr<ExprAST>>> data;
     void codegen();
 };
 }  // namespace AST

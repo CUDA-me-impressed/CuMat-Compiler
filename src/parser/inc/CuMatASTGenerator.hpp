@@ -13,4 +13,4 @@ class SimpleErrorListener : public antlr4::BaseErrorListener {
                      std::exception_ptr e) override;
 };
 
-std::unique_ptr<AST::Node> runParser(std::string fileName);
+std::shared_ptr<AST::Node> runParser(std::string fileName);

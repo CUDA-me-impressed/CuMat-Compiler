@@ -9,7 +9,6 @@ namespace AST {
     };
 
     class UnaryExprASTNode : public ExprAST {
-        std::unique_ptr<ExprAST> operand;
-
+        std::shared_ptr<ExprAST> operand;
     };
 }

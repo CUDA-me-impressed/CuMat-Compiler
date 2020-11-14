@@ -40,6 +40,7 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
     antlrcpp::Any visitExp_pow(CuMatParser::Exp_powContext *ctx) override;
     antlrcpp::Any visitExp_mat(CuMatParser::Exp_matContext *ctx) override;
     antlrcpp::Any visitExp_neg(CuMatParser::Exp_negContext *ctx) override;
+    antlrcpp::Any visitExp_bnot(CuMatParser::Exp_bnotContext *ctx) override;
     antlrcpp::Any visitExp_not(CuMatParser::Exp_notContext *ctx) override;
     antlrcpp::Any visitExp_chain(CuMatParser::Exp_chainContext *ctx) override;
     antlrcpp::Any visitExp_func(CuMatParser::Exp_funcContext *ctx) override;
@@ -62,7 +63,7 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
    protected:
     antlrcpp::Any defaultResult() override;
     // Aggregate results use vectors of type:
-    // std::vector<std::unique_ptr<AST::Node>>
+    // std::vector<std::shared_ptr<AST::Node>>
     antlrcpp::Any aggregateResult(antlrcpp::Any aggregate,
                                   const antlrcpp::Any &nextResult) override;
 };
