@@ -13,10 +13,10 @@ directorylist               : (directories+=directory DIRSEP)* ;
 directory                   : SLUG ;
 file                        : SLUG ;
 
-definitions                 : definition* ;
+definitions                 : definition (EOL definition)* EOL? ;
 definition                  : funcdef | cmtypedef | assignment ;
 
-funcdef                     : FUNC signature EOL? block EOL ;
+funcdef                     : FUNC signature EOL? block ;
 signature                   : typespec funcname (LPAR parameters RPAR)? ;
 parameters                  : (parameter (COMMA parameter)* )? ;
 parameter                   : typespec varname ;
@@ -25,7 +25,9 @@ dimensionspec               : LSQB dimension (COMMA dimension)* RSQB ;
 dimension                   : INT | STAR ;
 
 block                       : LBRA EOL? ((assignments+=assignment EOL)* RETURN expression EOL?)? RBRA ;
-assignment                  : varname ASSIGN expression ;
+assignment                  : asstarget ASSIGN expression ;
+asstarget                   : variable | decomp;
+decomp                      : LSQB variable COLON asstarget RSQB ;
 
 expression                  : exp_logic | lambda | exp_if ;
 exp_if                      : IF EOL? expression EOL? THEN EOL? expression EOL? ELSE EOL? expression ;
