@@ -27,7 +27,7 @@ dimension                   : INT | STAR ;
 block                       : LBRA EOL? (assignments+=assignment EOL)* assignments+=assignment? EOL? RBRA ;
 assignment                  : varname ASSIGN expression ;
 
-expression                  : exp_logic ; //| lambda ; TODO BE ADDED
+expression                  : exp_logic | lambda ;
 exp_logic                   : exp_comp (op_logic exp_comp)* ;
 exp_comp                    : exp_bit (op_comp exp_bit)* ;
 exp_bit                     : exp_sum (op_bit exp_sum)* ;
@@ -35,32 +35,38 @@ exp_sum                     : exp_mult (op_sum exp_mult)* ;
 exp_mult                    : exp_pow (op_mult exp_pow)* ;
 exp_pow                     : (exp_mat op_pow)* exp_mat ; // rtol
 exp_mat                     : exp_neg (op_mat exp_neg)* ;
-exp_neg                     : op_neg* exp_not ;
+exp_neg                     : op_neg* exp_bnot ;
+exp_bnot                    : op_bnot* exp_not ;
 exp_not                     : op_not* exp_chain ;
 exp_chain                   : (exp_func op_chain)* exp_func ;
-exp_func                    : funcname args | value ;
+exp_func                    : value args* | exp_if ;
+exp_if                      : IF EOL? expression EOL? THEN EOL? expression EOL? ELSE EOL? expression ;
 
 op_logic                    : EOL? op=(LOR | LAND) EOL? ;
 op_comp                     : EOL? op=(LT | GT | LTE | GTE | EQ | NEQ) EOL? ;
-op_bit                      : EOL? op=(BAND | BOR ) EOL? ;
+op_bit                      : EOL? op=(BAND | BOR) EOL? ;
 op_sum                      : EOL? op=(PLUS | MINUS) EOL? ;
 op_mult                     : EOL? op=(TIMES | STAR | DIV ) EOL? ;
 op_pow                      : EOL? (POW) EOL? ;
 op_mat                      : EOL? (MATM) EOL? ; // Dot product symbol??
 op_neg                      : EOL? (MINUS) ;
-op_not                      : EOL? (LNOT | BNOT) ;
+op_not                      : EOL? (LNOT) ;
+op_bnot                     : EOL? (BNOT) ;
 op_chain                    : EOL? (CHAIN) EOL? ;
+
+lambda                      : LAMBDA LPAR arguments RPAR ARROW expression EOL ;
 
 value                       : literal | LPAR expression RPAR | variable ;
 literal                     : matrixliteral | scalarliteral ;
-matrixliteral               : LSQB rows+=rowliteral (BSLASH+ rows+=rowliteral)* RSQB ;
+matrixliteral               : LSQB EOL? rows+=rowliteral (BSLASH+ EOL? rows+=rowliteral)* EOL? RSQB ;
 rowliteral                  : cols+=expression (COMMA cols+=expression)* ;
 scalarliteral               : stringliteral | numliteral ;
 stringliteral               : STRING ;
 numliteral                  : INT | FLOAT ;
 
 variable                    : cmnamespace varname (LSQB dimensionspec RSQB)? ;
-cmnamespace                 : (file DOT)? (cmtypename DOT)? ;
+cmnamespace                 : (identifier DOT)* ;
+nsfile                      : ID ;
 
 args                        : expression (COMMA expression)* ;
 
