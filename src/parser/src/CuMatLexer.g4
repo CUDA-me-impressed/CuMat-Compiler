@@ -62,7 +62,7 @@ THEN                        : 'THEN' ;
 ELSE                        : 'ELSE' ;
 
 ID                          : ID_INITIAL (ID_TAIL*) ;
-TYPE_ID                     : ID_INITIAL (ID_TAIL*) ('\''?) ;
+TYPE_ID                     : ID_INITIAL (ID_TAIL*) '\'' ;
 INT                         : '0' | (POSDIGIT DIGIT*) ;
 FLOAT                       : DIGIT+ ('.' DIGIT+)? ([eE][-+] DIGIT+)? ;
 STRING                      : '"' [^"\\]* ('\\'[\\|"]?[^"\\]+)*('\\'[\\|"]?)? '"' ;

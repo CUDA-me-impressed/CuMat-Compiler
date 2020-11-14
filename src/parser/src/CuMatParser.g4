@@ -68,7 +68,7 @@ variable                    : cmnamespace varname (LSQB dimensionspec RSQB)? ;
 cmnamespace                 : (identifier DOT)* ;
 nsfile                      : ID ;
 
-params                      : (expression (COMMA expression)*)? ;
+params                      : LPAR (expression (COMMA expression)*)? RPAR ;
 
 cmtypedef                   : TYPE newtype attrblock EOL ;
 attrblock                   : LBRA EOL? attrs+=attr+ RBRA ;
@@ -81,7 +81,7 @@ newtype                     : identifier ;
 attrname                    : identifier ;
 
 identifier                  : ID ;
-typeidentifier              : TYPE_ID ;
+typeidentifier              : ID | TYPE_ID ;
 
 primitive                   : T_INT | T_BOOL | T_STRING | T_FLOAT | functype ;
 functype                    : LPAR argspecs+=typespec (COMMA argspecs+=typespec)* RPAR ARROW retspec=typespec ;
