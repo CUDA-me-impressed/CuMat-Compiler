@@ -13,10 +13,10 @@ directorylist               : (directories+=directory DIRSEP)* ;
 directory                   : SLUG ;
 file                        : SLUG ;
 
-definitions                 : definition* ;
+definitions                 : definition (EOL definition)* EOL? ;
 definition                  : funcdef | cmtypedef | assignment ;
 
-funcdef                     : FUNC signature EOL? block EOL ;
+funcdef                     : FUNC signature EOL? block ;
 signature                   : typespec funcname (LPAR parameters RPAR)? ;
 parameters                  : (parameter (COMMA parameter)* )? ;
 parameter                   : typespec varname ;
@@ -25,9 +25,12 @@ dimensionspec               : LSQB dimension (COMMA dimension)* RSQB ;
 dimension                   : INT | STAR ;
 
 block                       : LBRA EOL? ((assignments+=assignment EOL)* RETURN expression EOL?)? RBRA ;
-assignment                  : varname ASSIGN expression ;
+assignment                  : asstarget ASSIGN expression ;
+asstarget                   : variable | decomp;
+decomp                      : LSQB variable COLON asstarget RSQB ;
 
-expression                  : exp_logic | lambda ;
+expression                  : exp_logic | lambda | exp_if ;
+exp_if                      : IF EOL? expression EOL? THEN EOL? expression EOL? ELSE EOL? expression ;
 exp_logic                   : exp_comp (op_logic exp_comp)* ;
 exp_comp                    : exp_bit (op_comp exp_bit)* ;
 exp_bit                     : exp_sum (op_bit exp_sum)* ;
@@ -39,8 +42,7 @@ exp_neg                     : op_neg* exp_bnot ;
 exp_bnot                    : op_bnot* exp_not ;
 exp_not                     : op_not* exp_chain ;
 exp_chain                   : (exp_func op_chain)* exp_func ;
-exp_func                    : value args* | exp_if ;
-exp_if                      : IF EOL? expression EOL? THEN EOL? expression EOL? ELSE EOL? expression ;
+exp_func                    : value args* ;
 
 op_logic                    : EOL? op=(LOR | LAND) EOL? ;
 op_comp                     : EOL? op=(LT | GT | LTE | GTE | EQ | NEQ) EOL? ;
@@ -58,7 +60,7 @@ lambda                      : LAMBDA LPAR parameters RPAR ARROW expression ;
 
 value                       : literal | LPAR expression RPAR | variable ;
 literal                     : matrixliteral | scalarliteral ;
-matrixliteral               : LSQB EOL? rows+=rowliteral (BSLASH+ EOL? rows+=rowliteral)* EOL? RSQB ;
+matrixliteral               : LSQB (EOL? rows+=rowliteral (BSLASH+ EOL? rows+=rowliteral)* EOL?)? RSQB ;
 rowliteral                  : cols+=expression (COMMA cols+=expression)* ;
 scalarliteral               : stringliteral | numliteral ;
 stringliteral               : STRING ;
