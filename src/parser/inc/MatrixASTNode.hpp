@@ -6,10 +6,11 @@
 #include "ExprASTNode.hpp"
 #include "LiteralASTNode.hpp"
 
-
+namespace AST {
 class MatrixASTNode : public ASTNode {
-public:
-    TYPE type;      // Namespace pls
+   public:
+    TYPE type;  // Namespace pls
     std::vector<std::vector<ExprAST>> data;
     void codegen();
 };
+}  // namespace AST

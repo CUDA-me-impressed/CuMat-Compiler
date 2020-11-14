@@ -3,15 +3,16 @@
 //
 
 #include "ASTNode.hpp"
-
-ASTNode::ASTNode(std::string textRep) {
+namespace AST {
+Node::Node(std::string textRep) {
     this->parent = nullptr;
     this->literalText = std::move(textRep);
 }
 
-void ASTNode::addChild(std::shared_ptr<ASTNode> n) {
+void Node::addChild(std::shared_ptr<Node> n) {
     n->parent = this;
     this->children.push_back(std::move(n));
 }
 
-std::string ASTNode::toString() { return this->literalText; }
+std::string Node::toString() { return this->literalText; }
+}  // namespace AST

@@ -108,7 +108,7 @@ int main(int argc, char* argv[], char* envp[]) {
     Preprocessor::SourceFileLoader loader(inputFileName);
     auto files = loader.load();
 
-    std::vector<std::shared_ptr<ASTNode>> parseTrees;
+    std::vector<std::shared_ptr<AST::Node>> parseTrees;
     for (const auto& file : files) {
         auto tree = runParser(file);
         parseTrees.push_back(std::move(tree));

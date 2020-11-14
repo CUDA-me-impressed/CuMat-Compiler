@@ -64,7 +64,7 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
    protected:
     antlrcpp::Any defaultResult() override;
     // Aggregate results use vectors of type:
-    // std::vector<std::shared_ptr<ASTNode>>
+    // std::vector<std::shared_ptr<AST::Node>>
     antlrcpp::Any aggregateResult(antlrcpp::Any aggregate,
                                   const antlrcpp::Any &nextResult) override;
 };

@@ -9,21 +9,23 @@
 #include <string>
 #include <vector>
 
-class ASTNode {
+namespace AST {
+class Node {
    public:
     std::string literalText;
 
-    ASTNode* parent;
-    std::vector<std::shared_ptr<ASTNode>> children;
+    Node* parent;
+    std::vector<std::shared_ptr<Node>> children;
 
-    explicit ASTNode(std::string textRep);
+    explicit Node(std::string textRep);
 
-    void addChild(std::shared_ptr<ASTNode> n);
+    void addChild(std::shared_ptr<Node> n);
 
     std::string toString();
 
     virtual void semanticPass() {}
     virtual void codeGen() {}
 };
+}  // namespace AST
 
 #endif  //_ASTNODE_HPP_
