@@ -9,29 +9,29 @@
 #include <vector>
 
 namespace Typing {
-    enum class PRIMITIVE { STRING, INT, FLOAT, NONE };
+enum class PRIMITIVE { STRING, INT, FLOAT, NONE };
 
-    class Type {
-        bool isPrimitive;
-        bool isGeneric;
-        bool isFunction;
+class Type {
+    bool isPrimitive;
+    bool isGeneric;
+    bool isFunction;
 
-        std::string name;
-    };
+    std::string name;
+};
 
-    class FunctionType : Type {
-        Type returnType;
-        std::vector<Type> parameters;
-    };
+class FunctionType : Type {
+    Type returnType;
+    std::vector<Type> parameters;
+};
 
-    class MatrixType : Type {
-        uint rank; //1 = Vector, 2 = Matrix, 3 = 3D matrix...
-        std::vector<uint> dimensions;
-    };
+class MatrixType : Type {
+    uint rank;  // 1 = Vector, 2 = Matrix, 3 = 3D matrix...
+    std::vector<uint> dimensions;
+};
 
-    class PrimitiveType : Type {
-        PRIMITIVE prim;
-    };
-}
+class PrimitiveType : Type {
+    PRIMITIVE prim;
+};
+}  // namespace Typing
 
 #endif  //_TYPE_HPP_
