@@ -24,7 +24,7 @@ typespec                    : cmtypename dimensionspec? ;
 dimensionspec               : LSQB dimension (COMMA dimension)* RSQB ;
 dimension                   : INT | STAR ;
 
-block                       : LBRA EOL? (assignments+=assignment EOL)* assignments+=assignment? EOL? RBRA ;
+block                       : LBRA EOL? (assignments+=assignment (EOL assignments+=assignment)* EOL?)? RBRA ;
 assignment                  : varname ASSIGN expression ;
 
 expression                  : exp_logic | lambda ;
@@ -54,7 +54,7 @@ op_not                      : EOL? (LNOT) ;
 op_bnot                     : EOL? (BNOT) ;
 op_chain                    : EOL? (CHAIN) EOL? ;
 
-lambda                      : LAMBDA LPAR arguments RPAR ARROW expression EOL ;
+lambda                      : LAMBDA LPAR arguments RPAR ARROW expression ;
 
 value                       : literal | LPAR expression RPAR | variable ;
 literal                     : matrixliteral | scalarliteral ;
