@@ -5,7 +5,7 @@
 namespace AST {
 
     enum UNA_OPERATORS {
-
+        NEG, LNOT, BNOT
     };
 
     class UnaryExprASTNode : public ExprAST {
