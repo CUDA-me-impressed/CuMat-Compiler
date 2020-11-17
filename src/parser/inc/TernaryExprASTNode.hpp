@@ -6,6 +6,6 @@
 
 namespace AST {
 class TernaryExprASTNode : public ExprAST {
-    std::unique_ptr<ExprAST> condition, truthy, falsey;
+    std::shared_ptr<ExprAST> condition, truthy, falsey;
 };
 }  // namespace AST

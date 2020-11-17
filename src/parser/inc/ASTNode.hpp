@@ -15,6 +15,7 @@ class Node {
     std::vector<std::shared_ptr<Node>> children;
 
     explicit Node(std::string textRep);
+    Node() = default;
 
     void addChild(std::shared_ptr<Node> n);
 

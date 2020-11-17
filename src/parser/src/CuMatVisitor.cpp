@@ -3,7 +3,11 @@
 //
 #include "CuMatVisitor.hpp"
 
+#include <exception>
+
 #include "ASTNode.hpp"
+#include "BinaryExprASTNode.hpp"
+#include "CuMatLexer.h"
 
 antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext *ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
@@ -151,7 +155,7 @@ antlrcpp::Any CuMatVisitor::visitExpression(
     return n;
 }
 
-antlrcpp::Any CuMatVisitor::visitExp_logic(CuMatParser::Exp_logicContext *ctx) {
+antlrcpp::Any CuMatVisitor::visitExp_if(CuMatParser::Exp_ifContext *ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
@@ -159,66 +163,231 @@ antlrcpp::Any CuMatVisitor::visitExp_logic(CuMatParser::Exp_logicContext *ctx) {
         n->addChild(std::move(child));
     }
     return n;
+}
+
+bool CuMatVisitor::compareTokenTypes(size_t a, size_t b) const {
+    return this->parserVocab->getSymbolicName(a) ==
+           this->parserVocab->getSymbolicName(b);
+}
+
+antlrcpp::Any CuMatVisitor::visitExp_logic(CuMatParser::Exp_logicContext *ctx) {
+    auto lowerTier = ctx->exp_comp();
+    auto ops = ctx->op_logic();
+    if (lowerTier.size() > 1) {
+        std::shared_ptr<AST::ExprAST> rightSide;
+        auto opIt = ops.rbegin();
+        for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
+            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            if (rightSide == nullptr) {
+                rightSide = std::move(visit(*it));
+                continue;  // Skip the last one so that we can setup the loop
+                           // properly
+            }
+            auto op = (*opIt)->op;
+            opIt++;
+            n->rhs = std::move(rightSide);
+            if (compareTokenTypes(op->getType(), CuMatParser::LAND)) {
+                n->op = AST::BIN_OPERATORS::LAND;
+            } else if (compareTokenTypes(op->getType(), CuMatParser::LOR)) {
+                n->op = AST::BIN_OPERATORS::LOR;
+            } else {
+                throw std::runtime_error(
+                    "Encountered unknown operator, or Toby can't code");
+            }
+            n->lhs = std::move(visit(*it));
+            rightSide = std::move(n);
+        }
+        return std::move(rightSide);
+    } else {
+        return std::move(visit(lowerTier.front()));
+    }
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_comp(CuMatParser::Exp_compContext *ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto &child : children) {
-        n->addChild(std::move(child));
+    auto lowerTier = ctx->exp_bit();
+    auto ops = ctx->op_comp();
+    if (lowerTier.size() > 1) {
+        std::shared_ptr<AST::ExprAST> rightSide;
+        auto opIt = ops.rbegin();
+        for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
+            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            if (rightSide == nullptr) {
+                rightSide = std::move(visit(*it));
+                continue;  // Skip the last one so that we can setup the loop
+                           // properly
+            }
+            auto op = (*opIt)->op;
+            opIt++;
+            n->rhs = std::move(rightSide);
+            if (compareTokenTypes(op->getType(), CuMatParser::LT)) {
+                n->op = AST::BIN_OPERATORS::LT;
+            } else if (compareTokenTypes(op->getType(), CuMatParser::GT)) {
+                n->op = AST::BIN_OPERATORS::GT;
+            } else if (compareTokenTypes(op->getType(), CuMatParser::LTE)) {
+                n->op = AST::BIN_OPERATORS::LTE;
+            } else if (compareTokenTypes(op->getType(), CuMatParser::GTE)) {
+                n->op = AST::BIN_OPERATORS::GTE;
+            } else if (compareTokenTypes(op->getType(), CuMatParser::EQ)) {
+                n->op = AST::BIN_OPERATORS::EQ;
+            } else if (compareTokenTypes(op->getType(), CuMatParser::NEQ)) {
+                n->op = AST::BIN_OPERATORS::NEQ;
+            } else {
+                throw std::runtime_error(
+                    "Encountered unknown operator, or Toby can't code");
+            }
+            n->lhs = std::move(visit(*it));
+            rightSide = std::move(n);
+        }
+        return std::move(rightSide);
+    } else {
+        return std::move(visit(lowerTier.front()));
     }
-    return n;
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_bit(CuMatParser::Exp_bitContext *ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto &child : children) {
-        n->addChild(std::move(child));
+    auto lowerTier = ctx->exp_sum();
+    auto ops = ctx->op_bit();
+    if (lowerTier.size() > 1) {
+        std::shared_ptr<AST::ExprAST> rightSide;
+        auto opIt = ops.rbegin();
+        for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
+            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            if (rightSide == nullptr) {
+                rightSide = std::move(visit(*it));
+                continue;  // Skip the last one so that we can setup the loop
+                // properly
+            }
+            auto op = (*opIt)->op;
+            opIt++;
+            n->rhs = std::move(rightSide);
+            if (compareTokenTypes(op->getType(), CuMatParser::BAND)) {
+                n->op = AST::BIN_OPERATORS::BAND;
+            } else if (compareTokenTypes(op->getType(), CuMatParser::BOR)) {
+                n->op = AST::BIN_OPERATORS::BOR;
+            } else {
+                throw std::runtime_error(
+                    "Encountered unknown operator, or Toby can't code");
+            }
+            n->lhs = std::move(visit(*it));
+            rightSide = std::move(n);
+        }
+        return std::move(rightSide);
+    } else {
+        return std::move(visit(lowerTier.front()));
     }
-    return n;
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_sum(CuMatParser::Exp_sumContext *ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto &child : children) {
-        n->addChild(std::move(child));
+    auto lowerTier = ctx->exp_mult();
+    auto ops = ctx->op_sum();
+    if (lowerTier.size() > 1) {
+        std::shared_ptr<AST::ExprAST> rightSide;
+        auto opIt = ops.rbegin();
+        for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
+            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            if (rightSide == nullptr) {
+                rightSide = std::move(visit(*it));
+                continue;  // Skip the last one so that we can setup the loop
+                // properly
+            }
+            auto op = (*opIt)->op;
+            opIt++;
+            n->rhs = std::move(rightSide);
+            if (compareTokenTypes(op->getType(), CuMatParser::PLUS)) {
+                n->op = AST::BIN_OPERATORS::PLUS;
+            } else if (compareTokenTypes(op->getType(), CuMatParser::MINUS)) {
+                n->op = AST::BIN_OPERATORS::MINUS;
+            } else {
+                throw std::runtime_error(
+                    "Encountered unknown operator, or Toby can't code");
+            }
+            n->lhs = std::move(visit(*it));
+            rightSide = std::move(n);
+        }
+        return std::move(rightSide);
+    } else {
+        return std::move(visit(lowerTier.front()));
     }
-    return n;
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_mult(CuMatParser::Exp_multContext *ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto &child : children) {
-        n->addChild(std::move(child));
+    auto lowerTier = ctx->exp_pow();
+    auto ops = ctx->op_mult();
+    if (lowerTier.size() > 1) {
+        std::shared_ptr<AST::ExprAST> rightSide;
+        auto opIt = ops.rbegin();
+        for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
+            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            if (rightSide == nullptr) {
+                rightSide = std::move(visit(*it));
+                continue;  // Skip the last one so that we can setup the loop
+                // properly
+            }
+            auto op = (*opIt)->op;
+            opIt++;
+            n->rhs = std::move(rightSide);
+            if (compareTokenTypes(op->getType(), CuMatParser::TIMES) || compareTokenTypes(op->getType(), CuMatParser::STAR)) {
+                n->op = AST::BIN_OPERATORS::MUL;
+            } else if (compareTokenTypes(op->getType(), CuMatParser::DIV)) {
+                n->op = AST::BIN_OPERATORS::DIV;
+            } else {
+                throw std::runtime_error(
+                    "Encountered unknown operator, or Toby can't code");
+            }
+            n->lhs = std::move(visit(*it));
+            rightSide = std::move(n);
+        }
+        return std::move(rightSide);
+    } else {
+        return std::move(visit(lowerTier.front()));
     }
-    return n;
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_pow(CuMatParser::Exp_powContext *ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto &child : children) {
-        n->addChild(std::move(child));
+    auto lowerTier = ctx->exp_mat();
+    if(lowerTier.size() > 1) {
+        std::shared_ptr<AST::ExprAST> leftSide;
+        for (auto & it : lowerTier) {
+            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            if (leftSide == nullptr) {
+                leftSide = std::move(visit(it));
+                continue;  // Skip the last one so that we can setup the loop
+                // properly
+            }
+
+            n->lhs = std::move(leftSide);
+            n->op = AST::BIN_OPERATORS::POW;
+            n->rhs = std::move(visit(it));
+            leftSide = std::move(n);
+        }
+        return std::move(leftSide);
+    } else
+    {
+        return std::move(visit(lowerTier.front()));
     }
-    return n;
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_mat(CuMatParser::Exp_matContext *ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto &child : children) {
-        n->addChild(std::move(child));
+    auto lowerTier = ctx->exp_neg();
+    if (lowerTier.size() > 1) {
+        std::shared_ptr<AST::ExprAST> rightSide;
+        for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
+            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            if (rightSide == nullptr) {
+                rightSide = std::move(visit(*it));
+                continue;  // Skip the last one so that we can setup the loop
+                // properly
+            }
+
+            n->rhs = std::move(rightSide);
+            n->op = AST::BIN_OPERATORS::MATM;
+            n->lhs = std::move(visit(*it));
+            rightSide = std::move(n);
+        }
+        return std::move(rightSide);
+    } else {
+        return std::move(visit(lowerTier.front()));
     }
-    return n;
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_neg(CuMatParser::Exp_negContext *ctx) {
@@ -252,26 +421,30 @@ antlrcpp::Any CuMatVisitor::visitExp_not(CuMatParser::Exp_notContext *ctx) {
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_chain(CuMatParser::Exp_chainContext *ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto &child : children) {
-        n->addChild(std::move(child));
+    auto lowerTier = ctx->exp_func();
+    if(lowerTier.size() > 1) {
+        std::shared_ptr<AST::ExprAST> leftSide;
+        for (auto & it : lowerTier) {
+            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            if (leftSide == nullptr) {
+                leftSide = std::move(visit(it));
+                continue;  // Skip the last one so that we can setup the loop
+                // properly
+            }
+
+            n->lhs = std::move(leftSide);
+            n->op = AST::BIN_OPERATORS::CHAIN;
+            n->rhs = std::move(visit(it));
+            leftSide = std::move(n);
+        }
+        return std::move(leftSide);
+    } else
+    {
+        return std::move(visit(lowerTier.front()));
     }
-    return n;
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext *ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto &child : children) {
-        n->addChild(std::move(child));
-    }
-    return n;
-}
-
-antlrcpp::Any CuMatVisitor::visitExp_if(CuMatParser::Exp_ifContext *ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
