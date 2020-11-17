@@ -11,6 +11,7 @@ namespace Typing {
 enum class PRIMITIVE { STRING, INT, FLOAT, BOOL, NONE };
 
 class Type {
+   public:
     bool isPrimitive;
     bool isGeneric;
     bool isFunction;

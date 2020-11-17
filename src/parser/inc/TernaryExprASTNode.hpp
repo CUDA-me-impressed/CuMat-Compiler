@@ -7,5 +7,7 @@
 namespace AST {
 class TernaryExprASTNode : public ExprAST {
     std::unique_ptr<ExprAST> condition, truthy, falsey;
+
+    void codegen();
 };
 }  // namespace AST

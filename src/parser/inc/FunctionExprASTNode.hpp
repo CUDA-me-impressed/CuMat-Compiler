@@ -10,5 +10,7 @@ class FunctionExprASTNode : public ExprAST {
    public:
     const std::string funcName;
     std::vector<std::shared_ptr<ExprAST>> args;
+
+    void codegen();
 };
 }  // namespace AST
