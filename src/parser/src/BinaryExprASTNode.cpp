@@ -1,5 +1,3 @@
 #include "BinaryExprASTNode.hpp"
 
-void AST::BinaryExprASTNode::codegen() {
-
-}
+void AST::BinaryExprASTNode::codegen() {}

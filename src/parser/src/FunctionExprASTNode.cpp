@@ -1,5 +1,3 @@
 #include "FunctionExprASTNode.hpp"
 
-void AST::FunctionExprASTNode::codegen() {
-    
-}
+void AST::FunctionExprASTNode::codegen() {}
