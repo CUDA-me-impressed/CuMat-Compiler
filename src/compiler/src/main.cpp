@@ -112,9 +112,11 @@ int main(int argc, char* argv[], char* envp[]) {
     std::vector<std::tuple<std::string, std::shared_ptr<AST::Node>>> parseTrees;
     for (const auto& file : files) {
         auto tree = runParser(file);
-        parseTrees.emplace_back(std::make_tuple<const std::string, std::shared_ptr<AST::Node>>(
+        parseTrees.emplace_back(
+            std::make_tuple<const std::string, std::shared_ptr<AST::Node>>(
                 (const std::basic_string<char, std::char_traits<char>,
-                                         std::allocator<char>>&&)file, std::move(tree)));
+                                         std::allocator<char>>&&)file,
+                std::move(tree)));
     }
 
     // Pretty printing for test
