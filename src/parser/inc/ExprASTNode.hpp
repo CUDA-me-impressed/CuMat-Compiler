@@ -6,7 +6,7 @@
 namespace AST {
 class ExprAST : public Node {
    public:
-    std::shared_ptr<Typing::Type> type;
+    std::unique_ptr<Typing::Type> type;
 
     virtual ~ExprAST() = default;
 };

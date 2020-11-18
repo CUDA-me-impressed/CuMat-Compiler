@@ -27,7 +27,7 @@ enum BIN_OPERATORS {
 
 class BinaryExprASTNode : public ExprAST {
    public:
-    std::shared_ptr<ExprAST> lhs, rhs;
+    std::unique_ptr<ExprAST> lhs, rhs;
     AST::BIN_OPERATORS op;
 
     void codeGen(llvm::Module* module) override;
