@@ -31,6 +31,8 @@ T_BOOL                      : 'bool';
 T_STRING                    : 'string';
 FUNC                        : 'func';
 RETURN                      : 'return' ;
+MATCH                       : 'match' ;
+WITH                        : 'with' ;
 
 IMPORT_OPEN                 : ('import' SPACE+) -> pushMode(IMPORT_MODE);
 
