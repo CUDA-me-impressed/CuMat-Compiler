@@ -1,3 +1,3 @@
 #include "UnaryExprASTNode.hpp"
 
-void AST::UnaryExprASTNode::codeGen(llvm::Module *module) {}
+void AST::UnaryExprASTNode::codeGen(llvm::Module* module) {}
