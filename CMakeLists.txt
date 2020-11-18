@@ -16,5 +16,15 @@ if (NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 20)
 endif ()
 
+find_package(LLVM REQUIRED CONFIG)      # find from system lib
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+# include all of the components, may need to include nvvm at some point
+llvm_map_components_to_libnames(llvm_libs support core irreader)
+add_library(llvm_interface INTERFACE)
+target_link_libraries(llvm_interface INTERFACE ${llvm_libs})
+target_include_directories(llvm_interface INTERFACE ${LLVM_INCLUDE_DIRS})
+target_compile_definitions(llvm_interface INTERFACE ${LLVM_DEFINITIONS})
+
 link_libraries(-lstdc++fs)
 add_subdirectory(src)
