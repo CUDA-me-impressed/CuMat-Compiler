@@ -16,7 +16,7 @@ file                        : SLUG ;
 definitions                 : definition (EOL definition)* EOL? ;
 definition                  : funcdef | cmtypedef | assignment ;
 
-funcdef                     : FUNC signature EOL? block | exp_match ;
+funcdef                     : FUNC signature EOL? block ;
 signature                   : typespec funcname (LPAR parameters RPAR)? ;
 parameters                  : (parameter (COMMA parameter)* )? ;
 parameter                   : typespec varname ;
@@ -29,7 +29,7 @@ assignment                  : asstarget ASSIGN expression ;
 asstarget                   : varname | decomp;
 decomp                      : LSQB varname COLON asstarget RSQB ;
 
-expression                  : exp_logic | lambda | exp_if ;
+expression                  : exp_logic | lambda | exp_if | exp_match ;
 exp_match                   : MATCH expression WITH matches ;
 exp_if                      : IF EOL? expression EOL? THEN EOL? expression EOL? ELSE EOL? expression ;
 exp_logic                   : exp_comp (op_logic exp_comp)* ;
@@ -59,7 +59,11 @@ op_chain                    : EOL? (CHAIN) EOL? ;
 
 lambda                      : LAMBDA LPAR parameters RPAR ARROW expression ;
 
-matches                     : (BOR value COLON block)+ ;
+matches                     : (BOR matchliteral EOL? COLON EOL? block EOL)+ ;
+matchliteral                : expression | matchmatrix ;
+matchmatrix                 : LSQB (matchdecomp | matchmatrows)? RSQB ;
+matchdecomp                 : LSQB (expression) COLON asstarget RSQB ;
+matchmatrows                : rows+=rowliteral (BSLASH+ EOL? rows+=rowliteral)* EOL? ;
 
 value                       : literal | LPAR expression RPAR | variable ;
 literal                     : matrixliteral | scalarliteral ;
