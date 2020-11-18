@@ -16,7 +16,9 @@ if (NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 20)
 endif ()
 
-find_package(LLVM REQUIRED CONFIG)      # find from system lib
+find_package(LLVM REQUIRED CONFIG
+        # try the llvm-10 directory first to avoid other versions
+        PATHS /usr/lib/llvm-10/lib/cmake/llvm/)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 # include all of the components, may need to include nvvm at some point

@@ -29,15 +29,9 @@ jobs:
         # We'll use this as our working directory for all subsequent commands
         run: |
           sudo apt update
-          ls -la /usr/include
           sudo apt install clang-10 clang-tidy-10 clang-format-10 openjdk-8-jre pkg-config uuid-dev
           sudo apt install llvm-10 llvm-10-dev
           sudo apt install llvm llvm-dev
-          sudo rm /usr/include/llvm
-          sudo rm /usr/include/llvm-c
-          sudo ln -s /usr/lib/llvm-10/include/llvm /usr/include/llvm
-          sudo ln -s /usr/lib/llvm-10/include/llvm-c /usr/include/llvm-c
-          ls -la /usr/include
           cmake -E make_directory ${{runner.workspace}}/build
 
       - name: Configure CMake
