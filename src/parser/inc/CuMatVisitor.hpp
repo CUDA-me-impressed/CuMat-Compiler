@@ -9,7 +9,7 @@
 
 class CuMatVisitor : public CuMatParserBaseVisitor {
    public:
-    antlr4::dfa::Vocabulary* parserVocab;
+    antlr4::dfa::Vocabulary *parserVocab;
 
     antlrcpp::Any visitProgram(CuMatParser::ProgramContext *ctx) override;
 
