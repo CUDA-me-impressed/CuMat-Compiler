@@ -3,6 +3,10 @@
 //
 #pragma once
 
+#include <llvm-10/llvm/ADT/StringRef.h>
+#include <llvm-10/llvm/IR/LLVMContext.h>
+#include <llvm-10/llvm/IR/Module.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -23,6 +27,6 @@ class Node {
 
     // Default implementations just call the function on their children
     virtual void semanticPass();
-    virtual void codeGen();
+    virtual void codeGen(llvm::Module *module);
 };
 }  // namespace AST

@@ -8,6 +8,8 @@
 #include "ASTNode.hpp"
 #include "BinaryExprASTNode.hpp"
 #include "CuMatLexer.h"
+#include "MatrixASTNode.hpp"
+
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext *ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
@@ -475,7 +477,8 @@ antlrcpp::Any CuMatVisitor::visitValue(CuMatParser::ValueContext *ctx) {
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitMatrixliteral(
     CuMatParser::MatrixliteralContext *ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
+    auto n = std::make_shared<AST::MatrixASTNode>();
+    n->literalText = ctx->getText();
     auto children =
         this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
     for (auto &child : children) {

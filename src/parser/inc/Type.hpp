@@ -21,12 +21,12 @@ class Type {
     PRIMITIVE primType;
 };
 
-class FunctionType : Type {
+class FunctionType : public Type {
     Type returnType;
     std::vector<Type> parameters;
 };
 
-class MatrixType : Type {
+class MatrixType : public Type {
     uint rank;  // 1 = Vector, 2 = Matrix, 3 = 3D matrix...
     std::vector<uint> dimensions;
 };

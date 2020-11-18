@@ -70,5 +70,5 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
                                   const antlrcpp::Any &nextResult) override;
 
    private:
-    bool compareTokenTypes(size_t a, size_t b) const;
+    [[nodiscard]] bool compareTokenTypes(size_t a, size_t b) const;
 };
