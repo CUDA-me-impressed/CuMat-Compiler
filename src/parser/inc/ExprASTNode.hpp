@@ -8,8 +8,6 @@ class ExprAST : public Node {
    public:
     std::shared_ptr<Typing::Type> type;
 
-    virtual ~ExprAST() {}
-
-    virtual void codegen();
+    virtual ~ExprAST() = default;
 };
 }  // namespace AST

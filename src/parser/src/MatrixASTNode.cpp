@@ -7,7 +7,7 @@
 
 #include "LLVMUtils.hpp"
 
-void AST::MatrixASTNode::codegen() {
+void AST::MatrixASTNode::codeGen() {
     llvm::Type* type;
     switch (this->type->primType) {
         case Typing::PRIMITIVE::INT: {

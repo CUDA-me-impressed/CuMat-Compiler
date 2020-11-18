@@ -1,3 +1,3 @@
 #include "TernaryExprASTNode.hpp"
 
-void AST::TernaryExprASTNode::codegen() {}
+void AST::TernaryExprASTNode::codeGen() {}

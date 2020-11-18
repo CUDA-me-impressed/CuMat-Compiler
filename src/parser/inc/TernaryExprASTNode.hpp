@@ -8,6 +8,6 @@ namespace AST {
 class TernaryExprASTNode : public ExprAST {
     std::shared_ptr<ExprAST> condition, truthy, falsey;
 
-    void codegen();
+    void codeGen() override;
 };
 }  // namespace AST

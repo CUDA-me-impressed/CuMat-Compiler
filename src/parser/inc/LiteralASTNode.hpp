@@ -8,6 +8,6 @@ class LiteralASTNode : public ExprAST {
    public:
     T value;
 
-    void codegen();
+    void codeGen() override;
 };
 }  // namespace AST
