@@ -17,8 +17,8 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
     antlrcpp::Any visitCmimport(CuMatParser::CmimportContext *ctx) override;
 
     antlrcpp::Any visitDefinitions(
-        CuMatParser::DefinitionsContext *ctx) override;
-    antlrcpp::Any visitDefinition(CuMatParser::DefinitionContext *ctx) override;
+        CuMatParser::DefinitionsContext* ctx) override;
+    antlrcpp::Any visitDefinition(CuMatParser::DefinitionContext* ctx) override;
 
     antlrcpp::Any visitFuncdef(CuMatParser::FuncdefContext *ctx) override;
     antlrcpp::Any visitSignature(CuMatParser::SignatureContext *ctx) override;

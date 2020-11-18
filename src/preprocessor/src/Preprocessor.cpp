@@ -40,7 +40,7 @@ std::vector<std::string> Preprocessor::SourceFileLoader::load() {
 }
 
 std::unique_ptr<std::vector<std::string>> Preprocessor::SourceFileLoader::load(
-    const std::string &file) {
+    const std::string& file) {
     // We will load the files from the current directory
     std::ifstream fileStream(file);
     std::unique_ptr<std::vector<std::string>> fileLines =
