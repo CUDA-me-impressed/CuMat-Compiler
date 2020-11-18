@@ -27,11 +27,13 @@ std::shared_ptr<AST::Node> runParser(std::string fileName) {
     CuMatLexer lexer(&input);
     antlr4::CommonTokenStream tokens(&lexer);
     CuMatParser parser(&tokens);
+    auto vocab = parser.getVocabulary();
 
     parser.removeErrorListeners();
     SimpleErrorListener el;
     parser.addErrorListener(&el);
     CuMatVisitor visitor;
+    visitor.parserVocab = &vocab;
 
     try {
         CuMatParser::ProgramContext* context = parser.program();

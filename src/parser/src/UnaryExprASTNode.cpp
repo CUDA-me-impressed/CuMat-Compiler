@@ -1,3 +1,3 @@
 #include "UnaryExprASTNode.hpp"
 
-void AST::UnaryExprASTNode::codegen() {}
+void AST::UnaryExprASTNode::codeGen() {}
