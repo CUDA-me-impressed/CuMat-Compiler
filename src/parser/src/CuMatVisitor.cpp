@@ -212,7 +212,8 @@ antlrcpp::Any CuMatVisitor::visitExp_logic(CuMatParser::Exp_logicContext* ctx) {
         std::shared_ptr<std::unique_ptr<AST::ExprAST>> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
-            auto n = std::make_shared<std::unique_ptr<AST::BinaryExprASTNode>>();
+            auto n =
+                std::make_shared<std::unique_ptr<AST::BinaryExprASTNode>>();
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -229,7 +230,9 @@ antlrcpp::Any CuMatVisitor::visitExp_logic(CuMatParser::Exp_logicContext* ctx) {
                 throw std::runtime_error(
                     "Encountered unknown operator, or Toby can't code");
             }
-            (*n)->lhs = std::move(*visit(*it).as<std::shared_ptr<std::unique_ptr<AST::ExprAST>>>());
+            (*n)->lhs = std::move(
+                *visit(*it)
+                     .as<std::shared_ptr<std::unique_ptr<AST::ExprAST>>>());
             rightSide = finagle(n);
         }
         return std::move(rightSide);
@@ -245,7 +248,8 @@ antlrcpp::Any CuMatVisitor::visitExp_comp(CuMatParser::Exp_compContext* ctx) {
         std::shared_ptr<std::unique_ptr<AST::ExprAST>> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
-            auto n = std::make_shared<std::unique_ptr<AST::BinaryExprASTNode>>();
+            auto n =
+                std::make_shared<std::unique_ptr<AST::BinaryExprASTNode>>();
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -270,7 +274,9 @@ antlrcpp::Any CuMatVisitor::visitExp_comp(CuMatParser::Exp_compContext* ctx) {
                 throw std::runtime_error(
                     "Encountered unknown operator, or Toby can't code");
             }
-            (*n)->lhs = std::move(*visit(*it).as<std::shared_ptr<std::unique_ptr<AST::ExprAST>>>());
+            (*n)->lhs = std::move(
+                *visit(*it)
+                     .as<std::shared_ptr<std::unique_ptr<AST::ExprAST>>>());
             rightSide = finagle(n);
         }
         return std::move(rightSide);
@@ -286,7 +292,8 @@ antlrcpp::Any CuMatVisitor::visitExp_bit(CuMatParser::Exp_bitContext* ctx) {
         std::shared_ptr<std::unique_ptr<AST::ExprAST>> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
-            auto n = std::make_shared<std::unique_ptr<AST::BinaryExprASTNode>>();
+            auto n =
+                std::make_shared<std::unique_ptr<AST::BinaryExprASTNode>>();
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -303,7 +310,9 @@ antlrcpp::Any CuMatVisitor::visitExp_bit(CuMatParser::Exp_bitContext* ctx) {
                 throw std::runtime_error(
                     "Encountered unknown operator, or Toby can't code");
             }
-            (*n)->lhs = std::move(*visit(*it).as<std::shared_ptr<std::unique_ptr<AST::ExprAST>>>());
+            (*n)->lhs = std::move(
+                *visit(*it)
+                     .as<std::shared_ptr<std::unique_ptr<AST::ExprAST>>>());
             rightSide = finagle(n);
         }
         return std::move(rightSide);
@@ -319,7 +328,8 @@ antlrcpp::Any CuMatVisitor::visitExp_sum(CuMatParser::Exp_sumContext* ctx) {
         std::shared_ptr<std::unique_ptr<AST::ExprAST>> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
-            auto n = std::make_shared<std::unique_ptr<AST::BinaryExprASTNode>>();
+            auto n =
+                std::make_shared<std::unique_ptr<AST::BinaryExprASTNode>>();
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -336,7 +346,9 @@ antlrcpp::Any CuMatVisitor::visitExp_sum(CuMatParser::Exp_sumContext* ctx) {
                 throw std::runtime_error(
                     "Encountered unknown operator, or Toby can't code");
             }
-            (*n)->lhs = std::move(*visit(*it).as<std::shared_ptr<std::unique_ptr<AST::ExprAST>>>());
+            (*n)->lhs = std::move(
+                *visit(*it)
+                     .as<std::shared_ptr<std::unique_ptr<AST::ExprAST>>>());
             rightSide = finagle(n);
         }
         return std::move(rightSide);
