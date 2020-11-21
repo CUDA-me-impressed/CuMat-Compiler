@@ -29,7 +29,11 @@ jobs:
         # We'll use this as our working directory for all subsequent commands
         run: |
           sudo apt update
-          sudo apt install clang-10 clang-tidy-10 clang-format-10 openjdk-8-jre pkg-config uuid-dev llvm llvm-dev llvm-10 llvm-10-dev libllvm10
+          sudo apt install clang-10 clang-tidy-10 clang-format-10 openjdk-8-jre pkg-config uuid-dev
+          sudo apt install llvm-10 llvm-10-dev
+          sudo apt install llvm llvm-dev
+          sudo apt remove llvm-6.0 llvm-8 llvm-9 llvm-6.0-dev llvm-8-dev llvm-9-dev
+          sudo apt autoremove
           cmake -E make_directory ${{runner.workspace}}/build
 
       - name: Configure CMake

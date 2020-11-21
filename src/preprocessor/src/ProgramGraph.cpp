@@ -100,7 +100,7 @@ void Preprocessor::ProgramGraph::expandAllUnexpanded() {
 }
 
 void Preprocessor::ProgramGraph::generateCompileUnits(
-    std::vector<std::vector<std::shared_ptr<ProgramFileNode>>> &compileUnits) {
+    std::vector<std::vector<std::shared_ptr<ProgramFileNode>>>& compileUnits) {
     auto sortedProgram = topologicalSort();
     std::reverse(sortedProgram.begin(), sortedProgram.end());
     int i = 0;

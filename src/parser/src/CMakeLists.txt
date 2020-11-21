@@ -44,6 +44,5 @@ add_library(Parser
 target_include_directories(Parser PUBLIC
         ../inc)
 target_link_libraries(Parser PUBLIC
-        parser_gen)
-target_link_libraries(Parser PUBLIC
+        llvm_interface
         parser_gen)
