@@ -12,6 +12,6 @@ class MatrixASTNode : public ExprAST {
     std::vector<std::vector<std::shared_ptr<ExprAST>>> data;
 
     int numElements();
-    void codeGen(llvm::Module* module) override;
+    void codeGen(llvm::Module* module, llvm::Function * fp) override;
 };
 }  // namespace AST

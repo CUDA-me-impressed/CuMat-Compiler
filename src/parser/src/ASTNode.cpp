@@ -16,8 +16,8 @@ void Node::semanticPass() {
     for (auto const& child : this->children) child->semanticPass();
 }
 
-void Node::codeGen(llvm::Module* module) {
-    for (auto const& child : this->children) child->codeGen(module);
+void Node::codeGen(llvm::Module* module, llvm::Function * fp) {
+    for (auto const& child : this->children) child->codeGen(module, fp);
 }
 
 }  // namespace AST

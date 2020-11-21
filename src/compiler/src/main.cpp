@@ -129,7 +129,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
     for (const auto& tree : parseTrees) {
         llvm::Module module("CuMat-" + std::get<0>(tree), TheContext);
-        std::get<1>(tree)->codeGen(&module);
+        std::get<1>(tree)->codeGen(&module, nullptr);
     }
 
     return 0;

@@ -1,11 +1,14 @@
 #include "MatrixASTNode.hpp"
 
 #include <llvm-10/llvm/IR/DerivedTypes.h>
+#include <llvm-10/llvm/IR/Function.h>
+#include <llvm-10/llvm/IR/IRBuilder.h>
+#include <llvm-10/llvm/IR/Instructions.h>
 #include <llvm-10/llvm/IR/Type.h>
 
 #include <iostream>
 
-void AST::MatrixASTNode::codeGen(llvm::Module* module) {
+void AST::MatrixASTNode::codeGen(llvm::Module* module, llvm::Function* fp) {
     llvm::Type* type;
     switch (this->type->primType) {
         case Typing::PRIMITIVE::INT: {
@@ -35,7 +38,11 @@ void AST::MatrixASTNode::codeGen(llvm::Module* module) {
         case Typing::PRIMITIVE::NONE:
             break;
     }
-    llvm::ArrayType* array = llvm::ArrayType::get(type, this->numElements());
+    llvm::ArrayType* mat_type = llvm::ArrayType::get(type, this->numElements());
+    // We need a builder for the function
+    llvm::IRBuilder<> tmpB(&fp->getEntryBlock(), fp->getEntryBlock().begin());
+    llvm::AllocaInst* mat_alloc =
+        tmpB.CreateAlloca(mat_type, nullptr, this->literalText);
 }
 
 int AST::MatrixASTNode::numElements() {
