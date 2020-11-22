@@ -52,9 +52,9 @@ void AST::MatrixASTNode::codeGen(llvm::Module* module, llvm::Function* fp) {
             llvm::ConstantInt::get(type, genAPIntInstance(this->numElements())),
             matAlloc, fp);
     } else if (this->type->primType == Typing::PRIMITIVE::FLOAT) {
-//        storeInst = new llvm::StoreInst(
-//            llvm::ConstantFP(type, genAPFloatInstance(this->numElements())),
-//            matAlloc, fp);
+        //        storeInst = new llvm::StoreInst(
+        //            llvm::ConstantFP(type,
+        //            genAPFloatInstance(this->numElements())), matAlloc, fp);
     }
 }
 
@@ -74,12 +74,13 @@ llvm::APInt AST::MatrixASTNode::genAPIntInstance(const int numElements) {
 }
 
 llvm::APFloat AST::MatrixASTNode::genAPFloatInstance(const int numElements) {
-//    if (this->type->primType == Typing::PRIMITIVE::FLOAT) {
-//        return llvm::APFloat(64, numElements);
-//    }
-//    std::cerr << "Attempting to assign arbitrary precision float type"
-//              << " to internal non-float type [" << this->literalText << "]"
-//              << std::endl;
-// TODO: Fix this floating points so they work
+    //    if (this->type->primType == Typing::PRIMITIVE::FLOAT) {
+    //        return llvm::APFloat(64, numElements);
+    //    }
+    //    std::cerr << "Attempting to assign arbitrary precision float type"
+    //              << " to internal non-float type [" << this->literalText <<
+    //              "]"
+    //              << std::endl;
+    // TODO: Fix this floating points so they work
     return llvm::APFloat(5.0f);
 }

@@ -10,10 +10,10 @@ void AST::UnaryExprASTNode::codeGen(llvm::Module* module, llvm::Function* fp) {
     auto exprType = this->operand->type;
     if (exprType->isPrimitive) {
         // static cast to matrix
-        auto * matType = static_cast<Typing::MatrixType*>(exprType.get());
+        auto* matType = static_cast<Typing::MatrixType*>(exprType.get());
         if (!matType) {
-            std::cerr << "Internal Compiler Error: Matrix type for " <<
-                exprType->name << " pointer is invalid!" << std::endl;
+            std::cerr << "Internal Compiler Error: Matrix type for "
+                      << exprType->name << " pointer is invalid!" << std::endl;
             return;
         }
         // We determine the size of offset for each of the values

@@ -10,6 +10,6 @@ class UnaryExprASTNode : public ExprAST {
     UNA_OPERATORS op;
     std::shared_ptr<ExprAST> operand;
 
-    void codeGen(llvm::Module* module, llvm::Function * fp) override;
+    void codeGen(llvm::Module* module, llvm::Function* fp) override;
 };
 }  // namespace AST

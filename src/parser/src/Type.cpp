@@ -9,11 +9,14 @@ int Typing::Type::offset() {
     switch (primType) {
         case PRIMITIVE::STRING:
         case PRIMITIVE::BOOL:
-            return 8;   break;
+            return 8;
+            break;
         case PRIMITIVE::INT:
         case PRIMITIVE::FLOAT:
-            return 64;  break;
+            return 64;
+            break;
         default:
-            return 8;   break;
+            return 8;
+            break;
     }
 }

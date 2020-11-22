@@ -1,3 +1,4 @@
 #include "FunctionExprASTNode.hpp"
 
-void AST::FunctionExprASTNode::codeGen(llvm::Module* module, llvm::Function * fp) {}
+void AST::FunctionExprASTNode::codeGen(llvm::Module* module,
+                                       llvm::Function* fp) {}
