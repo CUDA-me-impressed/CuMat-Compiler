@@ -9,7 +9,9 @@
 
 #include <iostream>
 
-void AST::MatrixASTNode::codeGen(llvm::Module* module, llvm::Function* fp) {
+void AST::MatrixASTNode::codeGen(llvm::Module* module,
+                                 llvm::IRBuilder<> * Builder,
+                                 llvm::Function* fp) {
     llvm::Type* type;
     switch (this->type->primType) {
         case Typing::PRIMITIVE::INT: {
@@ -56,6 +58,7 @@ void AST::MatrixASTNode::codeGen(llvm::Module* module, llvm::Function* fp) {
         //            llvm::ConstantFP(type,
         //            genAPFloatInstance(this->numElements())), matAlloc, fp);
     }
+
 }
 
 int AST::MatrixASTNode::numElements() {

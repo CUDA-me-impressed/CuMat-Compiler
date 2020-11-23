@@ -9,6 +9,8 @@
 #include "CuMatASTGenerator.hpp"
 #include "Preprocessor.hpp"
 
+#include <llvm-10/llvm/IR/IRBuilder.h>
+
 void printArgumentError(std::string message, std::string arg) {
     const std::string helpText =
         "CuMat Compiler Syntax: CuMat inputFile [ -Wall | -Winfo | -Wnone ] [ "
@@ -128,8 +130,9 @@ int main(int argc, char* argv[], char* envp[]) {
     llvm::LLVMContext TheContext;
 
     for (const auto& tree : parseTrees) {
-        llvm::Module module("CuMat-" + std::get<0>(tree), TheContext);
-        std::get<1>(tree)->codeGen(&module, nullptr);
+        llvm::Module TheModule("CuMat-" + std::get<0>(tree), TheContext);
+        llvm::IRBuilder<> Builder(TheContext);
+        std::get<1>(tree)->codeGen(&TheModule, &Builder, nullptr);
     }
 
     return 0;

@@ -18,6 +18,6 @@ class MatrixASTNode : public ExprAST {
     llvm::APInt genAPIntInstance(int numElements);
     llvm::APFloat genAPFloatInstance(int numElements);
 
-    void codeGen(llvm::Module* module, llvm::Function* fp) override;
+    void codeGen(llvm::Module* module, llvm::IRBuilder<> * Builder, llvm::Function* fp) override;
 };
 }  // namespace AST
