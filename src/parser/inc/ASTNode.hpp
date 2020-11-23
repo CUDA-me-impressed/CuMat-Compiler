@@ -13,6 +13,9 @@
 #include <vector>
 
 #include "CodeGenUtils.hpp"
+namespace Analysis {
+class NameTable;
+}
 
 namespace AST {
 class Node {
@@ -31,5 +34,6 @@ class Node {
     // Default implementations just call the function on their children
     virtual void semanticPass();
     virtual llvm::Value* codeGen(Utils::IRContext* context);
+    virtual void dimensionPass(Analysis::NameTable* nt);
 };
 }  // namespace AST
