@@ -10,7 +10,7 @@
 #include <iostream>
 
 void AST::MatrixASTNode::codeGen(llvm::Module* module,
-                                 llvm::IRBuilder<> * Builder,
+                                 llvm::IRBuilder<>* Builder,
                                  llvm::Function* fp) {
     llvm::Type* type;
     switch (this->type->primType) {
@@ -58,7 +58,6 @@ void AST::MatrixASTNode::codeGen(llvm::Module* module,
         //            llvm::ConstantFP(type,
         //            genAPFloatInstance(this->numElements())), matAlloc, fp);
     }
-
 }
 
 int AST::MatrixASTNode::numElements() {
