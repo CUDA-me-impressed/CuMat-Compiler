@@ -9,9 +9,11 @@
 
 #include <iostream>
 
-void AST::MatrixASTNode::codeGen(llvm::Module* module,
-                                 llvm::IRBuilder<>* Builder,
-                                 llvm::Function* fp) {
+#include "CodeGenUtils.hpp"
+
+llvm::Value* AST::MatrixASTNode::codeGen(llvm::Module* module,
+                                         llvm::IRBuilder<>* Builder,
+                                         llvm::Function* fp) {
     llvm::Type* type;
     switch (this->type->primType) {
         case Typing::PRIMITIVE::INT: {
@@ -48,16 +50,20 @@ void AST::MatrixASTNode::codeGen(llvm::Module* module,
         tmpB.CreateAlloca(mat_type, nullptr, this->literalText);
     // Create a store instance for the correct precision and data type
     llvm::StoreInst* storeInst;
+    llvm::Value* val;
     if (this->type->primType == Typing::PRIMITIVE::INT ||
         this->type->primType == Typing::PRIMITIVE::BOOL) {
-        storeInst = new llvm::StoreInst(
+        val =
             llvm::ConstantInt::get(type, genAPIntInstance(this->numElements())),
-            matAlloc, fp);
+        matAlloc;
     } else if (this->type->primType == Typing::PRIMITIVE::FLOAT) {
         //        storeInst = new llvm::StoreInst(
         //            llvm::ConstantFP(type,
         //            genAPFloatInstance(this->numElements())), matAlloc, fp);
     }
+    Builder->CreateStore(val, matAlloc);
+    Utils::AllocSymbolTable[this->literalText] = matAlloc;
+    return matAlloc;
 }
 
 int AST::MatrixASTNode::numElements() {

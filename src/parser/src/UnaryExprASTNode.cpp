@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-void AST::UnaryExprASTNode::codeGen(llvm::Module* module,
-                                    llvm::IRBuilder<>* Builder,
-                                    llvm::Function* fp) {
+llvm::Value* AST::UnaryExprASTNode::codeGen(llvm::Module* module,
+                                            llvm::IRBuilder<>* Builder,
+                                            llvm::Function* fp) {
     /* We need to work out what the type of the expr is!
      * By Default all raw values are some type of matrix, we need to determine
      * if we can get this type as a matrix or if it is something else
@@ -16,9 +16,10 @@ void AST::UnaryExprASTNode::codeGen(llvm::Module* module,
         if (!matType) {
             std::cerr << "Internal Compiler Error: Matrix type for "
                       << exprType->name << " pointer is invalid!" << std::endl;
-            return;
+            return nullptr;
         }
         // We determine the size of offset for each of the values
         int offset = exprType->offset();
     }
+    return nullptr;
 }

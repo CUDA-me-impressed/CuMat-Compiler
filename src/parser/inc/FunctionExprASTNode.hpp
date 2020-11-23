@@ -13,9 +13,8 @@ class FunctionExprASTNode : public ExprAST {
     std::shared_ptr<ExprAST> nonAppliedFunction;
     std::vector<std::shared_ptr<ExprAST>> args;
 
-    void codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
-                 llvm::Function* fp) override;
-
+    llvm::Value* codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
+                         llvm::Function* fp) override;
     void dimensionPass() override;
 };
 }  // namespace AST

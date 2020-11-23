@@ -9,8 +9,8 @@ class TernaryExprASTNode : public ExprAST {
    public:
     std::shared_ptr<ExprAST> condition, truthy, falsey;
 
-    void codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
-                 llvm::Function* fp) override;
+    llvm::Value* codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
+                         llvm::Function* fp) override;
     void dimensionPass() override;
 };
 }  // namespace AST
