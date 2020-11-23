@@ -28,6 +28,5 @@ class Node {
     // Default implementations just call the function on their children
     virtual void semanticPass();
     virtual void codeGen(llvm::Module* module);
-    virtual void dimensionPass();
 };
 }  // namespace AST

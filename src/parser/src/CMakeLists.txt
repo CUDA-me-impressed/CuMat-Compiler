@@ -9,7 +9,7 @@ include(ExternalAntlr4Cpp)
 find_package(ANTLR REQUIRED)
 
 set(cpp_srcs
-        CuMatASTGenerator.cpp ASTNode.cpp CuMatVisitor.cpp BinaryExprASTNode.cpp FunctionExprASTNode.cpp LiteralASTNode.cpp MatrixASTNode.cpp TernaryExprASTNode.cpp UnaryExprASTNode.cpp passes/DimensionPass.cpp NameTable.cpp ../inc/NameTable.hpp)
+        CuMatASTGenerator.cpp ASTNode.cpp CuMatVisitor.cpp BinaryExprASTNode.cpp FunctionExprASTNode.cpp LiteralASTNode.cpp MatrixASTNode.cpp TernaryExprASTNode.cpp UnaryExprASTNode.cpp)
 
 set(lexer_srcs
         CuMatLexer.g4)

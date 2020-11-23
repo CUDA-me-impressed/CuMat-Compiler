@@ -31,6 +31,5 @@ class BinaryExprASTNode : public ExprAST {
     AST::BIN_OPERATORS op;
 
     void codeGen(llvm::Module* module) override;
-    void dimensionPass() override;
 };
 }  // namespace AST

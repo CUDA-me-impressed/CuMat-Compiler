@@ -11,7 +11,5 @@ class UnaryExprASTNode : public ExprAST {
     std::shared_ptr<ExprAST> operand;
 
     void codeGen(llvm::Module* module) override;
-    void dimensionPass() override;
-
 };
 }  // namespace AST

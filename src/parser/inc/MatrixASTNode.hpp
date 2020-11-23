@@ -13,7 +13,5 @@ class MatrixASTNode : public ExprAST {
 
     int numElements();
     void codeGen(llvm::Module* module) override;
-    void dimensionPass() override;
-
 };
 }  // namespace AST
