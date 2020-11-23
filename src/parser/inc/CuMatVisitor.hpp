@@ -47,12 +47,9 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
     antlrcpp::Any visitExp_chain(CuMatParser::Exp_chainContext* ctx) override;
     antlrcpp::Any visitExp_func(CuMatParser::Exp_funcContext* ctx) override;
 
-    antlrcpp::Any visitArgs(CuMatParser::ArgsContext* ctx) override;
-
     antlrcpp::Any visitValue(CuMatParser::ValueContext* ctx) override;
     antlrcpp::Any visitMatrixliteral(
         CuMatParser::MatrixliteralContext* ctx) override;
-    antlrcpp::Any visitRowliteral(CuMatParser::RowliteralContext* ctx) override;
     antlrcpp::Any visitScalarliteral(
         CuMatParser::ScalarliteralContext* ctx) override;
 

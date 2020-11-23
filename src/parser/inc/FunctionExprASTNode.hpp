@@ -10,10 +10,12 @@
 namespace AST {
 class FunctionExprASTNode : public ExprAST {
    public:
-    const std::string funcName;
+    std::shared_ptr<ExprAST> nonAppliedFunction;
     std::vector<std::shared_ptr<ExprAST>> args;
 
     void codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
                  llvm::Function* fp) override;
+
+    void dimensionPass() override;
 };
 }  // namespace AST

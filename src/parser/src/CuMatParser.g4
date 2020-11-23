@@ -60,7 +60,8 @@ lambda                      : LAMBDA LPAR parameters RPAR ARROW expression ;
 
 value                       : literal | LPAR expression RPAR | variable ;
 literal                     : matrixliteral | scalarliteral ;
-matrixliteral               : LSQB (EOL? rows+=rowliteral (BSLASH+ EOL? rows+=rowliteral)* EOL?)? RSQB ;
+matrixliteral               : LSQB (EOL? rowliteral (dimensionLiteral)* EOL?)? RSQB ;
+dimensionLiteral            : BSLASH+ EOL? rowliteral EOL? ;
 rowliteral                  : cols+=expression (COMMA cols+=expression)* ;
 scalarliteral               : stringliteral | numliteral ;
 stringliteral               : STRING ;
