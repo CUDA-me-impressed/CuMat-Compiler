@@ -6,6 +6,10 @@
 #include "LiteralASTNode.hpp"
 #include "Type.hpp"
 
+namespace Analysis {
+class NameTable;
+}
+
 namespace AST {
 class MatrixASTNode : public ExprAST {
    public:
@@ -13,7 +17,6 @@ class MatrixASTNode : public ExprAST {
 
     int numElements();
     void codeGen(llvm::Module* module) override;
-    void dimensionPass() override;
-
+    void dimensionPass(Analysis::NameTable* nt) override;
 };
 }  // namespace AST

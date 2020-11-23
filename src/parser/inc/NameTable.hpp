@@ -5,17 +5,20 @@
 #pragma once
 
 #include <map>
+#include <span>
 #include <string>
 
 #include "ASTNode.hpp"
-namespace AST {
+
+namespace Analysis {
 
 class NameTable {
-   protected:
-    std::map<std::string, std::unique_ptr<NameTable>> namespaces;
-    std::map<std::string, Node*> values;
+   private:
+    std::map<std::string, std::unique_ptr<NameTable>> namespaces{};
+    std::map<std::string, AST::Node*> values{};
 
    public:
-
+    [[nodiscard]] AST::Node* search_impl(
+        std::span<const std::string> name) const noexcept;
 };
-}  // namespace AST
+}  // namespace Analysis

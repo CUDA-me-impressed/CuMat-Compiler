@@ -11,6 +11,10 @@
 #include <string>
 #include <vector>
 
+namespace Analysis {
+class NameTable;
+}
+
 namespace AST {
 class Node {
    public:
@@ -28,6 +32,6 @@ class Node {
     // Default implementations just call the function on their children
     virtual void semanticPass();
     virtual void codeGen(llvm::Module* module);
-    virtual void dimensionPass();
+    virtual void dimensionPass(Analysis::NameTable* nt);
 };
 }  // namespace AST

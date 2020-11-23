@@ -4,6 +4,10 @@
 
 #include "ExprASTNode.hpp"
 
+namespace Analysis {
+class NameTable;
+}
+
 namespace AST {
 enum BIN_OPERATORS {
     PLUS,
@@ -31,6 +35,6 @@ class BinaryExprASTNode : public ExprAST {
     AST::BIN_OPERATORS op;
 
     void codeGen(llvm::Module* module) override;
-    void dimensionPass() override;
+    void dimensionPass(Analysis::NameTable* nt) override;
 };
 }  // namespace AST

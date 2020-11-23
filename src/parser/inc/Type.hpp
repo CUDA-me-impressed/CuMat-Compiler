@@ -33,6 +33,7 @@ class FunctionType : public Type {
 };
 
 class MatrixType : public Type {
+   public:
     uint rank;  // 1 = Vector, 2 = Matrix, 3 = 3D matrix...
     std::vector<std::variant<uint, Dimension>> dimensions;
 };
