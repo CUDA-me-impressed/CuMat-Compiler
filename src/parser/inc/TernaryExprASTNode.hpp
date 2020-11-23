@@ -6,6 +6,7 @@
 
 namespace AST {
 class TernaryExprASTNode : public ExprAST {
+   public:
     std::shared_ptr<ExprAST> condition, truthy, falsey;
 
     void codeGen(llvm::Module* module) override;
