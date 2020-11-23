@@ -31,5 +31,6 @@ class Node {
     virtual llvm::Value* codeGen(llvm::Module* TheModule,
                                  llvm::IRBuilder<>* Builder,
                                  llvm::Function* fp);
+    virtual void dimensionPass();
 };
 }  // namespace AST

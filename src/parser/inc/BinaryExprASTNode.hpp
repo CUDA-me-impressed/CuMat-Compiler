@@ -34,5 +34,6 @@ class BinaryExprASTNode : public ExprAST {
 
     llvm::Value* codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
                          llvm::Function* fp) override;
+    void dimensionPass() override;
 };
 }  // namespace AST

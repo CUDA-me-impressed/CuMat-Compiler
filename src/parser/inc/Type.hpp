@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace Typing {
@@ -23,13 +24,20 @@ class Type {
     int offset();
 };
 
+struct Dimension {
+    uint id;
+    int offset;
+};
+
 class FunctionType : public Type {
+   public:
     Type returnType;
     std::vector<Type> parameters;
 };
 
 class MatrixType : public Type {
+   public:
     uint rank;  // 1 = Vector, 2 = Matrix, 3 = 3D matrix...
-    std::vector<uint> dimensions;
+    std::vector<std::variant<uint, Dimension>> dimensions;
 };
 }  // namespace Typing
