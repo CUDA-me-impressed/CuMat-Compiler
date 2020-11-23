@@ -32,7 +32,7 @@ class BinaryExprASTNode : public ExprAST {
     std::shared_ptr<ExprAST> lhs, rhs;
     AST::BIN_OPERATORS op;
 
-    void codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
-                 llvm::Function* fp) override;
+    llvm::Value* codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
+                         llvm::Function* fp) override;
 };
 }  // namespace AST

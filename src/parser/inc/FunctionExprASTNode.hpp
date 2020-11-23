@@ -13,7 +13,7 @@ class FunctionExprASTNode : public ExprAST {
     const std::string funcName;
     std::vector<std::shared_ptr<ExprAST>> args;
 
-    void codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
-                 llvm::Function* fp) override;
+    llvm::Value* codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
+                         llvm::Function* fp) override;
 };
 }  // namespace AST
