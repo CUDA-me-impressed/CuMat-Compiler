@@ -55,6 +55,7 @@ add_executable(Parser_test
         ${test_srcs})
 target_link_libraries(Parser_test PRIVATE
         Parser
-        Catch2)
+        Catch2
+        Trompeloeil)
 add_test(NAME Parser_test
          COMMAND Parser_test)
