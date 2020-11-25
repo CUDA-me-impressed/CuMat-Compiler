@@ -6,10 +6,10 @@
 #include "ExprASTNode.hpp"
 
 namespace AST {
-class FunctionExprASTNode : public ExprAST {
+class FunctionExprNode : public ExprNode {
    public:
-    std::shared_ptr<ExprAST> nonAppliedFunction;
-    std::vector<std::shared_ptr<ExprAST>> args;
+    std::shared_ptr<ExprNode> nonAppliedFunction;
+    std::vector<std::shared_ptr<ExprNode>> args;
 
     void codeGen(llvm::Module* module) override;
 };

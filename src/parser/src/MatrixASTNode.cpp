@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-void AST::MatrixASTNode::codeGen(llvm::Module* module) {
+void AST::MatrixNode::codeGen(llvm::Module* module) {
     llvm::Type* type;
     switch (this->type->primType) {
         case Typing::PRIMITIVE::INT: {
@@ -38,7 +38,7 @@ void AST::MatrixASTNode::codeGen(llvm::Module* module) {
     llvm::ArrayType* array = llvm::ArrayType::get(type, this->numElements());
 }
 
-int AST::MatrixASTNode::numElements() {
+int AST::MatrixNode::numElements() {
     // We assume all sides equal lengths
     return this->data.size() * this->data.at(0).size();
 }

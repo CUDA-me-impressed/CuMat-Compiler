@@ -1,3 +1,3 @@
 #include "BinaryExprASTNode.hpp"
 
-void AST::BinaryExprASTNode::codeGen(llvm::Module* module) {}
+void AST::BinaryExprNode::codeGen(llvm::Module* module) {}

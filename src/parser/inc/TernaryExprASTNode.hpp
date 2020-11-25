@@ -5,9 +5,9 @@
 #include "ExprASTNode.hpp"
 
 namespace AST {
-class TernaryExprASTNode : public ExprAST {
+class TernaryExprNode : public ExprNode {
    public:
-    std::shared_ptr<ExprAST> condition, truthy, falsey;
+    std::shared_ptr<ExprNode> condition, truthy, falsey;
 
     void codeGen(llvm::Module* module) override;
 };
