@@ -10,7 +10,5 @@ class ExprAST : public Node {
 
     virtual ~ExprAST() = default;
     static CreateNamedAlloca();
-    void dimensionPass() override;
-
 };
 }  // namespace AST

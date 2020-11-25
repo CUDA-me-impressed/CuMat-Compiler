@@ -12,6 +12,5 @@ class UnaryExprASTNode : public ExprAST {
 
     llvm::Value* codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
                          llvm::Function* fp) override;
-    void dimensionPass() override;
 };
 }  // namespace AST
