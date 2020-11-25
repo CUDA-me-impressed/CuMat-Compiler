@@ -1,13 +1,17 @@
 cmake_minimum_required(VERSION 3.12)
-project(CuMat_Compiler)
+project(CuMat_Compiler LANGUAGES CXX)
 
 find_program(CLANG_10 "clang++-10")
 IF (CLANG_10)
-    set(CMAKE_CXX_COMPILER clang++-10)
-    set(CMAKE_CXX_CLANG_TID clang-tidy-10)
+    set(CMAKE_CXX_COMPILER "${CLANG_10}")
+    find_program(CLANG_TIDY_10 clang-tidy-10 REQUIRED)
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_10}")
 ELSE ()
-    set(CMAKE_CXX_COMPILER clang++)
-    set(CMAKE_CXX_CLANG_TIDY clang-tidy)
+    find_program(CLANG "clang++" REQUIRED)
+    find_program(CLANG_TIDY "clang-tidy" REQUIRED)
+
+    set(CMAKE_CXX_COMPILER "${CLANG}")
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY}")
 ENDIF ()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -31,6 +35,43 @@ add_library(llvm_interface INTERFACE)
 target_link_libraries(llvm_interface INTERFACE ${llvm_libs})
 target_include_directories(llvm_interface INTERFACE ${LLVM_INCLUDE_DIRS})
 target_compile_definitions(llvm_interface INTERFACE ${LLVM_DEFINITIONS})
+
+# Include Catch2
+include(FetchContent)
+FetchContent_Declare(Catch2_download
+        GIT_REPOSITORY      https://github.com/catchorg/Catch2.git
+        GIT_TAG             v2.13.3)
+FetchContent_Populate(Catch2_download)
+FetchContent_GetProperties(Catch2_download
+        SOURCE_DIR Catch2_source_dir)
+message(STATUS "Downloaded Catch2 to ${Catch2_source_dir}")
+add_library(Catch2 INTERFACE)
+target_include_directories(Catch2 INTERFACE
+        "${Catch2_source_dir}/single_include")
+
+# Include trompeloeil
+FetchContent_Declare(Trompeloeil_download
+        GIT_REPOSITORY      https://github.com/rollbear/trompeloeil.git
+        GIT_TAG             v39)
+FetchContent_Populate(Trompeloeil_download)
+FetchContent_GetProperties(Trompeloeil_download
+        SOURCE_DIR Trompeloeil_source_dir)
+message(STATUS "Downloaded Trompeloeil to ${Trompeloeil_source_dir}")
+add_library(Trompeloeil INTERFACE)
+target_include_directories(Trompeloeil INTERFACE
+        "${Trompeloeil_source_dir}/include")
+
+# Include Catch2
+include(ExternalProject)
+ExternalProject_Add(Catch2_download
+        GIT_REPOSITORY      https://github.com/catchorg/Catch2.git
+        GIT_TAG             v2.13.3
+        CONFIGURE_COMMAND   ""
+        BUILD_COMMAND       ""
+        INSTALL_COMMAND     "")
+ExternalProject_Get_Property(Catch2_download SOURCE_DIR)
+add_library(Catch2 INTERFACE)
+target_include_directories(Catch2 INTERFACE "${SOURCE_DIR}/single_include")
 
 link_libraries(-lstdc++fs)
 add_subdirectory(src)
