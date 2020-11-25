@@ -9,6 +9,7 @@ class ExprAST : public Node {
     std::shared_ptr<Typing::Type> type;
 
     virtual ~ExprAST() = default;
+    static CreateNamedAlloca();
     void dimensionPass() override;
 
 };
