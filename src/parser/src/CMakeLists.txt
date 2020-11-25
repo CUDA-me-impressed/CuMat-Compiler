@@ -9,7 +9,7 @@ include(ExternalAntlr4Cpp)
 find_package(ANTLR REQUIRED)
 
 set(cpp_srcs
-        parser.cpp ASTNode.cpp CuMatVisitor.cpp)
+        CuMatASTGenerator.cpp ASTNode.cpp CuMatVisitor.cpp BinaryExprASTNode.cpp FunctionExprASTNode.cpp LiteralASTNode.cpp MatrixASTNode.cpp TernaryExprASTNode.cpp UnaryExprASTNode.cpp)
 
 set(lexer_srcs
         CuMatLexer.g4)
@@ -44,6 +44,5 @@ add_library(Parser
 target_include_directories(Parser PUBLIC
         ../inc)
 target_link_libraries(Parser PUBLIC
-        parser_gen)
-target_link_libraries(Parser PUBLIC
+        llvm_interface
         parser_gen)

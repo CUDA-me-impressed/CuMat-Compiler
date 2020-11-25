@@ -3,8 +3,21 @@
 //
 
 #include "ASTNode.hpp"
+namespace AST {
+Node::Node(std::string textRep) { this->literalText = std::move(textRep); }
 
-ASTNode::ASTNode(std::shared_ptr<ASTNode> creator, std::string textRep) {
-    this->parent = std::move(creator);
-    this->literalText = std::move(textRep);
+void Node::addChild(std::shared_ptr<Node> n) {
+    this->children.push_back(std::move(n));
 }
+
+std::string Node::toString() const { return this->literalText; }
+
+void Node::semanticPass() {
+    for (auto const& child : this->children) child->semanticPass();
+}
+
+void Node::codeGen(llvm::Module* module) {
+    for (auto const& child : this->children) child->codeGen(module);
+}
+
+}  // namespace AST

@@ -2,9 +2,11 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "CompilerOptions.hpp"
+#include "CuMatASTGenerator.hpp"
 #include "Preprocessor.hpp"
 
 void printArgumentError(std::string message, std::string arg) {
@@ -106,6 +108,29 @@ int main(int argc, char* argv[], char* envp[]) {
 
     Preprocessor::SourceFileLoader loader(inputFileName);
     auto files = loader.load();
+
+    std::vector<std::tuple<std::string, std::shared_ptr<AST::Node>>> parseTrees;
+    for (const auto& file : files) {
+        auto tree = runParser(file);
+        parseTrees.emplace_back(
+            std::make_tuple<const std::string, std::shared_ptr<AST::Node>>(
+                (const std::basic_string<char, std::char_traits<char>,
+                                         std::allocator<char>>&&)file,
+                std::move(tree)));
+    }
+
+    // Pretty printing for test
+    for (const auto& tree : parseTrees) {
+        std::cout << "Program Tree: " << std::get<0>(tree) << std::endl;
+        std::cout << std::get<1>(tree)->literalText << std::endl;
+    }
+
+    llvm::LLVMContext TheContext;
+
+    for (const auto& tree : parseTrees) {
+        llvm::Module module("CuMat-" + std::get<0>(tree), TheContext);
+        std::get<1>(tree)->codeGen(&module);
+    }
 
     return 0;
 }

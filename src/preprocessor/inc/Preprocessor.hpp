@@ -1,10 +1,9 @@
+#pragma once
+
 #include <experimental/filesystem>
 #include <map>
 #include <string>
 #include <vector>
-
-#ifndef PREPROCESSOR_PREPROCESOR_H
-#define PREPROCESSOR_PREPROCESOR_H
 
 namespace Preprocessor {
 class SourceFileLoader {
@@ -14,12 +13,10 @@ class SourceFileLoader {
                      std::experimental::filesystem::path path);
     std::vector<std::string> load();
     static std::unique_ptr<std::vector<std::string>> load(
-        const std::string &file);
+        const std::string& file);
 
    private:
     std::string rootFile;
     std::map<std::string, std::experimental::filesystem::path> lookupPath;
 };
 }  // namespace Preprocessor
-
-#endif

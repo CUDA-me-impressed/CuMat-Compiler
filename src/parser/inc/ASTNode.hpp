@@ -1,25 +1,32 @@
 //
 // Created by tobyl on 12/11/2020.
 //
+#pragma once
 
-#ifndef _ASTNODE_HPP_
-#define _ASTNODE_HPP_
+#include <llvm-10/llvm/ADT/StringRef.h>
+#include <llvm-10/llvm/IR/LLVMContext.h>
+#include <llvm-10/llvm/IR/Module.h>
 
 #include <memory>
 #include <string>
 #include <vector>
 
-class ASTNode {
+namespace AST {
+class Node {
    public:
     std::string literalText;
 
-    std::shared_ptr<ASTNode> parent;
-    std::vector<std::shared_ptr<ASTNode>> children;
+    std::vector<std::shared_ptr<Node>> children;
 
-    ASTNode(std::shared_ptr<ASTNode> creator, std::string textRep);
+    explicit Node(std::string textRep);
+    Node() = default;
 
-    virtual std::shared_ptr<ASTNode> semanticPass();
-    virtual void codeGen();
+    void addChild(std::shared_ptr<Node> n);
+
+    [[nodiscard]] std::string toString() const;
+
+    // Default implementations just call the function on their children
+    virtual void semanticPass();
+    virtual void codeGen(llvm::Module* module);
 };
-
-#endif  //_ASTNODE_HPP_
+}  // namespace AST
