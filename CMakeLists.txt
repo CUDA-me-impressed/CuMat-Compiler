@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(CuMat_Compiler LANGUAGES CXX)
+enable_testing()
 
 find_program(CLANG_10 "clang++-10")
 IF (CLANG_10)
@@ -60,18 +61,6 @@ message(STATUS "Downloaded Trompeloeil to ${Trompeloeil_source_dir}")
 add_library(Trompeloeil INTERFACE)
 target_include_directories(Trompeloeil INTERFACE
         "${Trompeloeil_source_dir}/include")
-
-# Include Catch2
-include(ExternalProject)
-ExternalProject_Add(Catch2_download
-        GIT_REPOSITORY      https://github.com/catchorg/Catch2.git
-        GIT_TAG             v2.13.3
-        CONFIGURE_COMMAND   ""
-        BUILD_COMMAND       ""
-        INSTALL_COMMAND     "")
-ExternalProject_Get_Property(Catch2_download SOURCE_DIR)
-add_library(Catch2 INTERFACE)
-target_include_directories(Catch2 INTERFACE "${SOURCE_DIR}/single_include")
 
 link_libraries(-lstdc++fs)
 add_subdirectory(src)
