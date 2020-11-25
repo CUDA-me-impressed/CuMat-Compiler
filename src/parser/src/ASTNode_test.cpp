@@ -11,7 +11,8 @@ SCENARIO("AST Nodes propagate calls to their children", "[AST::Node]") {
         AST::Node root;
 
         for (int i = 0; i < NUM_MOCKS; i++) {
-            root.addChild(std::shared_ptr<AST::Node>{new AST::Test::NodeMock()});
+            root.addChild(
+                std::shared_ptr<AST::Node>{new AST::Test::NodeMock()});
         }
 
         WHEN("semanticPass() is called on the root") {
@@ -32,7 +33,8 @@ SCENARIO("AST Nodes propagate calls to their children", "[AST::Node]") {
             THEN("codeGen(nullptr) is called once on each child") {
                 for (auto& node : root.children) {
                     auto& mock = dynamic_cast<AST::Test::NodeMock&>(*node);
-                    REQUIRE_CALL(mock, codeGen(trompeloeil::eq<llvm::Module*>(ptr)));
+                    REQUIRE_CALL(mock,
+                                 codeGen(trompeloeil::eq<llvm::Module*>(ptr)));
                 }
             }
         }

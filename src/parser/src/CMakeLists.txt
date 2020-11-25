@@ -58,4 +58,4 @@ target_link_libraries(Parser_test PRIVATE
         Catch2
         Trompeloeil)
 add_test(NAME Parser_test
-         COMMAND Parser_test)
+        COMMAND Parser_test)

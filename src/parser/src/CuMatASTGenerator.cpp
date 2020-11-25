@@ -2,8 +2,8 @@
 
 #include <iostream>
 #include <memory>
-#include <string>
 #include <sstream>
+#include <string>
 
 #include "CuMatLexer.h"
 #include "CuMatParser.h"

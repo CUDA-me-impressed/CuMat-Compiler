@@ -19,6 +19,6 @@ class NodeMock : public AST::Node {
     MAKE_MOCK1(codeGen, void(llvm::Module*), override);
 };
 
-}
+}  // namespace AST::Test
 
 #endif  // CUMAT_COMPILER_ASTNODE_TEST_HPP
