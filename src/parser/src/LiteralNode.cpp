@@ -1,9 +1,9 @@
-#include "LiteralASTNode.hpp"
+#include "LiteralNode.hpp"
+
+#include <llvm-10/llvm/IR/Constants.h>
+#include <llvm-10/llvm/IR/Type.h>
 
 #include <iostream>
-
-#include <llvm-10/llvm/IR/Type.h>
-#include <llvm-10/llvm/IR/Constants.h>
 
 /**
  * Returns an LLVM Constant type which we use to populate a matrix
@@ -14,7 +14,7 @@
  * @return
  */
 template <class T>
-llvm::Value* AST::LiteralASTNode<T>::codeGen(llvm::Module* module,
+llvm::Value* AST::LiteralNode<T>::codeGen(llvm::Module* module,
                                              llvm::IRBuilder<>* Builder,
                                              llvm::Function* fp) {
     llvm::Type* type;

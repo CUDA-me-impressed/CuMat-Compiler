@@ -8,7 +8,7 @@
 #include "ExprASTNode.hpp"
 
 namespace AST {
-class FunctionExprASTNode : public ExprAST {
+class FunctionExprNode : public ExprAST {
    public:
     std::shared_ptr<ExprAST> nonAppliedFunction;
     std::vector<std::shared_ptr<ExprAST>> args;

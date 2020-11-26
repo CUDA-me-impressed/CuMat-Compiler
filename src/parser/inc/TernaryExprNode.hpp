@@ -1,14 +1,13 @@
 #pragma once
 
+#include <memory>
+
 #include "ExprASTNode.hpp"
 
 namespace AST {
-
-enum UNA_OPERATORS { NEG, LNOT, BNOT };
-
-class UnaryExprASTNode : public ExprAST {
-    UNA_OPERATORS op;
-    std::shared_ptr<ExprAST> operand;
+class TernaryExprNode : public ExprAST {
+   public:
+    std::shared_ptr<ExprAST> condition, truthy, falsey;
 
     llvm::Value* codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
                          llvm::Function* fp) override;

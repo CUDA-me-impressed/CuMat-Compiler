@@ -27,7 +27,7 @@ enum BIN_OPERATORS {
     CHAIN
 };
 
-class BinaryExprASTNode : public ExprAST {
+class BinaryExprNode : public ExprAST {
    public:
     std::shared_ptr<ExprAST> lhs, rhs;
     AST::BIN_OPERATORS op;

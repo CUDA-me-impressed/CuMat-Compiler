@@ -1,8 +1,8 @@
-#include "UnaryExprASTNode.hpp"
+#include "UnaryExprNode.hpp"
 
 #include <iostream>
 
-llvm::Value* AST::UnaryExprASTNode::codeGen(llvm::Module* module,
+llvm::Value* AST::UnaryExprNode::codeGen(llvm::Module* module,
                                             llvm::IRBuilder<>* Builder,
                                             llvm::Function* fp) {
     /* We need to work out what the type of the expr is!

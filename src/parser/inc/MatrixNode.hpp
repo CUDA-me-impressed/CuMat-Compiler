@@ -6,11 +6,11 @@
 #include <vector>
 
 #include "ExprASTNode.hpp"
-#include "LiteralASTNode.hpp"
+#include "LiteralNode.hpp"
 #include "Type.hpp"
 
 namespace AST {
-class MatrixASTNode : public ExprAST {
+class MatrixNode : public ExprAST {
    public:
     std::vector<std::vector<std::shared_ptr<ExprAST>>> data;
 
