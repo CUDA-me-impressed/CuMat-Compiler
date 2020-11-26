@@ -63,6 +63,18 @@ llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
     }
     Builder->CreateStore(val, matAlloc);
     Utils::AllocSymbolTable[this->literalText] = matAlloc;
+
+    // We need to fill in the data for each of the elements of the array:
+    for (int row = 0; row < data.size(); row++) {
+        for (int column = 0; column < data[row].size(); column++) {
+            // Generate the code for the element -> The Value* will be what
+            // we store within the matrix location so depending on what we are
+            // storing, it must be sufficient to run
+            llvm::Value* elementValue =
+                data[row][column]->codeGen(module, Builder, fp);
+        }
+    }
+
     return matAlloc;
 }
 
