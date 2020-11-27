@@ -1,7 +1,7 @@
 #pragma once
 
-#include <llvm-10/llvm/ADT/APFloat.h>
-#include <llvm-10/llvm/ADT/APInt.h>
+#include <llvm/ADT/APFloat.h>
+#include <llvm/ADT/APInt.h>
 
 #include <vector>
 

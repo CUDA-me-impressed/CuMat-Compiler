@@ -1,14 +1,16 @@
 #include "LiteralNode.hpp"
 
-#include <llvm-10/llvm/ADT/APFloat.h>
-#include <llvm-10/llvm/ADT/APInt.h>
-#include <llvm-10/llvm/IR/Constants.h>
-#include <llvm-10/llvm/IR/Type.h>
+#include <llvm/ADT/APFloat.h>
+#include <llvm/ADT/APInt.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/Type.h>
 
 #include <iostream>
 
 /**
- * Returns an LLVM Constant type which we use to populate a matrix
+ * Returns an LLVM Constant type which we use to populate data entires
+ * Literals consist of the lowest form of data structure we can have within
+ * CuMat and as such this section details the creation of these within memory
  * @tparam T
  * @param module
  * @param Builder

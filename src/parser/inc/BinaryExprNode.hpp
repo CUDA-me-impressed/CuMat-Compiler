@@ -1,6 +1,6 @@
 #pragma once
 
-#include <llvm-10/llvm/IR/IRBuilder.h>
+#include <llvm/IR/IRBuilder.h>
 
 #include <memory>
 

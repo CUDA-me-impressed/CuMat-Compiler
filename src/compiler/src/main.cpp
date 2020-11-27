@@ -9,7 +9,7 @@
 #include "CuMatASTGenerator.hpp"
 #include "Preprocessor.hpp"
 
-#include <llvm-10/llvm/IR/IRBuilder.h>
+#include <llvm/IR/IRBuilder.h>
 
 void printArgumentError(std::string message, std::string arg) {
     const std::string helpText =

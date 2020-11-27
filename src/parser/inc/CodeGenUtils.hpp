@@ -1,6 +1,6 @@
 #pragma once
 
-#include <llvm-10/llvm/IR/Instructions.h>
+#include <llvm/IR/Instructions.h>
 
 #include <map>
 #include <string>
