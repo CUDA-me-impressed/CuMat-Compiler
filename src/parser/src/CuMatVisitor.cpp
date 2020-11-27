@@ -524,7 +524,7 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(
     }
 
     mN->data = std::move(values);
-    //t->dimensions = dimensions;
+    // t->dimensions = dimensions;
     t->rank = dimensions.size();
     mN->type = std::move(t);
     return std::move(mN);

@@ -1,3 +1,5 @@
+#include <llvm/IR/IRBuilder.h>
+
 #include <algorithm>
 #include <iostream>
 #include <set>
@@ -8,8 +10,6 @@
 #include "CompilerOptions.hpp"
 #include "CuMatASTGenerator.hpp"
 #include "Preprocessor.hpp"
-
-#include <llvm/IR/IRBuilder.h>
 
 void printArgumentError(std::string message, std::string arg) {
     const std::string helpText =

@@ -47,8 +47,8 @@ std::unique_ptr<std::vector<std::string>> Preprocessor::SourceFileLoader::load(
         std::make_unique<std::vector<std::string>>();
     if (!fileStream.is_open()) {
         std::ostringstream ss;
-        ss << "Could not find source file defined at [" << file << " ] in " <<
-            std::experimental::filesystem::current_path();
+        ss << "Could not find source file defined at [" << file << " ] in "
+           << std::experimental::filesystem::current_path();
         throw std::experimental::filesystem::filesystem_error(
             ss.str(), std::error_code(15, std::system_category()));
     }

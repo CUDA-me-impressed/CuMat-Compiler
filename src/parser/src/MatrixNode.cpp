@@ -12,8 +12,8 @@
 #include "CodeGenUtils.hpp"
 
 llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
-                                         llvm::IRBuilder<>* Builder,
-                                         llvm::Function* fp) {
+                                      llvm::IRBuilder<>* Builder,
+                                      llvm::Function* fp) {
     llvm::Type* ty;
     switch (this->type->primType) {
         case Typing::PRIMITIVE::INT: {

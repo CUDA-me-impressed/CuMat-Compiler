@@ -6,5 +6,5 @@
 #include <string>
 
 namespace Utils {
-    static std::map<std::string, llvm::AllocaInst*> AllocSymbolTable;
+static std::map<std::string, llvm::AllocaInst*> AllocSymbolTable;
 }  // namespace Utils

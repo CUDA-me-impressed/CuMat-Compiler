@@ -3,8 +3,8 @@
 #include <iostream>
 
 llvm::Value* AST::UnaryExprNode::codeGen(llvm::Module* module,
-                                            llvm::IRBuilder<>* Builder,
-                                            llvm::Function* fp) {
+                                         llvm::IRBuilder<>* Builder,
+                                         llvm::Function* fp) {
     /* We need to work out what the type of the expr is!
      * By Default all raw values are some type of matrix, we need to determine
      * if we can get this type as a matrix or if it is something else
