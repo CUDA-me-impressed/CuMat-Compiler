@@ -4,7 +4,7 @@
 
 namespace AST {
 template <class T>
-class LiteralASTNode : public ExprAST {
+class LiteralNode : public ExprNode {
    public:
     T value;
 
