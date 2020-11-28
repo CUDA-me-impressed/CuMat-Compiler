@@ -1,7 +1,7 @@
 #pragma once
 
-#include <llvm/IR/Instructions.h>
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/Instructions.h>
 
 #include <map>
 #include <string>
@@ -10,7 +10,7 @@
 namespace Utils {
 static std::map<std::string, llvm::AllocaInst*> AllocSymbolTable;
 
-llvm::AllocaInst* generateMatrixAllocation(llvm::Type * ty,
+llvm::AllocaInst* generateMatrixAllocation(llvm::Type* ty,
                                            const std::vector<int>& dimensions,
-                                           llvm::IRBuilder<> * Builder);
+                                           llvm::IRBuilder<>* Builder);
 }  // namespace Utils

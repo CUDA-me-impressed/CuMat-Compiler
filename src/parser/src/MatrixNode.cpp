@@ -101,7 +101,8 @@ llvm::APInt AST::MatrixNode::genAPIntInstance(const int numElements) {
  */
 std::vector<int> AST::MatrixNode::getDimensions() {
     // TODO: Fix with Thomas's dimension change
-    return std::vector<int>({static_cast<int>(data.size()), static_cast<int>(data[0].size())});
+    return std::vector<int>(
+        {static_cast<int>(data.size()), static_cast<int>(data[0].size())});
 }
 
 // llvm::APFloat AST::MatrixNode::genAPFloatInstance(const int numElements) {
