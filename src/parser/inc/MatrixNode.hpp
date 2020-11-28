@@ -15,6 +15,7 @@ class MatrixNode : public ExprAST {
     std::vector<std::vector<std::shared_ptr<ExprAST>>> data;
 
     int numElements();
+    std::vector<int> getDimensions();
     llvm::APInt genAPIntInstance(int numElements);
     llvm::APFloat genAPFloatInstance(int numElements);
     llvm::Value* codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,

@@ -94,6 +94,16 @@ llvm::APInt AST::MatrixNode::genAPIntInstance(const int numElements) {
     return llvm::APInt();
 }
 
+/**
+ * Returns a list of vectors with the size of each dimension or indicates if
+ * the dimension is dynamically sized
+ * @return
+ */
+std::vector<int> AST::MatrixNode::getDimensions() {
+    // TODO: Fix with Thomas's dimension change
+    return std::vector<int>({static_cast<int>(data.size()), static_cast<int>(data[0].size())});
+}
+
 // llvm::APFloat AST::MatrixNode::genAPFloatInstance(const int numElements) {
 //    //    if (this->type->primType == Typing::PRIMITIVE::FLOAT) {
 //    //        return llvm::APFloat(64, numElements);
