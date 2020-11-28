@@ -5,21 +5,12 @@
 llvm::Value* AST::UnaryExprNode::codeGen(llvm::Module* module,
                                          llvm::IRBuilder<>* Builder,
                                          llvm::Function* fp) {
-    /* We need to work out what the type of the expr is!
-     * By Default all raw values are some type of matrix, we need to determine
-     * if we can get this type as a matrix or if it is something else
-     */
-    auto exprType = this->operand->type;
-    if (exprType->isPrimitive) {
-        // static cast to matrix
-        auto* matType = static_cast<Typing::MatrixType*>(exprType.get());
-        if (!matType) {
-            std::cerr << "Internal Compiler Error: Matrix type for "
-                      << exprType->name << " pointer is invalid!" << std::endl;
-            return nullptr;
+    // opval should be an evaluated matrix for which we can create a new matrix
+    llvm::Value* opVal = this->operand->codeGen(module, Builder, fp);
+    switch(this->op){
+        case UNA_OPERATORS::NEG: {
+
         }
-        // We determine the size of offset for each of the values
-        int offset = exprType->offset();
     }
     return nullptr;
 }
