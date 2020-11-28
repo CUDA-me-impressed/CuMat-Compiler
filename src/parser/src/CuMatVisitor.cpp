@@ -180,7 +180,7 @@ antlrcpp::Any CuMatVisitor::visitExp_logic(CuMatParser::Exp_logicContext* ctx) {
     auto lowerTier = ctx->exp_comp();
     auto ops = ctx->op_logic();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
             auto n = std::make_shared<AST::BinaryExprNode>();
@@ -213,7 +213,7 @@ antlrcpp::Any CuMatVisitor::visitExp_comp(CuMatParser::Exp_compContext* ctx) {
     auto lowerTier = ctx->exp_bit();
     auto ops = ctx->op_comp();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
             auto n = std::make_shared<AST::BinaryExprNode>();
@@ -254,7 +254,7 @@ antlrcpp::Any CuMatVisitor::visitExp_bit(CuMatParser::Exp_bitContext* ctx) {
     auto lowerTier = ctx->exp_sum();
     auto ops = ctx->op_bit();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
             auto n = std::make_shared<AST::BinaryExprNode>();
@@ -287,7 +287,7 @@ antlrcpp::Any CuMatVisitor::visitExp_sum(CuMatParser::Exp_sumContext* ctx) {
     auto lowerTier = ctx->exp_mult();
     auto ops = ctx->op_sum();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
             auto n = std::make_shared<AST::BinaryExprNode>();
@@ -320,7 +320,7 @@ antlrcpp::Any CuMatVisitor::visitExp_mult(CuMatParser::Exp_multContext* ctx) {
     auto lowerTier = ctx->exp_pow();
     auto ops = ctx->op_mult();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
             auto n = std::make_shared<AST::BinaryExprNode>();
@@ -353,7 +353,7 @@ antlrcpp::Any CuMatVisitor::visitExp_mult(CuMatParser::Exp_multContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitExp_pow(CuMatParser::Exp_powContext* ctx) {
     auto lowerTier = ctx->exp_mat();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> leftSide;
+        std::shared_ptr<AST::ExprNode> leftSide;
         for (auto& it : lowerTier) {
             auto n = std::make_shared<AST::BinaryExprNode>();
             if (leftSide == nullptr) {
@@ -376,7 +376,7 @@ antlrcpp::Any CuMatVisitor::visitExp_pow(CuMatParser::Exp_powContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitExp_mat(CuMatParser::Exp_matContext* ctx) {
     auto lowerTier = ctx->exp_neg();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
             auto n = std::make_shared<AST::BinaryExprNode>();
             if (rightSide == nullptr) {
@@ -429,7 +429,7 @@ antlrcpp::Any CuMatVisitor::visitExp_not(CuMatParser::Exp_notContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitExp_chain(CuMatParser::Exp_chainContext* ctx) {
     auto lowerTier = ctx->exp_func();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> leftSide;
+        std::shared_ptr<AST::ExprNode> leftSide;
         for (auto& it : lowerTier) {
             auto n = std::make_shared<AST::BinaryExprNode>();
             if (leftSide == nullptr) {
@@ -454,7 +454,7 @@ antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext* ctx) {
     fN->literalText = ctx->getText();
     fN->nonAppliedFunction = std::move(visit(ctx->value()));
     if (!ctx->args().empty()) {
-        std::vector<std::shared_ptr<AST::ExprAST>> arguments;
+        std::vector<std::shared_ptr<AST::ExprNode>> arguments;
         for (auto arg : ctx->args()) {
             for (auto a : arg->expression()) {
                 arguments.emplace_back(std::move(visit(a)));
@@ -485,10 +485,10 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(
     mN->literalText = ctx->getText();
     auto t = std::make_shared<Typing::MatrixType>();
     std::vector<uint> dimensions;
-    std::vector<std::vector<std::shared_ptr<AST::ExprAST>>> values;
+    std::vector<std::vector<std::shared_ptr<AST::ExprNode>>> values;
     int inDimension = 0;
     dimensions.push_back(ctx->rowliteral()->cols.size());  // First size
-    std::vector<std::shared_ptr<AST::ExprAST>> valueContainer;
+    std::vector<std::shared_ptr<AST::ExprNode>> valueContainer;
     for (auto exp : ctx->rowliteral()->cols) {
         valueContainer.emplace_back(std::move(visit(exp)));
     }

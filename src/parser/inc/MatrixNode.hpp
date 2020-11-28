@@ -10,9 +10,9 @@
 #include "Type.hpp"
 
 namespace AST {
-class MatrixNode : public ExprAST {
+class MatrixNode : public ExprNode {
    public:
-    std::vector<std::vector<std::shared_ptr<ExprAST>>> data;
+    std::vector<std::vector<std::shared_ptr<ExprNode>>> data;
 
     int numElements();
     std::vector<int> getDimensions();

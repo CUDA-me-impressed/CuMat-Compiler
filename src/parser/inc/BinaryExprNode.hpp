@@ -27,9 +27,9 @@ enum BIN_OPERATORS {
     CHAIN
 };
 
-class BinaryExprNode : public ExprAST {
+class BinaryExprNode : public ExprNode {
    public:
-    std::shared_ptr<ExprAST> lhs, rhs;
+    std::shared_ptr<ExprNode> lhs, rhs;
     AST::BIN_OPERATORS op;
 
     llvm::Value* codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
