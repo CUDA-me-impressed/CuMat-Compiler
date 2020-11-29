@@ -15,8 +15,5 @@ int Typing::Type::offset() {
         case PRIMITIVE::FLOAT:
             return 64;
             break;
-        default:
-            return 8;
-            break;
     }
 }
