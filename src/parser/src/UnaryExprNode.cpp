@@ -16,15 +16,93 @@ llvm::Value* AST::UnaryExprNode::codeGen(llvm::Module* module,
     auto newMatAlloc = Utils::generateMatrixAllocation(ty, dimension, Builder);
     // We generate the operations sequentially
     // TODO: Add Kernel call for nvptx
+    recursiveUnaryGeneration(op, module, Builder, ty, newMatAlloc, opVal,
+                             dimension);
+    return newMatAlloc;
+}
 
-    switch (this->op) {
-        case NEG: {
-            break;
-        }
-        case LNOT:
-            break;
-        case BNOT:
-            break;
+/**
+ * Generates LLVM IR for the Unary Expression via a recursive pass over each
+ * element of the matrix in a column major systematic search. This will output
+ * code that NVPTX should be able to identifiy and use to generate PTX compliant
+ * code optimised for CUDA.
+ *
+ * Note, final two paramaters, index and prevDim can be excluded as they are
+ * used within the function to recursively generate the index offset. By default
+ * they are set to the identity element (1) and will not impact the result.
+ * @param op
+ * @param module
+ * @param Builder
+ * @param ty
+ * @param matAlloc
+ * @param opVal
+ * @param dimension
+ * @param index
+ * @param prevDim
+ */
+void AST::UnaryExprNode::recursiveUnaryGeneration(
+    const UNA_OPERATORS& op, llvm::Module* module, llvm::IRBuilder<>* Builder,
+    llvm::Type* ty, llvm::AllocaInst* matAlloc, llvm::Value* opVal,
+    std::vector<int> dimension, int index, int prevDim) {
+    // Store of a type for the matrix (only need this for the final pass)
+    llvm::ArrayType* matType;
+    if (dimension.size() == 1) {
+        matType = llvm::ArrayType::get(ty, index * dimension.at(0));
     }
-    return nullptr;
+
+    for (int i = 0; i < dimension.at(0); i++) {
+        // If we have more than one dimension, we need to explore the matrix
+        // more
+        if (dimension.size() > 1) {
+            // Create a new dimension vector with this dimension removed
+            std::vector<int> subDimension(dimension.begin() + 1,
+                                          dimension.end());
+            recursiveUnaryGeneration(op, module, Builder, ty, matAlloc, opVal,
+                                     subDimension, (index * prevDim) + i,
+                                     dimension.size());
+        } else {
+            // At this point, the element that will be contained is the most raw
+            // llvm value, indexed at position
+            auto zero = llvm::ConstantInt::get(module->getContext(),
+                                               llvm::APInt(64, 0, true));
+            auto indexVal = llvm::ConstantInt::get(
+                module->getContext(), llvm::APInt(64, index, true));
+            // Pointer to the index within IR
+            auto ptr = llvm::GetElementPtrInst::Create(
+                matType, matAlloc, {zero, indexVal}, "",
+                Builder->GetInsertBlock());
+            // Generate the code for each valid operation and type
+            /*TODO: Probably needs syntax checking, leaving this for someone
+             * with a better understanding of programming language theory
+             * */
+            switch (this->op) {
+                case NEG: {
+                    if (ty->isIntegerTy()) {
+                        llvm::BinaryOperator::CreateNeg(
+                            Builder->CreateLoad(ptr), "",
+                            Builder->GetInsertBlock());
+                    } else if (ty->isFloatTy()) {
+                        llvm::BinaryOperator::CreateFNeg(
+                            Builder->CreateLoad(ptr), "",
+                            Builder->GetInsertBlock());
+                    }
+                    break;
+                }
+                case LNOT: {
+                    // TODO: Linear not? Can someone check on this? Same for
+                    // BNOT
+                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptr),
+                                                    "",
+                                                    Builder->GetInsertBlock());
+                    break;
+                }
+                case BNOT: {
+                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptr),
+                                                    "",
+                                                    Builder->GetInsertBlock());
+                    break;
+                }
+            }
+        }
+    }
 }
