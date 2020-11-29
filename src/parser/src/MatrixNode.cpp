@@ -14,35 +14,8 @@
 llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
                                       llvm::IRBuilder<>* Builder,
                                       llvm::Function* fp) {
-    llvm::Type* ty;
-    switch (this->type->primType) {
-        case Typing::PRIMITIVE::INT: {
-            ty = static_cast<llvm::Type*>(
-                llvm::Type::getInt64Ty(module->getContext()));
-            break;
-        }
-        case Typing::PRIMITIVE::FLOAT: {
-            ty = llvm::Type::getFloatTy(module->getContext());
-            break;
-        }
-        case Typing::PRIMITIVE::BOOL: {
-            ty = static_cast<llvm::Type*>(
-                llvm::Type::getInt1Ty(module->getContext()));
-            break;
-        }
-        default: {
-            std::cerr << "Cannot find a valid type for " << this->literalText
-                      << std::endl;
-            // Assign the type to be an integer
-            ty = static_cast<llvm::Type*>(
-                llvm::Type::getInt64Ty(module->getContext()));
-            break;
-        }
-        case Typing::PRIMITIVE::STRING:
-            break;
-        case Typing::PRIMITIVE::NONE:
-            break;
-    }
+    // Get the LLVM type out for the basic type
+    llvm::Type* ty = this->getLLVMType(module);
     // Get function to store this data within
     llvm::ArrayType* matType = llvm::ArrayType::get(ty, this->numElements());
 
@@ -103,6 +76,38 @@ std::vector<int> AST::MatrixNode::getDimensions() {
     // TODO: Fix with Thomas's dimension change
     return std::vector<int>(
         {static_cast<int>(data.size()), static_cast<int>(data[0].size())});
+}
+llvm::Type* AST::MatrixNode::getLLVMType(llvm::Module* module) {
+    llvm::Type* ty;
+    switch (this->type->primType) {
+        case Typing::PRIMITIVE::INT: {
+            ty = static_cast<llvm::Type*>(
+                llvm::Type::getInt64Ty(module->getContext()));
+            break;
+        }
+        case Typing::PRIMITIVE::FLOAT: {
+            ty = llvm::Type::getFloatTy(module->getContext());
+            break;
+        }
+        case Typing::PRIMITIVE::BOOL: {
+            ty = static_cast<llvm::Type*>(
+                llvm::Type::getInt1Ty(module->getContext()));
+            break;
+        }
+        default: {
+            std::cerr << "Cannot find a valid type for " << this->literalText
+                      << std::endl;
+            // Assign the type to be an integer
+            ty = static_cast<llvm::Type*>(
+                llvm::Type::getInt64Ty(module->getContext()));
+            break;
+        }
+        case Typing::PRIMITIVE::STRING:
+            break;
+        case Typing::PRIMITIVE::NONE:
+            break;
+    }
+    return ty;
 }
 
 // llvm::APFloat AST::MatrixNode::genAPFloatInstance(const int numElements) {
