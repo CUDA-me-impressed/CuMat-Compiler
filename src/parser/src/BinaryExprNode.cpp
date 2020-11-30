@@ -1,10 +1,63 @@
 #include "BinaryExprNode.hpp"
 
+#include <MatrixNode.hpp>
+
 llvm::Value* AST::BinaryExprNode::codeGen(llvm::Module* module,
                                           llvm::IRBuilder<>* Builder,
                                           llvm::Function* fp) {
     // Assumption is that our types are two evaluated matricies of compatible
     // dimensions. We first generate code for each of the l and r matricies
-    //    Value* val =
+    llvm::Value* lhsVal = lhs->codeGen(module, Builder, fp);
+    llvm::Value* rhsVal = rhs->codeGen(module, Builder, fp);
+    auto lhsMatType = std::dynamic_pointer_cast<AST::MatrixNode>(this->lhs);
+    auto rhsMatType = std::dynamic_pointer_cast<AST::MatrixNode>(this->rhs);
+
+    llvm::Type* lhsTy = lhsMatType->getLLVMType(module);
+    llvm::Type* rhsTy = rhsMatType->getLLVMType(module);
+
+    auto lhsDimension = lhsMatType->getDimensions();
+    auto rhsDimension = rhsMatType->getDimensions();
+
+
+    switch (op) {
+        case PLUS: {
+            plusCodeGen(module, Builder, lhsVal, rhsVal, lhsTy, rhsTy, lhsDimension);
+            break;
+        }
+        default:
+            // TODO: Remove when ALL functions are implemented
+            break;
+    }
+
     return nullptr;
+}
+
+void AST::BinaryExprNode::plusCodeGen(llvm::Module* TheModule,
+                                      llvm::IRBuilder<>* Builder, llvm::Value* lhs,
+                                      llvm::Value* rhs, llvm::Type* lhsType,
+                                      llvm::Type* rhsType, std::vector<int> dimension, int index, int prevDim) {
+    llvm::ArrayType* matType;
+    if (dimension.size() == 1) {
+        matType = llvm::ArrayType::get(lhsType, index * dimension.at(0));
+    }
+
+    for (int i = 0; i < dimension.at(0); i++) {
+        if (dimension.size() > 1) {
+            // Create a new dimension vector with this dimension removed
+            std::vector<int> subDimension(dimension.begin() + 1,
+                                          dimension.end());
+            plusCodeGen(TheModule, Builder, lhs, rhs, lhsType, rhsType,
+                        subDimension, (index * prevDim) + i, dimension.at(0));
+        }
+
+        // TODO: Make work with non-64 bit variables
+        auto zero = llvm::ConstantInt::get(TheModule->getContext(),
+                                           llvm::APInt(64, 0, true));
+        auto indexVal = llvm::ConstantInt::get(
+            TheModule->getContext(), llvm::APInt(64, index, true));
+        // Pointer to the index within IR
+//        auto ptr = llvm::GetElementPtrInst::Create(
+//            matType, opVal, {zero, indexVal}, "",
+//            Builder->GetInsertBlock());
+    }
 }

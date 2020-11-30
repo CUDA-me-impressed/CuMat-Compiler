@@ -18,7 +18,8 @@ llvm::Value* AST::UnaryExprNode::codeGen(llvm::Module* module,
     // TODO: Add Kernel call for nvptx
     recursiveUnaryGeneration(op, module, Builder, ty, newMatAlloc, opVal,
                              dimension);
-    return newMatAlloc;
+    free(ty);
+    return opVal;
 }
 
 /**
@@ -59,16 +60,20 @@ void AST::UnaryExprNode::recursiveUnaryGeneration(
                                           dimension.end());
             recursiveUnaryGeneration(op, module, Builder, ty, matAlloc, opVal,
                                      subDimension, (index * prevDim) + i,
-                                     dimension.size());
+                                     dimension.at(0));
         } else {
             // At this point, the element that will be contained is the most raw
             // llvm value, indexed at position
+            // TODO: Offset needs to work with non-64 bit variables
             auto zero = llvm::ConstantInt::get(module->getContext(),
                                                llvm::APInt(64, 0, true));
             auto indexVal = llvm::ConstantInt::get(
                 module->getContext(), llvm::APInt(64, index, true));
             // Pointer to the index within IR
-            auto ptr = llvm::GetElementPtrInst::Create(
+            auto ptrOld = llvm::GetElementPtrInst::Create(
+                matType, opVal, {zero, indexVal}, "",
+                Builder->GetInsertBlock());
+            auto ptrNew = llvm::GetElementPtrInst::Create(
                 matType, matAlloc, {zero, indexVal}, "",
                 Builder->GetInsertBlock());
             // Generate the code for each valid operation and type
@@ -78,26 +83,30 @@ void AST::UnaryExprNode::recursiveUnaryGeneration(
             switch (this->op) {
                 case NEG: {
                     if (ty->isIntegerTy()) {
-                        llvm::BinaryOperator::CreateNeg(
-                            Builder->CreateLoad(ptr), "",
+                        auto neg = llvm::BinaryOperator::CreateNeg(
+                            Builder->CreateLoad(ptrOld), "",
                             Builder->GetInsertBlock());
+                        // Insert
+                        llvm::StoreInst(neg, ptrNew, false, Builder->GetInsertBlock());
                     } else if (ty->isFloatTy()) {
-                        llvm::BinaryOperator::CreateFNeg(
-                            Builder->CreateLoad(ptr), "",
+                        auto neg = llvm::BinaryOperator::CreateFNeg(
+                            Builder->CreateLoad(ptrOld), "",
                             Builder->GetInsertBlock());
+                        llvm::StoreInst(neg, ptrNew, false, Builder->GetInsertBlock());
+
                     }
                     break;
                 }
                 case LNOT: {
                     // TODO: Linear not? Can someone check on this? Same for
                     // BNOT
-                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptr),
+                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptrOld),
                                                     "",
                                                     Builder->GetInsertBlock());
                     break;
                 }
                 case BNOT: {
-                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptr),
+                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptrOld),
                                                     "",
                                                     Builder->GetInsertBlock());
                     break;
