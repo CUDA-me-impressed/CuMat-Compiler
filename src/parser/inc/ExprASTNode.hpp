@@ -8,11 +8,11 @@ class NameTable;
 }
 
 namespace AST {
-class ExprAST : public Node {
+class ExprNode : public Node {
    public:
     std::shared_ptr<Typing::Type> type;
 
-    virtual ~ExprAST() = default;
+    virtual ~ExprNode() = default;
     void dimensionPass(Analysis::NameTable* nt) override;
 };
 }  // namespace AST

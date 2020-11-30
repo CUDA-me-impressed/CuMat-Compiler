@@ -1,5 +1,7 @@
 #pragma once
 
+#include <llvm/IR/IRBuilder.h>
+
 #include <memory>
 
 #include "ExprASTNode.hpp"
@@ -29,12 +31,13 @@ enum BIN_OPERATORS {
     CHAIN
 };
 
-class BinaryExprASTNode : public ExprAST {
+class BinaryExprNode : public ExprNode {
    public:
-    std::shared_ptr<ExprAST> lhs, rhs;
+    std::shared_ptr<ExprNode> lhs, rhs;
     AST::BIN_OPERATORS op;
 
-    void codeGen(llvm::Module* module) override;
+    llvm::Value* codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
+                         llvm::Function* fp) override;
     void dimensionPass(Analysis::NameTable* nt) override;
 };
 }  // namespace AST

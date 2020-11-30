@@ -5,7 +5,6 @@
 #pragma once
 
 #include <string>
-#include <variant>
 #include <vector>
 
 namespace Typing {
@@ -20,14 +19,12 @@ struct Type {
     std::string name;
     // If !isPrimitive then NONE
     PRIMITIVE primType;
-};
 
-struct Dimension {
-    uint id;
-    int offset;
+    int offset();
 };
 
 class FunctionType : public Type {
+   public:
     Type returnType;
     std::vector<Type> parameters;
 };
@@ -35,6 +32,6 @@ class FunctionType : public Type {
 class MatrixType : public Type {
    public:
     uint rank;  // 1 = Vector, 2 = Matrix, 3 = 3D matrix...
-    std::vector<std::variant<uint, Dimension>> dimensions;
+    std::vector<uint> dimensions;
 };
 }  // namespace Typing

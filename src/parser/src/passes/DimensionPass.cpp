@@ -1,15 +1,3 @@
-//
-// Created by thomas on 22/11/2020.
-//
-#import "ASTNode.hpp"
-#import "BinaryExprASTNode.hpp"
-#import "FunctionExprASTNode.hpp"
-#import "LiteralASTNode.hpp"
-#import "MatrixASTNode.hpp"
-#import "TernaryExprASTNode.hpp"
-#import "UnaryExprASTNode.hpp"
-
-namespace AST {
 
 bool expandableDimension(const Typing::Type& left, const Typing::Type& right);
 

@@ -6,9 +6,13 @@
 #include <exception>
 
 #include "ASTNode.hpp"
-#include "BinaryExprASTNode.hpp"
+#include "BinaryExprNode.hpp"
 #include "CuMatLexer.h"
-#include "MatrixASTNode.hpp"
+#include "FunctionExprNode.hpp"
+#include "LiteralNode.hpp"
+#include "MatrixNode.hpp"
+#include "TernaryExprNode.hpp"
+#include "UnaryExprNode.hpp"
 
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
@@ -156,15 +160,15 @@ antlrcpp::Any CuMatVisitor::visitExpression(
     }
     return n;
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitExp_if(CuMatParser::Exp_ifContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
-    }
-    return n;
+    auto ifN = std::make_shared<AST::TernaryExprNode>();
+    ifN->literalText = ctx->getText();
+    ifN->condition = std::move(visit(ctx->expression(0)));
+    ifN->truthy = std::move(visit(ctx->expression(1)));
+    ifN->falsey = std::move(visit(ctx->expression(2)));
+
+    return std::move(ifN);
 }
 
 bool CuMatVisitor::compareTokenTypes(size_t a, size_t b) const {
@@ -176,10 +180,10 @@ antlrcpp::Any CuMatVisitor::visitExp_logic(CuMatParser::Exp_logicContext* ctx) {
     auto lowerTier = ctx->exp_comp();
     auto ops = ctx->op_logic();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
-            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            auto n = std::make_shared<AST::BinaryExprNode>();
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -209,10 +213,10 @@ antlrcpp::Any CuMatVisitor::visitExp_comp(CuMatParser::Exp_compContext* ctx) {
     auto lowerTier = ctx->exp_bit();
     auto ops = ctx->op_comp();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
-            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            auto n = std::make_shared<AST::BinaryExprNode>();
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -250,10 +254,10 @@ antlrcpp::Any CuMatVisitor::visitExp_bit(CuMatParser::Exp_bitContext* ctx) {
     auto lowerTier = ctx->exp_sum();
     auto ops = ctx->op_bit();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
-            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            auto n = std::make_shared<AST::BinaryExprNode>();
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -283,10 +287,10 @@ antlrcpp::Any CuMatVisitor::visitExp_sum(CuMatParser::Exp_sumContext* ctx) {
     auto lowerTier = ctx->exp_mult();
     auto ops = ctx->op_sum();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
-            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            auto n = std::make_shared<AST::BinaryExprNode>();
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -316,10 +320,10 @@ antlrcpp::Any CuMatVisitor::visitExp_mult(CuMatParser::Exp_multContext* ctx) {
     auto lowerTier = ctx->exp_pow();
     auto ops = ctx->op_mult();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         auto opIt = ops.rbegin();
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
-            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            auto n = std::make_shared<AST::BinaryExprNode>();
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -349,9 +353,9 @@ antlrcpp::Any CuMatVisitor::visitExp_mult(CuMatParser::Exp_multContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitExp_pow(CuMatParser::Exp_powContext* ctx) {
     auto lowerTier = ctx->exp_mat();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> leftSide;
+        std::shared_ptr<AST::ExprNode> leftSide;
         for (auto& it : lowerTier) {
-            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            auto n = std::make_shared<AST::BinaryExprNode>();
             if (leftSide == nullptr) {
                 leftSide = std::move(visit(it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -372,9 +376,9 @@ antlrcpp::Any CuMatVisitor::visitExp_pow(CuMatParser::Exp_powContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitExp_mat(CuMatParser::Exp_matContext* ctx) {
     auto lowerTier = ctx->exp_neg();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> rightSide;
+        std::shared_ptr<AST::ExprNode> rightSide;
         for (auto it = lowerTier.rbegin(); it != lowerTier.rend(); it++) {
-            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            auto n = std::make_shared<AST::BinaryExprNode>();
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -425,9 +429,9 @@ antlrcpp::Any CuMatVisitor::visitExp_not(CuMatParser::Exp_notContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitExp_chain(CuMatParser::Exp_chainContext* ctx) {
     auto lowerTier = ctx->exp_func();
     if (lowerTier.size() > 1) {
-        std::shared_ptr<AST::ExprAST> leftSide;
+        std::shared_ptr<AST::ExprNode> leftSide;
         for (auto& it : lowerTier) {
-            auto n = std::make_shared<AST::BinaryExprASTNode>();
+            auto n = std::make_shared<AST::BinaryExprNode>();
             if (leftSide == nullptr) {
                 leftSide = std::move(visit(it));
                 continue;  // Skip the last one so that we can setup the loop
@@ -444,26 +448,26 @@ antlrcpp::Any CuMatVisitor::visitExp_chain(CuMatParser::Exp_chainContext* ctx) {
         return std::move(visit(lowerTier.front()));
     }
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    auto fN = std::make_shared<AST::FunctionExprNode>();
+    fN->literalText = ctx->getText();
+    fN->nonAppliedFunction = std::move(visit(ctx->value()));
+    if (!ctx->args().empty()) {
+        std::vector<std::shared_ptr<AST::ExprNode>> arguments;
+        for (auto arg : ctx->args()) {
+            for (auto a : arg->expression()) {
+                arguments.emplace_back(std::move(visit(a)));
+            }
+        }
+        fN->args =
+            std::move(arguments);  // This...might be an issue and need
+                                   // to use the copy semantics. We'll see
     }
-    return n;
+
+    return std::move(fN);
 }
-// TODO Implement
-antlrcpp::Any CuMatVisitor::visitArgs(CuMatParser::ArgsContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
-    }
-    return n;
-}
+
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitValue(CuMatParser::ValueContext* ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
@@ -474,28 +478,56 @@ antlrcpp::Any CuMatVisitor::visitValue(CuMatParser::ValueContext* ctx) {
     }
     return n;
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitMatrixliteral(
     CuMatParser::MatrixliteralContext* ctx) {
-    auto n = std::make_shared<AST::MatrixASTNode>();
-    n->literalText = ctx->getText();
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    auto mN = std::make_shared<AST::MatrixNode>();
+    mN->literalText = ctx->getText();
+    auto t = std::make_shared<Typing::MatrixType>();
+    std::vector<uint> dimensions;
+    std::vector<std::vector<std::shared_ptr<AST::ExprNode>>> values;
+    int inDimension = 0;
+    dimensions.push_back(ctx->rowliteral()->cols.size());  // First size
+    std::vector<std::shared_ptr<AST::ExprNode>> valueContainer;
+    for (auto exp : ctx->rowliteral()->cols) {
+        valueContainer.emplace_back(std::move(visit(exp)));
     }
-    return n;
-}
-// TODO Implement
-antlrcpp::Any CuMatVisitor::visitRowliteral(
-    CuMatParser::RowliteralContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    values.emplace_back(std::move(valueContainer));
+    valueContainer.clear();
+    if (!ctx->dimensionLiteral().empty()) {
+        for (auto dim : ctx->dimensionLiteral()) {
+            auto dimension = dim->BSLASH().size();
+            if (dimension > inDimension) {  // New dimension
+                while (dimension < dimensions.size()) {
+                    dimensions.push_back(1);
+                    inDimension++;
+                }
+            } else if (dimension == inDimension) {  // More rows/layers etc.
+                dimensions[dimension]++;
+            } else if (dimension <
+                       inDimension) {  // Check that they match up to earlier
+                if (dim->rowliteral()->cols.size() !=
+                    dimensions[dimension - 1]) {
+                    throw std::runtime_error(
+                        "Dimensions do not match up: Dimension:" +
+                        (std::to_string(dimension)) +
+                        " inDimension: " + (std::to_string(inDimension)));
+                }
+            }
+
+            for (auto exp : dim->rowliteral()->cols) {
+                valueContainer.emplace_back(std::move(visit(exp)));
+            }
+            values.emplace_back(std::move(valueContainer));
+            valueContainer.clear();
+        }
     }
-    return n;
+
+    mN->data = std::move(values);
+    // t->dimensions = dimensions;
+    t->rank = dimensions.size();
+    mN->type = std::move(t);
+    return std::move(mN);
 }
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitScalarliteral(
