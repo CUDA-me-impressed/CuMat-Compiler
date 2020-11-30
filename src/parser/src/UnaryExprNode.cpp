@@ -18,7 +18,6 @@ llvm::Value* AST::UnaryExprNode::codeGen(llvm::Module* module,
     // TODO: Add Kernel call for nvptx
     recursiveUnaryGeneration(op, module, Builder, ty, newMatAlloc, opVal,
                              dimension);
-    free(ty);
     return opVal;
 }
 
