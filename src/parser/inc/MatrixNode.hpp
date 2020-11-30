@@ -9,6 +9,10 @@
 #include "LiteralNode.hpp"
 #include "Type.hpp"
 
+namespace Analysis {
+class NameTable;
+}
+
 namespace AST {
 class MatrixNode : public ExprNode {
    public:
@@ -18,5 +22,6 @@ class MatrixNode : public ExprNode {
     llvm::APInt genAPIntInstance(int numElements);
     llvm::APFloat genAPFloatInstance(int numElements);
     llvm::Value* codeGen(Utils::IRContext* context) override;
+    void dimensionPass(Analysis::NameTable* nt) override;
 };
 }  // namespace AST

@@ -7,6 +7,10 @@
 
 #include "ExprASTNode.hpp"
 
+namespace Analysis {
+class NameTable;
+}
+
 namespace AST {
 class FunctionExprNode : public ExprNode {
    public:
@@ -14,6 +18,7 @@ class FunctionExprNode : public ExprNode {
     std::shared_ptr<ExprNode> nonAppliedFunction;
     std::vector<std::shared_ptr<ExprNode>> args;
 
+    void dimensionPass(Analysis::NameTable* nt) override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
 };
 }  // namespace AST

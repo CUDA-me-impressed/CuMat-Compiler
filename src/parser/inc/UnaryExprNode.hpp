@@ -2,6 +2,10 @@
 
 #include "ExprASTNode.hpp"
 
+namespace Analysis {
+class NameTable;
+}
+
 namespace AST {
 
 enum UNA_OPERATORS { NEG, LNOT, BNOT };
@@ -13,5 +17,6 @@ class UnaryExprNode : public ExprNode {
     std::shared_ptr<ExprNode> operand;
 
     llvm::Value* codeGen(Utils::IRContext* context) override;
+    void dimensionPass(Analysis::NameTable* nt) override;
 };
 }  // namespace AST
