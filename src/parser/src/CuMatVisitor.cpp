@@ -6,13 +6,13 @@
 #include <exception>
 
 #include "ASTNode.hpp"
-#include "BinaryExprASTNode.hpp"
+#include "BinaryExprNode.hpp"
 #include "CuMatLexer.h"
-#include "FunctionExprASTNode.hpp"
-#include "LiteralASTNode.hpp"
-#include "MatrixASTNode.hpp"
-#include "TernaryExprASTNode.hpp"
-#include "UnaryExprASTNode.hpp"
+#include "FunctionExprNode.hpp"
+#include "LiteralNode.hpp"
+#include "MatrixNode.hpp"
+#include "TernaryExprNode.hpp"
+#include "UnaryExprNode.hpp"
 
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
@@ -524,7 +524,7 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(
     }
 
     mN->data = std::move(values);
-    t->dimensions = dimensions;
+    // t->dimensions = dimensions;
     t->rank = dimensions.size();
     mN->type = std::move(t);
     return std::move(mN);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <llvm/IR/IRBuilder.h>
+
 #include <memory>
 
 #include "ExprASTNode.hpp"
@@ -30,6 +32,7 @@ class BinaryExprNode : public ExprNode {
     std::shared_ptr<ExprNode> lhs, rhs;
     AST::BIN_OPERATORS op;
 
-    void codeGen(llvm::Module* module) override;
+    llvm::Value* codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
+                         llvm::Function* fp) override;
 };
 }  // namespace AST

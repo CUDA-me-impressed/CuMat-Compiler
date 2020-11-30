@@ -3,9 +3,10 @@
 //
 #pragma once
 
-#include <llvm-10/llvm/ADT/StringRef.h>
-#include <llvm-10/llvm/IR/LLVMContext.h>
-#include <llvm-10/llvm/IR/Module.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
 
 #include <memory>
 #include <string>
@@ -27,6 +28,8 @@ class Node {
 
     // Default implementations just call the function on their children
     virtual void semanticPass();
-    virtual void codeGen(llvm::Module* module);
+    virtual llvm::Value* codeGen(llvm::Module* TheModule,
+                                 llvm::IRBuilder<>* Builder,
+                                 llvm::Function* fp);
 };
 }  // namespace AST

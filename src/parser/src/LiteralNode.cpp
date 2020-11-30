@@ -1,26 +1,41 @@
-#include "MatrixASTNode.hpp"
+#include "LiteralNode.hpp"
 
-#include <llvm-10/llvm/IR/DerivedTypes.h>
-#include <llvm-10/llvm/IR/Type.h>
+#include <llvm/ADT/APFloat.h>
+#include <llvm/ADT/APInt.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/Type.h>
 
 #include <iostream>
 
-void AST::MatrixNode::codeGen(llvm::Module* module) {
-    llvm::Type* type;
+/**
+ * Returns an LLVM Constant type which we use to populate data entires
+ * Literals consist of the lowest form of data structure we can have within
+ * CuMat and as such this section details the creation of these within memory
+ * @tparam T
+ * @param module
+ * @param Builder
+ * @param fp
+ * @return
+ */
+template <class T>
+llvm::Value* AST::LiteralNode<T>::codeGen(llvm::Module* module,
+                                          llvm::IRBuilder<>* Builder,
+                                          llvm::Function* fp) {
+    llvm::Type* ty;
     switch (this->type->primType) {
         case Typing::PRIMITIVE::INT: {
             type = static_cast<llvm::Type*>(
                 llvm::Type::getInt64Ty(module->getContext()));
-            break;
+            return llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
         }
         case Typing::PRIMITIVE::FLOAT: {
             type = llvm::Type::getFloatTy(module->getContext());
-            break;
+            return llvm::ConstantFP::get(ty, llvm::APFloat(value));
         }
         case Typing::PRIMITIVE::BOOL: {
             type = static_cast<llvm::Type*>(
                 llvm::Type::getInt1Ty(module->getContext()));
-            break;
+            return llvm::ConstantInt::get(ty, llvm::APInt(1, value, false));
         }
         default: {
             std::cerr << "Cannot find a valid type for " << this->literalText
@@ -35,10 +50,5 @@ void AST::MatrixNode::codeGen(llvm::Module* module) {
         case Typing::PRIMITIVE::NONE:
             break;
     }
-    llvm::ArrayType* array = llvm::ArrayType::get(type, this->numElements());
-}
-
-int AST::MatrixNode::numElements() {
-    // We assume all sides equal lengths
-    return this->data.size() * this->data.at(0).size();
+    return nullptr;
 }
