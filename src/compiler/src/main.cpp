@@ -1,3 +1,5 @@
+#include <llvm/IR/IRBuilder.h>
+
 #include <algorithm>
 #include <iostream>
 #include <set>
@@ -128,8 +130,9 @@ int main(int argc, char* argv[], char* envp[]) {
     llvm::LLVMContext TheContext;
 
     for (const auto& tree : parseTrees) {
-        llvm::Module module("CuMat-" + std::get<0>(tree), TheContext);
-        std::get<1>(tree)->codeGen(&module);
+        llvm::Module TheModule("CuMat-" + std::get<0>(tree), TheContext);
+        llvm::IRBuilder<> Builder(TheContext);
+        std::get<1>(tree)->codeGen(&TheModule, &Builder, nullptr);
     }
 
     return 0;
