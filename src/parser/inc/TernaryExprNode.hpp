@@ -4,6 +4,10 @@
 
 #include "ExprASTNode.hpp"
 
+namespace Analysis {
+class NameTable;
+}
+
 namespace AST {
 class TernaryExprNode : public ExprNode {
    public:
@@ -11,5 +15,6 @@ class TernaryExprNode : public ExprNode {
 
     llvm::Value* codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
                          llvm::Function* fp) override;
+    void dimensionPass(Analysis::NameTable* nt) override;
 };
 }  // namespace AST
