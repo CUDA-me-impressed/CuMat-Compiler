@@ -532,25 +532,23 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(
 
 antlrcpp::Any CuMatVisitor::visitScalarliteral(
     CuMatParser::ScalarliteralContext* ctx) {
-    if(ctx->stringliteral() != nullptr)
-    {
+    if (ctx->stringliteral() != nullptr) {
         auto n = std::make_shared<AST::LiteralNode<std::string>>();
         n->literalText = ctx->getText();
         n->value = ctx->stringliteral()->STRING()->getText();
         n->type = std::make_shared<Typing::Type>();
         n->type->primType = Typing::PRIMITIVE::STRING;
         return std::move(n);
-    } else //Implies numLiteral is not a nullptr
+    } else  // Implies numLiteral is not a nullptr
     {
-        if(ctx->numliteral()->INT() != nullptr)
-        {
+        if (ctx->numliteral()->INT() != nullptr) {
             auto n = std::make_shared<AST::LiteralNode<int>>();
             n->literalText = ctx->getText();
             n->value = std::stoi(ctx->numliteral()->INT()->getText());
             n->type = std::make_shared<Typing::Type>();
             n->type->primType = Typing::PRIMITIVE::INT;
             return std::move(n);
-        } else //Implies float
+        } else  // Implies float
         {
             auto n = std::make_shared<AST::LiteralNode<float>>();
             n->literalText = ctx->getText();
