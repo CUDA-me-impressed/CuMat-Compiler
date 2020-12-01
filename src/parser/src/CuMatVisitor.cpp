@@ -484,15 +484,18 @@ antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext* ctx) {
     return std::move(fN);
 }
 
-// TODO Implement
 antlrcpp::Any CuMatVisitor::visitValue(CuMatParser::ValueContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    if (ctx->literal() != nullptr) {
+        if (ctx->literal()->matrixliteral() != nullptr) {
+            return std::move(visit(ctx->literal()->matrixliteral()));
+        } else {
+            return std::move(visit(ctx->literal()->scalarliteral()));
+        }
+    } else if (ctx->expression() != nullptr) {
+        return std::move(visit(ctx->expression()));
+    } else {
+        return std::move(visit(ctx->variable()));
     }
-    return n;
 }
 
 antlrcpp::Any CuMatVisitor::visitMatrixliteral(
