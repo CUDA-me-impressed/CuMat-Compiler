@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace Utils {
-static std::map<std::string, std::shared_ptr<llvm::AllocaInst>>
+static std::map<std::string, llvm::AllocaInst*>
     AllocSymbolTable;
 
 llvm::AllocaInst* generateMatrixAllocation(llvm::Type* ty,
