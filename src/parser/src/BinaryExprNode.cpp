@@ -19,12 +19,13 @@ llvm::Value* AST::BinaryExprNode::codeGen(llvm::Module* module,
     auto lhsDimension = lhsMatType->getDimensions();
     auto rhsDimension = rhsMatType->getDimensions();
 
-    auto newMatAlloc = Utils::generateMatrixAllocation(lhsTy, lhsDimension, Builder);
-
+    auto newMatAlloc =
+        Utils::generateMatrixAllocation(lhsTy, lhsDimension, Builder);
 
     switch (op) {
         case PLUS: {
-            plusCodeGen(module, Builder, lhsVal, rhsVal, lhsTy, rhsTy, newMatAlloc, lhsDimension);
+            plusCodeGen(module, Builder, lhsVal, rhsVal, lhsTy, rhsTy,
+                        newMatAlloc, lhsDimension);
             break;
         }
         default:
@@ -35,12 +36,13 @@ llvm::Value* AST::BinaryExprNode::codeGen(llvm::Module* module,
     return nullptr;
 }
 
-void AST::BinaryExprNode::plusCodeGen(
-    llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
-    llvm::Value* lhs, llvm::Value* rhs,
-    llvm::Type* lhsType, llvm::Type* rhsType,
-    llvm::AllocaInst* matAlloc,
-    std::vector<int> dimension, int index, int prevDim) {
+void AST::BinaryExprNode::plusCodeGen(llvm::Module* TheModule,
+                                      llvm::IRBuilder<>* Builder,
+                                      llvm::Value* lhs, llvm::Value* rhs,
+                                      llvm::Type* lhsType, llvm::Type* rhsType,
+                                      llvm::AllocaInst* matAlloc,
+                                      std::vector<int> dimension, int index,
+                                      int prevDim) {
     llvm::ArrayType* matType;
     if (dimension.size() == 1) {
         matType = llvm::ArrayType::get(lhsType, index * dimension.at(0));
@@ -51,8 +53,9 @@ void AST::BinaryExprNode::plusCodeGen(
             // Create a new dimension vector with this dimension removed
             std::vector<int> subDimension(dimension.begin() + 1,
                                           dimension.end());
-            plusCodeGen(TheModule, Builder, lhs, rhs, lhsType, rhsType, matAlloc,
-                        subDimension, (index * prevDim) + i, dimension.at(0));
+            plusCodeGen(TheModule, Builder, lhs, rhs, lhsType, rhsType,
+                        matAlloc, subDimension, (index * prevDim) + i,
+                        dimension.at(0));
         } else {
             // TODO: Make work with non-64 bit variables
             auto zero = llvm::ConstantInt::get(TheModule->getContext(),
@@ -67,7 +70,8 @@ void AST::BinaryExprNode::plusCodeGen(
                 matType, rhs, {zero, indexVal}, "rhs",
                 Builder->GetInsertBlock());
             auto ptrNew = llvm::GetElementPtrInst::Create(
-                matType, matAlloc, {zero, indexVal}, "", Builder->GetInsertBlock());
+                matType, matAlloc, {zero, indexVal}, "",
+                Builder->GetInsertBlock());
             // Compute the Addition
             auto addSum = Builder->CreateAdd(Builder->CreateLoad(ptrLhs),
                                              Builder->CreateLoad(ptrRhs));

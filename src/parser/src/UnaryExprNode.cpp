@@ -86,13 +86,14 @@ void AST::UnaryExprNode::recursiveUnaryGeneration(
                             Builder->CreateLoad(ptrOld), "",
                             Builder->GetInsertBlock());
                         // Insert
-                        llvm::StoreInst(neg, ptrNew, false, Builder->GetInsertBlock());
+                        llvm::StoreInst(neg, ptrNew, false,
+                                        Builder->GetInsertBlock());
                     } else if (ty->isFloatTy()) {
                         auto neg = llvm::BinaryOperator::CreateFNeg(
                             Builder->CreateLoad(ptrOld), "",
                             Builder->GetInsertBlock());
-                        llvm::StoreInst(neg, ptrNew, false, Builder->GetInsertBlock());
-
+                        llvm::StoreInst(neg, ptrNew, false,
+                                        Builder->GetInsertBlock());
                     }
                     break;
                 }

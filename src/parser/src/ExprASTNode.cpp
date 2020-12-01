@@ -1,6 +1,6 @@
 #include "ExprASTNode.hpp"
 
-//static llvm::AllocaInst* CreateNamedAlloca(llvm::Function* fn,
+// static llvm::AllocaInst* CreateNamedAlloca(llvm::Function* fn,
 //                                           Types::TypeDecl* type,
 //                                           const std::string& name) {
 //    llvm::BasicBlock* bb = builder.GetInsertBlock();
