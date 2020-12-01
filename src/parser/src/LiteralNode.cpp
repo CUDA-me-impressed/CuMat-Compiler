@@ -24,16 +24,16 @@ llvm::Value* AST::LiteralNode<T>::codeGen(llvm::Module* module,
     llvm::Type* ty;
     switch (this->type->primType) {
         case Typing::PRIMITIVE::INT: {
-            type = static_cast<llvm::Type*>(
+            ty = static_cast<llvm::Type*>(
                 llvm::Type::getInt64Ty(module->getContext()));
             return llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
         }
         case Typing::PRIMITIVE::FLOAT: {
-            type = llvm::Type::getFloatTy(module->getContext());
+            ty = llvm::Type::getFloatTy(module->getContext());
             return llvm::ConstantFP::get(ty, llvm::APFloat(value));
         }
         case Typing::PRIMITIVE::BOOL: {
-            type = static_cast<llvm::Type*>(
+            ty = static_cast<llvm::Type*>(
                 llvm::Type::getInt1Ty(module->getContext()));
             return llvm::ConstantInt::get(ty, llvm::APInt(1, value, false));
         }
@@ -41,7 +41,7 @@ llvm::Value* AST::LiteralNode<T>::codeGen(llvm::Module* module,
             std::cerr << "Cannot find a valid type for " << this->literalText
                       << std::endl;
             // Assign the type to be an integer
-            type = static_cast<llvm::Type*>(
+            ty = static_cast<llvm::Type*>(
                 llvm::Type::getInt64Ty(module->getContext()));
             break;
         }
