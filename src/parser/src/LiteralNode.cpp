@@ -57,29 +57,18 @@ template <>
 llvm::Value* AST::LiteralNode<int>::codeGen(llvm::Module* module,
                                             llvm::IRBuilder<>* Builder,
                                             llvm::Function* fp) {
-    llvm::Type* ty;
-    switch (this->type->primType) {
-        case Typing::PRIMITIVE::INT: {
-            ty = static_cast<llvm::Type*>(
-                llvm::Type::getInt64Ty(module->getContext()));
-            return llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
-        }
-    }
-    return nullptr;
+    if(type->primType != Typing::PRIMITIVE::INT) return nullptr;
+    auto ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(module->getContext()));
+    return llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
 }
 
 template <>
 llvm::Value* AST::LiteralNode<float>::codeGen(llvm::Module* module,
                                               llvm::IRBuilder<>* Builder,
                                               llvm::Function* fp) {
-    llvm::Type* ty;
-    switch (this->type->primType) {
-        case Typing::PRIMITIVE::FLOAT: {
-            ty = llvm::Type::getFloatTy(module->getContext());
-            return llvm::ConstantFP::get(ty, llvm::APFloat(value));
-        }
-    }
-    return nullptr;
+    if(type->primType != Typing::PRIMITIVE::FLOAT) return nullptr;
+    auto ty = llvm::Type::getFloatTy(module->getContext());
+    return llvm::ConstantFP::get(ty, llvm::APFloat(value));
 }
 
 template <>
@@ -87,10 +76,6 @@ llvm::Value* AST::LiteralNode<std::string>::codeGen(llvm::Module* module,
                                                     llvm::IRBuilder<>* Builder,
                                                     llvm::Function* fp) {
     llvm::Type* ty;
-    switch (this->type->primType) {
-        case Typing::PRIMITIVE::STRING:
-            break;
-    }
     return nullptr;
 }
 
