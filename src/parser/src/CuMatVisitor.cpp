@@ -395,35 +395,47 @@ antlrcpp::Any CuMatVisitor::visitExp_mat(CuMatParser::Exp_matContext* ctx) {
         return std::move(visit(lowerTier.front()));
     }
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitExp_neg(CuMatParser::Exp_negContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    auto negations = ctx->op_neg();
+    // Quick optimisation for silly scenarios like -----3 to become -3
+    if (negations.size() % 2 == 0) {
+        return std::move(visit(ctx->exp_bnot()));
+    } else {
+        auto n = std::make_shared<AST::UnaryExprNode>();
+        n->literalText = ctx->getText();
+        n->op = AST::UNA_OPERATORS::NEG;
+        n->operand = std::move(visit(ctx->exp_bnot()));
+        return std::move(n);
     }
-    return n;
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitExp_bnot(CuMatParser::Exp_bnotContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    auto negations = ctx->op_bnot();
+    // Quick optimisation for silly scenarios like .!.!.!3 to become .!3
+    if (negations.size() % 2 == 0) {
+        return std::move(visit(ctx->exp_not()));
+    } else {
+        auto n = std::make_shared<AST::UnaryExprNode>();
+        n->literalText = ctx->getText();
+        n->op = AST::UNA_OPERATORS::BNOT;
+        n->operand = std::move(visit(ctx->exp_not()));
+        return std::move(n);
     }
-    return n;
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitExp_not(CuMatParser::Exp_notContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    auto negations = ctx->op_not();
+    // Quick optimisation for silly scenarios like !!!!3 to become 3
+    if (negations.size() % 2 == 0) {
+        return std::move(visit(ctx->exp_chain()));
+    } else {
+        auto n = std::make_shared<AST::UnaryExprNode>();
+        n->literalText = ctx->getText();
+        n->op = AST::UNA_OPERATORS::LNOT;
+        n->operand = std::move(visit(ctx->exp_chain()));
+        return std::move(n);
     }
-    return n;
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_chain(CuMatParser::Exp_chainContext* ctx) {

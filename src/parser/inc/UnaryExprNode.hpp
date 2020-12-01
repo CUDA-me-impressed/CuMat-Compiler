@@ -7,6 +7,7 @@ namespace AST {
 enum UNA_OPERATORS { NEG, LNOT, BNOT };
 
 class UnaryExprNode : public ExprNode {
+   public:
     UNA_OPERATORS op;
     std::shared_ptr<ExprNode> operand;
 
