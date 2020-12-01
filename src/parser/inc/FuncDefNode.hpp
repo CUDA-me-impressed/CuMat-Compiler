@@ -6,7 +6,7 @@
 #include "FunctionExprNode.hpp"
 
 namespace AST {
-class FuncBodyExprNode : public Node {
+class FuncDefNode : public Node {
    public:
     //Function Signature
     std::shared_ptr<Typing::Type> returnType;

@@ -8,7 +8,7 @@
 #include "ASTNode.hpp"
 #include "BinaryExprNode.hpp"
 #include "CuMatLexer.h"
-#include "FuncBodyExprNode.hpp"
+#include "FuncDefNode.hpp"
 #include "FunctionExprNode.hpp"
 #include "LiteralNode.hpp"
 #include "MatrixNode.hpp"
@@ -69,7 +69,7 @@ antlrcpp::Any CuMatVisitor::visitDefinition(
 }
 // TODO Complete Implementing
 antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
-    auto n = std::make_shared<AST::FuncBodyExprNode>();
+    auto n = std::make_shared<AST::FuncDefNode>();
     n->literalText = ctx->getText();
 
 
