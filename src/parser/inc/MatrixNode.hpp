@@ -14,7 +14,7 @@ class MatrixNode : public ExprNode {
    public:
     std::vector<std::vector<std::shared_ptr<ExprNode>>> data;
 
-    size_t numElements();
+    int numElements();
     std::vector<int> getDimensions();
     llvm::APInt genAPIntInstance(int numElements);
     llvm::Type* getLLVMType(llvm::Module* module);

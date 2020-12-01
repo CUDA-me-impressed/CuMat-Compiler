@@ -37,9 +37,8 @@ class BinaryExprNode : public ExprNode {
 
     // Operation specific codegen
     void plusCodeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
-                     llvm::Value* lhs, llvm::Value* rhs, llvm::Type* lhsType,
-                     llvm::Type* rhsType, llvm::AllocaInst* matAlloc,
-                     std::vector<int> dimension, int index = 1,
-                     int prevDim = 1);
+                     llvm::Value* lhsVal, llvm::Value* rhsVal,
+                     const Typing::Type& lhsType, const Typing::Type& rhsType,
+                     llvm::AllocaInst* matAlloc);
 };
 }  // namespace AST

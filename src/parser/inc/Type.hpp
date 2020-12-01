@@ -22,9 +22,9 @@ class MatrixType {
 
     PRIMITIVE primType;
 
-    int getLength();
-    int offset();
-    llvm::Type* getLLVMType(llvm::Module* module);
+    int getLength() const;
+    int offset() const;
+    llvm::Type* getLLVMType(llvm::Module* module) const;
 };
 
 class GenericType {

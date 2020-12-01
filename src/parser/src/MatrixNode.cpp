@@ -8,6 +8,7 @@
 #include <llvm/IR/Type.h>
 
 #include <iostream>
+#include <numeric>
 
 #include "CodeGenUtils.hpp"
 
@@ -51,10 +52,6 @@ llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
     return matAlloc;
 }
 
-size_t AST::MatrixNode::numElements() {
-    // We assume all sides equal lengths
-    return this->data.size() * this->data.at(0).size();
-}
 llvm::APInt AST::MatrixNode::genAPIntInstance(const int numElements) {
     if (this->type->primType == Typing::PRIMITIVE::INT ||
         this->type->primType == Typing::PRIMITIVE::BOOL) {
@@ -75,38 +72,6 @@ std::vector<int> AST::MatrixNode::getDimensions() {
     // TODO: Fix with Thomas's dimension change
     return std::vector<int>(
         {static_cast<int>(data.size()), static_cast<int>(data[0].size())});
-}
-llvm::Type* AST::MatrixNode::getLLVMType(llvm::Module* module) {
-    llvm::Type* ty;
-    switch (this->type->primType) {
-        case Typing::PRIMITIVE::INT: {
-            ty = static_cast<llvm::Type*>(
-                llvm::Type::getInt64Ty(module->getContext()));
-            break;
-        }
-        case Typing::PRIMITIVE::FLOAT: {
-            ty = llvm::Type::getFloatTy(module->getContext());
-            break;
-        }
-        case Typing::PRIMITIVE::BOOL: {
-            ty = static_cast<llvm::Type*>(
-                llvm::Type::getInt1Ty(module->getContext()));
-            break;
-        }
-        default: {
-            std::cerr << "Cannot find a valid type for " << this->literalText
-                      << std::endl;
-            // Assign the type to be an integer
-            ty = static_cast<llvm::Type*>(
-                llvm::Type::getInt64Ty(module->getContext()));
-            break;
-        }
-        case Typing::PRIMITIVE::STRING:
-            break;
-        case Typing::PRIMITIVE::NONE:
-            break;
-    }
-    return ty;
 }
 
 // llvm::APFloat AST::MatrixNode::genAPFloatInstance(const int numElements) {
