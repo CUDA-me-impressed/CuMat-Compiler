@@ -21,8 +21,7 @@ llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
 
     // Create a store instance for the correct precision and data type
     // Address space set to zero
-    llvm::AllocaInst* matAlloc =
-        new llvm::AllocaInst(ty, 0, "matVar", Builder->GetInsertBlock());
+    auto matAlloc = Builder->CreateAlloca(ty, 0, nullptr, "matVar");
 
     // We need to fill in the data for each of the elements of the array:
     std::vector<llvm::Value*> matElements(this->numElements());
@@ -44,10 +43,10 @@ llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
             auto ptr = llvm::GetElementPtrInst::Create(
                 matType, matAlloc, {zero, index}, "",
                 Builder->GetInsertBlock());
-            auto store = new llvm::StoreInst(index, ptr, false,
-                                             Builder->GetInsertBlock());
+            Builder->CreateStore(val, ptr);
         }
     }
+
     Utils::AllocSymbolTable[this->literalText] = matAlloc;
     return matAlloc;
 }
