@@ -52,3 +52,7 @@ llvm::Value* AST::LiteralNode<T>::codeGen(llvm::Module* module,
     }
     return nullptr;
 }
+
+template class AST::LiteralNode<float>;
+template class AST::LiteralNode<int>;
+template class AST::LiteralNode<std::string>;
