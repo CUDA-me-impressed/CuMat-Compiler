@@ -14,12 +14,6 @@ class MatrixNode : public ExprNode {
    public:
     std::vector<std::vector<std::shared_ptr<ExprNode>>> data;
 
-    int numElements();
-    std::vector<int> getDimensions();
-    llvm::APInt genAPIntInstance(int numElements);
-    llvm::Type* getLLVMType(llvm::Module* module);
-    llvm::APFloat genAPFloatInstance(int numElements);
-    llvm::Value* codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
-                         llvm::Function* fp) override;
+    llvm::Value* codeGen(Utils::IRContext* context) override;
 };
 }  // namespace AST

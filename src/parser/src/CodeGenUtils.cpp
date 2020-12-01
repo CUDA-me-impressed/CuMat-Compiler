@@ -3,13 +3,13 @@
 #include <algorithm>
 #include <iostream>
 
-    llvm::AllocaInst* Utils::MatrixInterface::createMatrix(Utils::IRContext* context,
-    Typing::Type type) {
+    llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context,
+    const Typing::Type &type) {
     // We need a prefix that has some basic information
     Typing::MatrixType matType;
     try {
         matType = std::get<Typing::MatrixType>(type);
-    } catch (std::bad_variant_access bva) {
+    } catch (std::bad_variant_access &bva) {
         std::cerr << "Failed to allocate matrix type!" << bva.what()
                   << std::endl;
     }

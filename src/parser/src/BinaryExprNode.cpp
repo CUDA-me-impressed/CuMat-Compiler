@@ -12,18 +12,16 @@ static llvm::AllocaInst* CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder,
     return TmpB.CreateAlloca(Type, nullptr, VarName);
 }
 
-llvm::Value* AST::BinaryExprNode::codeGen(llvm::Module* module,
-                                          llvm::IRBuilder<>* Builder,
-                                          llvm::Function* fp) {
+llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     // Assumption is that our types are two evaluated matricies of compatible
     // dimensions. We first generate code for each of the l and r matricies
-    llvm::Value* lhsVal = lhs->codeGen(module, Builder, fp);
-    llvm::Value* rhsVal = rhs->codeGen(module, Builder, fp);
+    llvm::Value* lhsVal = lhs->codeGen(context);
+    llvm::Value* rhsVal = rhs->codeGen(context);
     auto lhsMatType = std::dynamic_pointer_cast<AST::MatrixNode>(this->lhs);
     auto rhsMatType = std::dynamic_pointer_cast<AST::MatrixNode>(this->rhs);
 
-    llvm::Type* lhsTy = lhsMatType->getLLVMType(module);
-    llvm::Type* rhsTy = rhsMatType->getLLVMType(module);
+    llvm::Type* lhsTy = lhsMatType->getLLVMType(context->module);
+    llvm::Type* rhsTy = rhsMatType->getLLVMType(context->module);
 
     auto lhsDimension = lhsMatType->getDimensions();
     auto rhsDimension = rhsMatType->getDimensions();
@@ -35,12 +33,11 @@ llvm::Value* AST::BinaryExprNode::codeGen(llvm::Module* module,
         targetDimension = &rhsDimension;
     }
 
-    auto newMatAlloc =
-        Utils::generateMatrixAllocation(lhsTy, *targetDimension, Builder);
+    auto newMatAlloc = Utils::createMatrix(context, resultType);
 
     switch (op) {
         case PLUS: {
-            plusCodeGen(module, Builder, lhsVal, rhsVal, lhsTy, rhsTy,
+            plusCodeGen(context, lhsVal, rhsVal, lhsTy, rhsTy,
                         newMatAlloc);
             break;
         }
@@ -52,12 +49,12 @@ llvm::Value* AST::BinaryExprNode::codeGen(llvm::Module* module,
     return nullptr;
 }
 
-void AST::BinaryExprNode::plusCodeGen(llvm::Module* TheModule,
-                                      llvm::IRBuilder<>* Builder,
+void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context,
                                       llvm::Value* lhsVal, llvm::Value* rhsVal,
                                       const Typing::Type& lhsType,
                                       const Typing::Type& rhsType,
                                       llvm::AllocaInst* matAlloc) {
+    auto Builder = context->Builder;
     llvm::Function* parent = Builder->GetInsertBlock()->getParent();
 
     llvm::BasicBlock* whileBB =

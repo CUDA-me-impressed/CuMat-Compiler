@@ -17,8 +17,6 @@ struct IRContext {
     llvm::IRBuilder<>* Builder;
 };
 
-class MatrixInterface {
-   public:
-    llvm::AllocaInst* createMatrix(IRContext* context, Typing::Type type);
-};
+llvm::AllocaInst* createMatrix(IRContext* context, const Typing::Type &type);
+
 }  // namespace Utils
