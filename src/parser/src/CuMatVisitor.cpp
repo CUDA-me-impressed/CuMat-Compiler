@@ -72,8 +72,6 @@ antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
     auto n = std::make_shared<AST::FuncDefNode>();
     n->literalText = ctx->getText();
 
-
-
     return std::move(n);
 }
 // TODO Implement
@@ -152,18 +150,15 @@ antlrcpp::Any CuMatVisitor::visitVarname(CuMatParser::VarnameContext* ctx) {
 
 antlrcpp::Any CuMatVisitor::visitExpression(
     CuMatParser::ExpressionContext* ctx) {
-    if(ctx->exp_logic() != nullptr)
-    {
+    if (ctx->exp_logic() != nullptr) {
         return std::move(visit(ctx->exp_logic()));
     }
 
-    if(ctx->lambda() != nullptr)
-    {
+    if (ctx->lambda() != nullptr) {
         return std::move(visit(ctx->lambda()));
     }
 
-    if(ctx->exp_if() != nullptr)
-    {
+    if (ctx->exp_if() != nullptr) {
         return std::move(visit(ctx->exp_if()));
     }
 
