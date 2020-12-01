@@ -56,9 +56,12 @@ size_t AST::MatrixNode::numElements() {
     return this->data.size() * this->data.at(0).size();
 }
 llvm::APInt AST::MatrixNode::genAPIntInstance(const int numElements) {
-    if (this->type->primType == Typing::PRIMITIVE::INT ||
-        this->type->primType == Typing::PRIMITIVE::BOOL) {
-        return llvm::APInt(this->type->offset(), numElements);
+    if (std::get<Typing::MatrixType>(*(this->type)).primType ==
+            Typing::PRIMITIVE::INT ||
+        std::get<Typing::MatrixType>(*(this->type)).primType ==
+            Typing::PRIMITIVE::BOOL) {
+        return llvm::APInt(std::get<Typing::MatrixType>(*(this->type)).offset(),
+                           numElements);
     }
     std::cerr << "Attempting to assign arbitrary precision integer type"
               << " to internal non-integer type [" << this->literalText << "]"
@@ -78,7 +81,7 @@ std::vector<int> AST::MatrixNode::getDimensions() {
 }
 llvm::Type* AST::MatrixNode::getLLVMType(llvm::Module* module) {
     llvm::Type* ty;
-    switch (this->type->primType) {
+    switch (std::get<Typing::MatrixType>(*(this->type)).primType) {
         case Typing::PRIMITIVE::INT: {
             ty = static_cast<llvm::Type*>(
                 llvm::Type::getInt64Ty(module->getContext()));
