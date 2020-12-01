@@ -45,8 +45,7 @@ llvm::Type* Typing::MatrixType::getLLVMType(llvm::Module* module) {
             break;
         }
         default: {
-            std::cerr << "Cannot find a valid type for " << this->primType
-                      << std::endl;
+            std::cerr << "Cannot find a valid type" << std::endl;
             // Assign the type to be an integer
             ty = static_cast<llvm::Type*>(
                 llvm::Type::getInt64Ty(module->getContext()));
