@@ -24,8 +24,7 @@ int main(int argc, char* argv[], char* envp[]) {
     std::string inputFileName;
     std::string outputFile;
 
-    const std::set<std::string> validFlags = {
-        "-Wall", "-Winfo", "-Wnone", "-Oall", "-Onone", "-Oexp", "-o"};
+    const std::set<std::string> validFlags = {"-Wall", "-Winfo", "-Wnone", "-Oall", "-Onone", "-Oexp", "-o"};
 
     // First argument is always name of exe, ignore
     for (int i = 1; i < argc; ++i) {
@@ -34,8 +33,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
         if (validFlags.find(arg) != validFlags.end()) {
             args.emplace_back(arg);
-        } else if (!args.empty() && args.back() == "-o" &&
-                   outputFile.empty())  // Output and at least one additional
+        } else if (!args.empty() && args.back() == "-o" && outputFile.empty())  // Output and at least one additional
         {
             outputFile = arg;
         } else if (inputFileName.empty()) {
@@ -114,11 +112,8 @@ int main(int argc, char* argv[], char* envp[]) {
     std::vector<std::tuple<std::string, std::shared_ptr<AST::Node>>> parseTrees;
     for (const auto& file : files) {
         auto tree = runParser(file);
-        parseTrees.emplace_back(
-            std::make_tuple<const std::string, std::shared_ptr<AST::Node>>(
-                (const std::basic_string<char, std::char_traits<char>,
-                                         std::allocator<char>>&&)file,
-                std::move(tree)));
+        parseTrees.emplace_back(std::make_tuple<const std::string, std::shared_ptr<AST::Node>>(
+            (const std::basic_string<char, std::char_traits<char>, std::allocator<char>>&&)file, std::move(tree)));
     }
 
     // Pretty printing for test

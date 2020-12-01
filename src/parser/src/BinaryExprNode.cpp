@@ -3,18 +3,14 @@
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
 
-static llvm::AllocaInst* CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder,
-                                                const std::string& VarName,
+static llvm::AllocaInst* CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName,
                                                 llvm::Type* Type) {
-    llvm::IRBuilder<> TmpB(
-        &Builder.GetInsertBlock()->getParent()->getEntryBlock(),
-        Builder.GetInsertBlock()->getParent()->getEntryBlock().begin());
+    llvm::IRBuilder<> TmpB(&Builder.GetInsertBlock()->getParent()->getEntryBlock(),
+                           Builder.GetInsertBlock()->getParent()->getEntryBlock().begin());
     return TmpB.CreateAlloca(Type, nullptr, VarName);
 }
 
-llvm::Value* AST::BinaryExprNode::codeGen(llvm::Module* module,
-                                          llvm::IRBuilder<>* Builder,
-                                          llvm::Function* fp) {
+llvm::Value* AST::BinaryExprNode::codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder, llvm::Function* fp) {
     // Assumption is that our types are two evaluated matricies of compatible
     // dimensions. We first generate code for each of the l and r matricies
     llvm::Value* lhsVal = lhs->codeGen(module, Builder, fp);
@@ -35,13 +31,11 @@ llvm::Value* AST::BinaryExprNode::codeGen(llvm::Module* module,
         targetDimension = &rhsDimension;
     }
 
-    auto newMatAlloc =
-        Utils::generateMatrixAllocation(lhsTy, *targetDimension, Builder);
+    auto newMatAlloc = Utils::generateMatrixAllocation(lhsTy, *targetDimension, Builder);
 
     switch (op) {
         case PLUS: {
-            plusCodeGen(module, Builder, lhsVal, rhsVal, lhsTy, rhsTy,
-                        newMatAlloc);
+            plusCodeGen(module, Builder, lhsVal, rhsVal, lhsTy, rhsTy, newMatAlloc);
             break;
         }
         default:
@@ -52,23 +46,16 @@ llvm::Value* AST::BinaryExprNode::codeGen(llvm::Module* module,
     return nullptr;
 }
 
-void AST::BinaryExprNode::plusCodeGen(llvm::Module* TheModule,
-                                      llvm::IRBuilder<>* Builder,
-                                      llvm::Value* lhsVal, llvm::Value* rhsVal,
-                                      const Typing::Type& lhsType,
-                                      const Typing::Type& rhsType,
+void AST::BinaryExprNode::plusCodeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder, llvm::Value* lhsVal,
+                                      llvm::Value* rhsVal, const Typing::Type& lhsType, const Typing::Type& rhsType,
                                       llvm::AllocaInst* matAlloc) {
     llvm::Function* parent = Builder->GetInsertBlock()->getParent();
 
-    llvm::BasicBlock* whileBB =
-        llvm::BasicBlock::Create(Builder->getContext(), "add.loop", parent);
-    llvm::BasicBlock* addBB =
-        llvm::BasicBlock::Create(Builder->getContext(), "add.add", parent);
-    llvm::BasicBlock* endBB =
-        llvm::BasicBlock::Create(Builder->getContext(), "add.end", parent);
+    llvm::BasicBlock* whileBB = llvm::BasicBlock::Create(Builder->getContext(), "add.loop", parent);
+    llvm::BasicBlock* addBB = llvm::BasicBlock::Create(Builder->getContext(), "add.add", parent);
+    llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), "add.end", parent);
 
-    auto indexAlloca = CreateEntryBlockAlloca(
-        *Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
+    auto indexAlloca = CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
 
     Builder->CreateBr(whileBB);
 
@@ -76,9 +63,7 @@ void AST::BinaryExprNode::plusCodeGen(llvm::Module* TheModule,
     {
         auto* ind = Builder->CreateLoad(indexAlloca, "loadCounter");
         auto* val = Builder->CreateAdd(
-            ind, llvm::ConstantInt::get(
-                     llvm::Type::getInt64Ty(Builder->getContext()),
-                     llvm::APInt{64, 1, false}));
+            ind, llvm::ConstantInt::get(llvm::Type::getInt64Ty(Builder->getContext()), llvm::APInt{64, 1, false}));
         Builder->CreateStore(val, indexAlloca);
     }
 

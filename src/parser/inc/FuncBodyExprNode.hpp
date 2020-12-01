@@ -12,7 +12,6 @@ class FuncBodyExprNode : public ExprNode {
 
     std::vector<std::shared_ptr<ExprNode>> expr;
 
-    llvm::Value* codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
-                         llvm::Function* fp) override;
+    llvm::Value* codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder, llvm::Function* fp) override;
 };
 }  // namespace AST

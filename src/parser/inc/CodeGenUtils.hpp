@@ -10,7 +10,6 @@
 namespace Utils {
 static std::map<std::string, llvm::AllocaInst*> AllocSymbolTable;
 
-llvm::AllocaInst* generateMatrixAllocation(llvm::Type* ty,
-                                           const std::vector<int>& dimensions,
+llvm::AllocaInst* generateMatrixAllocation(llvm::Type* ty, const std::vector<int>& dimensions,
                                            llvm::IRBuilder<>* Builder);
 }  // namespace Utils

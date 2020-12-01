@@ -12,9 +12,7 @@
 
 #include "CodeGenUtils.hpp"
 
-llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
-                                      llvm::IRBuilder<>* Builder,
-                                      llvm::Function* fp) {
+llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder, llvm::Function* fp) {
     // Get the LLVM type out for the basic type
     llvm::Type* ty = this->getLLVMType(module);
     // Get function to store this data within
@@ -26,8 +24,7 @@ llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
 
     // We need to fill in the data for each of the elements of the array:
     std::vector<llvm::Value*> matElements(this->numElements());
-    auto zero =
-        llvm::ConstantInt::get(module->getContext(), llvm::APInt(64, 0, true));
+    auto zero = llvm::ConstantInt::get(module->getContext(), llvm::APInt(64, 0, true));
     for (int row = 0; row < data.size(); row++) {
         for (int column = 0; column < data[row].size(); column++) {
             // Generate the code for the element -> The Value* will be what
@@ -37,13 +34,10 @@ llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
             llvm::Value* val = data[row][column]->codeGen(module, Builder, fp);
 
             // Create index for current index of the value
-            auto index = llvm::ConstantInt::get(module->getContext(),
-                                                llvm::APInt(64, elIndex, true));
+            auto index = llvm::ConstantInt::get(module->getContext(), llvm::APInt(64, elIndex, true));
 
             // Get pointer to the index location within memory
-            auto ptr = llvm::GetElementPtrInst::Create(
-                matType, matAlloc, {zero, index}, "",
-                Builder->GetInsertBlock());
+            auto ptr = llvm::GetElementPtrInst::Create(matType, matAlloc, {zero, index}, "", Builder->GetInsertBlock());
             Builder->CreateStore(val, ptr);
         }
     }
@@ -53,13 +47,11 @@ llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
 }
 
 llvm::APInt AST::MatrixNode::genAPIntInstance(const int numElements) {
-    if (this->type->primType == Typing::PRIMITIVE::INT ||
-        this->type->primType == Typing::PRIMITIVE::BOOL) {
+    if (this->type->primType == Typing::PRIMITIVE::INT || this->type->primType == Typing::PRIMITIVE::BOOL) {
         return llvm::APInt(this->type->offset(), numElements);
     }
     std::cerr << "Attempting to assign arbitrary precision integer type"
-              << " to internal non-integer type [" << this->literalText << "]"
-              << std::endl;
+              << " to internal non-integer type [" << this->literalText << "]" << std::endl;
     return llvm::APInt();
 }
 
@@ -70,8 +62,7 @@ llvm::APInt AST::MatrixNode::genAPIntInstance(const int numElements) {
  */
 std::vector<int> AST::MatrixNode::getDimensions() {
     // TODO: Fix with Thomas's dimension change
-    return std::vector<int>(
-        {static_cast<int>(data.size()), static_cast<int>(data[0].size())});
+    return std::vector<int>({static_cast<int>(data.size()), static_cast<int>(data[0].size())});
 }
 
 // llvm::APFloat AST::MatrixNode::genAPFloatInstance(const int numElements) {
