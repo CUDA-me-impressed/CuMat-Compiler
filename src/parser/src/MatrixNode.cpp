@@ -32,7 +32,7 @@ llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
             // Generate the code for the element -> The Value* will be what
             // we store within the matrix location so depending on what we are
             // storing, it must be sufficient to run
-            int elIndex = row * data.size() + column;
+            size_t elIndex = row * data.size() + column;
             llvm::Value* val = data[row][column]->codeGen(module, Builder, fp);
 
             // Create index for current index of the value
@@ -51,7 +51,7 @@ llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module,
     return matAlloc;
 }
 
-int AST::MatrixNode::numElements() {
+size_t AST::MatrixNode::numElements() {
     // We assume all sides equal lengths
     return this->data.size() * this->data.at(0).size();
 }
