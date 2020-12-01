@@ -6,9 +6,12 @@
 #include "FunctionExprNode.hpp"
 
 namespace AST {
-class FuncBodyExprNode : public ExprNode {
+class FuncBodyExprNode : public Node {
    public:
-    std::shared_ptr<Node> funcSig;  // Function signature
+    //Function Signature
+    std::shared_ptr<Typing::Type> returnType;
+    std::string funcName;
+    std::vector<std::pair<std::string,std::shared_ptr<Typing::Type>>> parameters;
 
     std::vector<std::shared_ptr<Node>> assignments;
     std::shared_ptr<ExprNode> returnExpr;

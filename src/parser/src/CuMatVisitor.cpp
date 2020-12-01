@@ -8,6 +8,7 @@
 #include "ASTNode.hpp"
 #include "BinaryExprNode.hpp"
 #include "CuMatLexer.h"
+#include "FuncBodyExprNode.hpp"
 #include "FunctionExprNode.hpp"
 #include "LiteralNode.hpp"
 #include "MatrixNode.hpp"
@@ -66,15 +67,14 @@ antlrcpp::Any CuMatVisitor::visitDefinition(
     }
     return n;
 }
-// TODO Implement
+// TODO Complete Implementing
 antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
-    }
-    return n;
+    auto n = std::make_shared<AST::FuncBodyExprNode>();
+    n->literalText = ctx->getText();
+
+
+
+    return std::move(n);
 }
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitSignature(CuMatParser::SignatureContext* ctx) {
