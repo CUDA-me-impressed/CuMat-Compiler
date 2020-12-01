@@ -8,9 +8,10 @@
 namespace AST {
 class FuncBodyExprNode : public ExprNode {
    public:
-    std::shared_ptr<FunctionExprNode> funcSig;  // Function signature
+    std::shared_ptr<Node> funcSig;  // Function signature
 
-    std::vector<std::shared_ptr<ExprNode>> expr;
+    std::vector<std::shared_ptr<Node>> assignments;
+    std::shared_ptr<ExprNode> returnExpr;
 
     llvm::Value* codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
                          llvm::Function* fp) override;
