@@ -149,16 +149,25 @@ antlrcpp::Any CuMatVisitor::visitVarname(CuMatParser::VarnameContext* ctx) {
     }
     return n;
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitExpression(
     CuMatParser::ExpressionContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children =
-        this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    if(ctx->exp_logic() != nullptr)
+    {
+        return std::move(visit(ctx->exp_logic()));
     }
-    return n;
+
+    if(ctx->lambda() != nullptr)
+    {
+        return std::move(visit(ctx->lambda()));
+    }
+
+    if(ctx->exp_if() != nullptr)
+    {
+        return std::move(visit(ctx->exp_if()));
+    }
+
+    return nullptr;
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_if(CuMatParser::Exp_ifContext* ctx) {
