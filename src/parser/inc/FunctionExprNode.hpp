@@ -10,6 +10,7 @@
 namespace AST {
 class FunctionExprNode : public ExprNode {
    public:
+    std::string funcName;
     std::shared_ptr<ExprNode> nonAppliedFunction;
     std::vector<std::shared_ptr<ExprNode>> args;
 
