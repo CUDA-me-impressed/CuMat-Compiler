@@ -2,6 +2,7 @@
 
 #include <llvm/IR/Module.h>
 
+#include <iostream>
 #include <numeric>
 #include <stdexcept>
 
@@ -44,7 +45,7 @@ llvm::Type* Typing::MatrixType::getLLVMType(llvm::Module* module) {
             break;
         }
         default: {
-            std::cerr << "Cannot find a valid type for " << this->literalText
+            std::cerr << "Cannot find a valid type for " << this->primType
                       << std::endl;
             // Assign the type to be an integer
             ty = static_cast<llvm::Type*>(
