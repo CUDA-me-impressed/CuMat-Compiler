@@ -1,8 +1,9 @@
-#include "FuncBodyExprNode.hpp"
+#include "FuncDefNode.hpp"
 
-llvm::Value* AST::FuncBodyExprNode::codeGen(llvm::Module* TheModule,
+llvm::Value* AST::FuncDefNode::codeGen(llvm::Module* TheModule,
                                             llvm::IRBuilder<>* Builder,
                                             llvm::Function* fp) {
+    /*
     // For this function, we need a new BasicBlock structure
     llvm::BasicBlock* bb = llvm::BasicBlock::Create(
         TheModule->getContext(), "func" + funcSig->funcName, fp,
@@ -12,4 +13,5 @@ llvm::Value* AST::FuncBodyExprNode::codeGen(llvm::Module* TheModule,
     for (auto stmt : this->expr) {
         stmt->codeGen(TheModule, Builder, fp);
     }
+    */
 }
