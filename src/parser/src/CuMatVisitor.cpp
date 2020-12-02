@@ -185,6 +185,7 @@ antlrcpp::Any CuMatVisitor::visitExp_logic(CuMatParser::Exp_logicContext* ctx) {
                 throw std::runtime_error("Encountered unknown operator, or Toby can't code");
             }
             n->lhs = std::move(visit(*it));
+            n->literalText = n->lhs->literalText + (op->getText()) + n->rhs->literalText;
             rightSide = std::move(n);
         }
         return std::move(rightSide);
@@ -225,6 +226,7 @@ antlrcpp::Any CuMatVisitor::visitExp_comp(CuMatParser::Exp_compContext* ctx) {
                 throw std::runtime_error("Encountered unknown operator, or Toby can't code");
             }
             n->lhs = std::move(visit(*it));
+            n->literalText = n->lhs->literalText + (op->getText()) + n->rhs->literalText;
             rightSide = std::move(n);
         }
         return std::move(rightSide);
@@ -257,6 +259,7 @@ antlrcpp::Any CuMatVisitor::visitExp_bit(CuMatParser::Exp_bitContext* ctx) {
                 throw std::runtime_error("Encountered unknown operator, or Toby can't code");
             }
             n->lhs = std::move(visit(*it));
+            n->literalText = n->lhs->literalText + (op->getText()) + n->rhs->literalText;
             rightSide = std::move(n);
         }
         return std::move(rightSide);
@@ -289,6 +292,7 @@ antlrcpp::Any CuMatVisitor::visitExp_sum(CuMatParser::Exp_sumContext* ctx) {
                 throw std::runtime_error("Encountered unknown operator, or Toby can't code");
             }
             n->lhs = std::move(visit(*it));
+            n->literalText = n->lhs->literalText + (op->getText()) + n->rhs->literalText;
             rightSide = std::move(n);
         }
         return std::move(rightSide);
@@ -322,6 +326,7 @@ antlrcpp::Any CuMatVisitor::visitExp_mult(CuMatParser::Exp_multContext* ctx) {
                 throw std::runtime_error("Encountered unknown operator, or Toby can't code");
             }
             n->lhs = std::move(visit(*it));
+            n->literalText = n->lhs->literalText + (op->getText()) + n->rhs->literalText;
             rightSide = std::move(n);
         }
         return std::move(rightSide);
@@ -345,6 +350,8 @@ antlrcpp::Any CuMatVisitor::visitExp_pow(CuMatParser::Exp_powContext* ctx) {
             n->lhs = std::move(leftSide);
             n->op = AST::BIN_OPERATORS::POW;
             n->rhs = std::move(visit(it));
+            n->literalText =
+                n->lhs->literalText + (this->parserVocab->getLiteralName(CuMatLexer::POW)) + n->rhs->literalText;
             leftSide = std::move(n);
         }
         return std::move(leftSide);
@@ -368,6 +375,8 @@ antlrcpp::Any CuMatVisitor::visitExp_mat(CuMatParser::Exp_matContext* ctx) {
             n->rhs = std::move(rightSide);
             n->op = AST::BIN_OPERATORS::MATM;
             n->lhs = std::move(visit(*it));
+            n->literalText =
+                n->lhs->literalText + (this->parserVocab->getLiteralName(CuMatLexer::MATM)) + n->rhs->literalText;
             rightSide = std::move(n);
         }
         return std::move(rightSide);
@@ -433,6 +442,8 @@ antlrcpp::Any CuMatVisitor::visitExp_chain(CuMatParser::Exp_chainContext* ctx) {
             n->lhs = std::move(leftSide);
             n->op = AST::BIN_OPERATORS::CHAIN;
             n->rhs = std::move(visit(it));
+            n->literalText =
+                n->lhs->literalText + (this->parserVocab->getLiteralName(CuMatLexer::CHAIN)) + n->rhs->literalText;
             leftSide = std::move(n);
         }
         return std::move(leftSide);
