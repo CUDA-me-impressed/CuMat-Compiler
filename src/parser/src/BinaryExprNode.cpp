@@ -39,10 +39,8 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     return nullptr;
 }
 
-void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context,
-                                      llvm::Value* lhsVal, llvm::Value* rhsVal,
-                                      const Typing::Type& lhsType,
-                                      const Typing::Type& rhsType,
+void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
+                                      const Typing::Type& lhsType, const Typing::Type& rhsType,
                                       llvm::AllocaInst* matAlloc) {
     auto Builder = context->Builder;
     llvm::Function* parent = Builder->GetInsertBlock()->getParent();
