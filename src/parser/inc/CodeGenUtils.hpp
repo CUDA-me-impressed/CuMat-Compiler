@@ -20,8 +20,8 @@ struct IRContext {
 
 struct LLVMMatrixRecord {
     llvm::Value* dataPtr;
-    llvm::Value* rank; // Signed
-    llvm::Value* numBytes; // Signed
+    llvm::Value* rank;      // Signed
+    llvm::Value* numBytes;  // Signed
 };
 
 void insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset, llvm::Value* val);
@@ -30,4 +30,3 @@ llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Type* type, llv
 llvm::AllocaInst* createMatrix(IRContext* context, const Typing::Type& type);
 std::unique_ptr<Utils::LLVMMatrixRecord> getMatrixFromPointer(IRContext* context, llvm::AllocaInst* basePtr);
 }  // namespace Utils
-
