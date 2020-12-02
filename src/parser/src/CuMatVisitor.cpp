@@ -76,9 +76,9 @@ antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
     // Parameters
     auto paramCtx = sig->parameters()->parameter();
     std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> paramContainer;
-    for(auto &param: paramCtx)
-    {
-        std::pair<std::string,std::shared_ptr<Typing::Type>> p(param->varname()->getText(),std::move(visit(param->typespec())));
+    for (auto& param : paramCtx) {
+        std::pair<std::string, std::shared_ptr<Typing::Type>> p(param->varname()->getText(),
+                                                                std::move(visit(param->typespec())));
         paramContainer.emplace_back(p);
     }
     n->parameters = std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>>(paramContainer);
@@ -94,42 +94,32 @@ antlrcpp::Any CuMatVisitor::visitTypespec(CuMatParser::TypespecContext* ctx) {
     if (ctx->cmtypename()->primitive() != nullptr) {
         Typing::MatrixType m;
         auto primType = ctx->cmtypename()->primitive();
-        if(primType->T_INT())
-        {
+        if (primType->T_INT()) {
             m.primType = Typing::PRIMITIVE::INT;
-        } else if(primType->T_FLOAT())
-        {
+        } else if (primType->T_FLOAT()) {
             m.primType = Typing::PRIMITIVE::FLOAT;
-        } else if(primType->T_STRING())
-        {
+        } else if (primType->T_STRING()) {
             m.primType = Typing::PRIMITIVE::STRING;
-        } else if(primType->T_BOOL())
-        {
+        } else if (primType->T_BOOL()) {
             m.primType = Typing::PRIMITIVE::BOOL;
-        } else if(primType->functype())
-        {
+        } else if (primType->functype()) {
             Typing::FunctionType f;
             std::vector<std::shared_ptr<Typing::Type>> params;
-            for(auto & argspec : primType->functype()->argspecs)
-            {
+            for (auto& argspec : primType->functype()->argspecs) {
                 params.emplace_back(std::move(visit(argspec)));
             }
             f.parameters = std::vector(params);
             f.returnType = std::move(visit(primType->functype()->retspec));
             return std::make_shared<Typing::Type>(f);
         }
-        if(ctx->dimensionspec())
-        {
+        if (ctx->dimensionspec()) {
             auto specs = ctx->dimensionspec();
             m.rank = specs->dimension().size();
             std::vector<uint> dims;
-            for(auto & dim : specs->dimension())
-            {
-                if(dim->INT())
-                {
+            for (auto& dim : specs->dimension()) {
+                if (dim->INT()) {
                     dims.emplace_back(std::stoi(dim->INT()->getText()));
-                } else
-                {
+                } else {
                     dims.emplace_back(0);
                 }
             }
@@ -148,8 +138,7 @@ antlrcpp::Any CuMatVisitor::visitBlock(CuMatParser::BlockContext* ctx) {
     n->literalText = ctx->getText();
 
     std::vector<std::shared_ptr<AST::Node>> assigns;
-    for(auto &ass: ctx->assignments)
-    {
+    for (auto& ass : ctx->assignments) {
         assigns.emplace_back(std::move(visit(ass)));
     }
     n->assignments = std::vector<std::shared_ptr<AST::Node>>(assigns);

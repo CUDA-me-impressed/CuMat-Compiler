@@ -7,9 +7,9 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Type.h>
 
+#include <memory>
 #include <string>
 #include <variant>
-#include <memory>
 #include <vector>
 
 namespace Typing {

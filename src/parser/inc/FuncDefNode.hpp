@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "ASTNode.hpp"
-#include "ExprASTNode.hpp"
 #include "BlockNode.hpp"
+#include "ExprASTNode.hpp"
 
 namespace AST {
 class FuncDefNode : public Node {
