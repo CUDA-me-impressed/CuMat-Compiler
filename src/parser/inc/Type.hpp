@@ -9,11 +9,18 @@
 
 #include <string>
 #include <variant>
+#include <memory>
 #include <vector>
 
 namespace Typing {
 
 enum class PRIMITIVE { STRING, INT, FLOAT, BOOL, NONE };
+
+class MatrixType;
+class GenericType;
+class FunctionType;
+
+using Type = std::variant<FunctionType, GenericType, MatrixType>;
 
 class MatrixType {
    public:
@@ -33,9 +40,7 @@ class GenericType {
 
 class FunctionType {
    public:
-    MatrixType returnType;
-    std::vector<std::variant<FunctionType, MatrixType>> parameters;
+    std::shared_ptr<Type> returnType;
+    std::vector<std::shared_ptr<Type>> parameters;
 };
-
-using Type = std::variant<FunctionType, GenericType, MatrixType>;
 }  // namespace Typing
