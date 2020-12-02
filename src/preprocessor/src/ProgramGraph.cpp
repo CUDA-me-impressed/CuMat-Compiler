@@ -12,7 +12,8 @@
  * Constructor for the Program Graph class
  * @param root
  */
-Preprocessor::ProgramGraph::ProgramGraph(std::shared_ptr<ProgramFileNode> root) : root(root) {
+Preprocessor::ProgramGraph::ProgramGraph(std::shared_ptr<ProgramFileNode> root)
+    : root(root) {
     // Add root node into unexpanded list
     this->unexpandedNodes.push_back(root);
     expandAllUnexpanded();
@@ -24,8 +25,9 @@ Preprocessor::ProgramGraph::ProgramGraph(std::shared_ptr<ProgramFileNode> root) 
  * @param src
  * @param dest
  */
-void Preprocessor::ProgramGraph::addInclude(std::shared_ptr<ProgramFileNode> src,
-                                            std::shared_ptr<ProgramFileNode> dest) {
+void Preprocessor::ProgramGraph::addInclude(
+    std::shared_ptr<ProgramFileNode> src,
+    std::shared_ptr<ProgramFileNode> dest) {
     // operator[] applied to map auto creates the vector if it does not exist
     this->vertexEdges[src].push_back(dest);
     this->vertexEdgesReverse[dest].push_back(src);
@@ -36,7 +38,8 @@ void Preprocessor::ProgramGraph::addInclude(std::shared_ptr<ProgramFileNode> src
  * Nodes are merged when they have a single connection to at most one left node
  * @returns An ordered list of the program topology
  */
-std::vector<std::shared_ptr<Preprocessor::ProgramFileNode>> Preprocessor::ProgramGraph::topologicalSort() {
+std::vector<std::shared_ptr<Preprocessor::ProgramFileNode>>
+Preprocessor::ProgramGraph::topologicalSort() {
     // Implementation of Kahns algorithm
     std::deque<std::shared_ptr<ProgramFileNode>> s;
     std::vector<std::shared_ptr<ProgramFileNode>> l;
@@ -67,11 +70,14 @@ void Preprocessor::ProgramGraph::expandAllUnexpanded() {
         // Get the node
         std::shared_ptr<ProgramFileNode> node = unexpandedNodes.at(0);
         // Search for each include, this does not deal with comments TODO
-        std::regex rgx(R"(import ([_a-zA-Z][_a-zA-Z0-9\-\.]*(\/[_a-zA-Z][_a-zA-Z0-9\-\.]*)*))");
-        for (auto it = node->fileContents.begin(); it != node->fileContents.end(); it++) {
+        std::regex rgx(
+            R"(import ([_a-zA-Z][_a-zA-Z0-9\-\.]*(\/[_a-zA-Z][_a-zA-Z0-9\-\.]*)*))");
+        for (auto it = node->fileContents.begin();
+             it != node->fileContents.end(); it++) {
             // Get the line as a string
             std::smatch matches;
-            std::string line = node->fileContents.at(it - node->fileContents.begin());
+            std::string line =
+                node->fileContents.at(it - node->fileContents.begin());
             if (!std::regex_search(line, matches, rgx)) break;
             // Our regex splits the import into a number of capture groups
             // Group 1 consists of the full path file, minus the extension
@@ -83,7 +89,8 @@ void Preprocessor::ProgramGraph::expandAllUnexpanded() {
             if (fileTable.count(included)) continue;
             auto newFileLines = Preprocessor::SourceFileLoader::load(included);
             std::shared_ptr<ProgramFileNode> newFileNode =
-                std::make_shared<ProgramFileNode>(included, *newFileLines.get());
+                std::make_shared<ProgramFileNode>(included,
+                                                  *newFileLines.get());
             fileTable[included] = newFileNode;
             // We need to handle this new node by adding it to the program graph
             this->addInclude(node, newFileNode);
@@ -106,7 +113,8 @@ void Preprocessor::ProgramGraph::generateCompileUnits(
         for (auto n : vertexEdgesReverse[sortedProgram.at(i)]) {
             addedNodes.emplace(n);
         }
-        if (std::find(addedNodes.begin(), addedNodes.end(), sortedProgram.at(i)) != addedNodes.end()) {
+        if (std::find(addedNodes.begin(), addedNodes.end(),
+                      sortedProgram.at(i)) != addedNodes.end()) {
             compileUnits.emplace_back();
             layer++;
             compileUnits[layer].push_back(sortedProgram.at(i));

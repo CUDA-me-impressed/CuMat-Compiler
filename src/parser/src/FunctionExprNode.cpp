@@ -1,3 +1,7 @@
 #include "FunctionExprNode.hpp"
 
-llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) { return nullptr; }
+llvm::Value* AST::FunctionExprNode::codeGen(llvm::Module* module,
+                                            llvm::IRBuilder<>* Builder,
+                                            llvm::Function* fp) {
+    return nullptr;
+}

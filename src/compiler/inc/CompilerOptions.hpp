@@ -18,7 +18,8 @@ class CompilerOptions {
     std::string outputFile;  // Default to name of file
 
     CompilerOptions() = default;
-    explicit CompilerOptions(const std::string& inpFile) : inputFile(inpFile), outputFile(inpFile) {}
+    explicit CompilerOptions(const std::string& inpFile)
+        : inputFile(inpFile), outputFile(inpFile) {}
     CompilerOptions(std::string inpFile, std::string outFile)
         : inputFile(std::move(inpFile)), outputFile(std::move(outFile)) {}
 };
