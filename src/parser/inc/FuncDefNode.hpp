@@ -2,8 +2,9 @@
 
 #include <vector>
 
+#include "ASTNode.hpp"
 #include "ExprASTNode.hpp"
-#include "FunctionExprNode.hpp"
+#include "BlockNode.hpp"
 
 namespace AST {
 class FuncDefNode : public Node {
@@ -13,8 +14,7 @@ class FuncDefNode : public Node {
     std::string funcName;
     std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> parameters;
 
-    std::vector<std::shared_ptr<Node>> assignments;
-    std::shared_ptr<ExprNode> returnExpr;
+    std::shared_ptr<BlockNode> block;
 
     llvm::Value* codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder, llvm::Function* fp) override;
 };
