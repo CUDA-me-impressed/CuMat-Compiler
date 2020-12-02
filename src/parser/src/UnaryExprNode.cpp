@@ -3,9 +3,7 @@
 #include "CodeGenUtils.hpp"
 #include "MatrixNode.hpp"
 
-llvm::Value* AST::UnaryExprNode::codeGen(llvm::Module* module,
-                                         llvm::IRBuilder<>* Builder,
-                                         llvm::Function* fp) {
+llvm::Value* AST::UnaryExprNode::codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder, llvm::Function* fp) {
     // opval should be an evaluated matrix for which we can create a new matrix
     llvm::Value* opVal = this->operand->codeGen(module, Builder, fp);
     // We go through and apply the relevant unary operator to each element of
@@ -16,8 +14,7 @@ llvm::Value* AST::UnaryExprNode::codeGen(llvm::Module* module,
     auto newMatAlloc = Utils::generateMatrixAllocation(ty, dimension, Builder);
     // We generate the operations sequentially
     // TODO: Add Kernel call for nvptx
-    recursiveUnaryGeneration(op, module, Builder, ty, newMatAlloc, opVal,
-                             dimension);
+    recursiveUnaryGeneration(op, module, Builder, ty, newMatAlloc, opVal, dimension);
     return opVal;
 }
 
@@ -40,10 +37,10 @@ llvm::Value* AST::UnaryExprNode::codeGen(llvm::Module* module,
  * @param index
  * @param prevDim
  */
-void AST::UnaryExprNode::recursiveUnaryGeneration(
-    const UNA_OPERATORS& op, llvm::Module* module, llvm::IRBuilder<>* Builder,
-    llvm::Type* ty, llvm::AllocaInst* matAlloc, llvm::Value* opVal,
-    std::vector<int> dimension, int index, int prevDim) {
+void AST::UnaryExprNode::recursiveUnaryGeneration(const UNA_OPERATORS& op, llvm::Module* module,
+                                                  llvm::IRBuilder<>* Builder, llvm::Type* ty,
+                                                  llvm::AllocaInst* matAlloc, llvm::Value* opVal,
+                                                  std::vector<int> dimension, int index, int prevDim) {
     // Store of a type for the matrix (only need this for the final pass)
     llvm::ArrayType* matType;
     if (dimension.size() == 1) {
@@ -55,26 +52,20 @@ void AST::UnaryExprNode::recursiveUnaryGeneration(
         // more
         if (dimension.size() > 1) {
             // Create a new dimension vector with this dimension removed
-            std::vector<int> subDimension(dimension.begin() + 1,
-                                          dimension.end());
-            recursiveUnaryGeneration(op, module, Builder, ty, matAlloc, opVal,
-                                     subDimension, (index * prevDim) + i,
+            std::vector<int> subDimension(dimension.begin() + 1, dimension.end());
+            recursiveUnaryGeneration(op, module, Builder, ty, matAlloc, opVal, subDimension, (index * prevDim) + i,
                                      dimension.at(0));
         } else {
             // At this point, the element that will be contained is the most raw
             // llvm value, indexed at position
             // TODO: Offset needs to work with non-64 bit variables
-            auto zero = llvm::ConstantInt::get(module->getContext(),
-                                               llvm::APInt(64, 0, true));
-            auto indexVal = llvm::ConstantInt::get(
-                module->getContext(), llvm::APInt(64, index, true));
+            auto zero = llvm::ConstantInt::get(module->getContext(), llvm::APInt(64, 0, true));
+            auto indexVal = llvm::ConstantInt::get(module->getContext(), llvm::APInt(64, index, true));
             // Pointer to the index within IR
-            auto ptrOld = llvm::GetElementPtrInst::Create(
-                matType, opVal, {zero, indexVal}, "",
-                Builder->GetInsertBlock());
-            auto ptrNew = llvm::GetElementPtrInst::Create(
-                matType, matAlloc, {zero, indexVal}, "",
-                Builder->GetInsertBlock());
+            auto ptrOld =
+                llvm::GetElementPtrInst::Create(matType, opVal, {zero, indexVal}, "", Builder->GetInsertBlock());
+            auto ptrNew =
+                llvm::GetElementPtrInst::Create(matType, matAlloc, {zero, indexVal}, "", Builder->GetInsertBlock());
             // Generate the code for each valid operation and type
             /*TODO: Probably needs syntax checking, leaving this for someone
              * with a better understanding of programming language theory
@@ -82,33 +73,25 @@ void AST::UnaryExprNode::recursiveUnaryGeneration(
             switch (this->op) {
                 case NEG: {
                     if (ty->isIntegerTy()) {
-                        auto neg = llvm::BinaryOperator::CreateNeg(
-                            Builder->CreateLoad(ptrOld), "",
-                            Builder->GetInsertBlock());
+                        auto neg =
+                            llvm::BinaryOperator::CreateNeg(Builder->CreateLoad(ptrOld), "", Builder->GetInsertBlock());
                         // Insert
-                        llvm::StoreInst(neg, ptrNew, false,
-                                        Builder->GetInsertBlock());
+                        llvm::StoreInst(neg, ptrNew, false, Builder->GetInsertBlock());
                     } else if (ty->isFloatTy()) {
-                        auto neg = llvm::BinaryOperator::CreateFNeg(
-                            Builder->CreateLoad(ptrOld), "",
-                            Builder->GetInsertBlock());
-                        llvm::StoreInst(neg, ptrNew, false,
-                                        Builder->GetInsertBlock());
+                        auto neg = llvm::BinaryOperator::CreateFNeg(Builder->CreateLoad(ptrOld), "",
+                                                                    Builder->GetInsertBlock());
+                        llvm::StoreInst(neg, ptrNew, false, Builder->GetInsertBlock());
                     }
                     break;
                 }
                 case LNOT: {
                     // TODO: Linear not? Can someone check on this? Same for
                     // BNOT
-                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptrOld),
-                                                    "",
-                                                    Builder->GetInsertBlock());
+                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptrOld), "", Builder->GetInsertBlock());
                     break;
                 }
                 case BNOT: {
-                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptrOld),
-                                                    "",
-                                                    Builder->GetInsertBlock());
+                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptrOld), "", Builder->GetInsertBlock());
                     break;
                 }
             }

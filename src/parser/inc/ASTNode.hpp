@@ -28,8 +28,6 @@ class Node {
 
     // Default implementations just call the function on their children
     virtual void semanticPass();
-    virtual llvm::Value* codeGen(llvm::Module* TheModule,
-                                 llvm::IRBuilder<>* Builder,
-                                 llvm::Function* fp);
+    virtual llvm::Value* codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder, llvm::Function* fp);
 };
 }  // namespace AST
