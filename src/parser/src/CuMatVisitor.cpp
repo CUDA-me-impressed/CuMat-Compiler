@@ -65,8 +65,6 @@ antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
     auto n = std::make_shared<AST::FuncDefNode>();
     n->literalText = ctx->getText();
 
-
-
     return std::move(n);
 }
 // TODO Implement
@@ -133,20 +131,16 @@ antlrcpp::Any CuMatVisitor::visitVarname(CuMatParser::VarnameContext* ctx) {
     return n;
 }
 
-antlrcpp::Any CuMatVisitor::visitExpression(
-    CuMatParser::ExpressionContext* ctx) {
-    if(ctx->exp_logic() != nullptr)
-    {
+antlrcpp::Any CuMatVisitor::visitExpression(CuMatParser::ExpressionContext* ctx) {
+    if (ctx->exp_logic() != nullptr) {
         return std::move(visit(ctx->exp_logic()));
     }
 
-    if(ctx->lambda() != nullptr)
-    {
+    if (ctx->lambda() != nullptr) {
         return std::move(visit(ctx->lambda()));
     }
 
-    if(ctx->exp_if() != nullptr)
-    {
+    if (ctx->exp_if() != nullptr) {
         return std::move(visit(ctx->exp_if()));
     }
 
@@ -465,20 +459,24 @@ antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext* ctx) {
     return std::move(fN);
 }
 
-// TODO Implement
 antlrcpp::Any CuMatVisitor::visitValue(CuMatParser::ValueContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children = this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    if (ctx->literal() != nullptr) {
+        if (ctx->literal()->matrixliteral() != nullptr) {
+            return std::move(visit(ctx->literal()->matrixliteral()));
+        } else {
+            return std::move(visit(ctx->literal()->scalarliteral()));
+        }
+    } else if (ctx->expression() != nullptr) {
+        return std::move(visit(ctx->expression()));
+    } else {
+        return std::move(visit(ctx->variable()));
     }
-    return n;
 }
 
 antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext* ctx) {
     auto mN = std::make_shared<AST::MatrixNode>();
     mN->literalText = ctx->getText();
-    auto t = std::make_shared<Typing::MatrixType>();
+    Typing::MatrixType t;
     std::vector<uint> dimensions;
     std::vector<std::vector<std::shared_ptr<AST::ExprNode>>> values;
     int inDimension = 0;
@@ -515,9 +513,9 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
     }
 
     mN->data = std::move(values);
-    t->dimensions = std::vector<uint>(dimensions);
-    t->rank = dimensions.size();
-    mN->type = std::move(t);
+    t.dimensions = std::vector<uint>(dimensions);
+    t.rank = dimensions.size();
+    mN->type = std::make_shared<Typing::Type>(t);
     return std::move(mN);
 }
 
@@ -526,8 +524,10 @@ antlrcpp::Any CuMatVisitor::visitScalarliteral(CuMatParser::ScalarliteralContext
         auto n = std::make_shared<AST::LiteralNode<std::string>>();
         n->literalText = ctx->getText();
         n->value = ctx->stringliteral()->STRING()->getText();
-        n->type = std::make_shared<Typing::Type>();
-        n->type->primType = Typing::PRIMITIVE::STRING;
+        Typing::MatrixType mn;
+        mn.rank = 0;
+        mn.primType = Typing::PRIMITIVE::STRING;
+        n->type = std::make_shared<Typing::Type>(mn);
         return std::move(n);
     } else  // Implies numLiteral is not a nullptr
     {
@@ -535,16 +535,20 @@ antlrcpp::Any CuMatVisitor::visitScalarliteral(CuMatParser::ScalarliteralContext
             auto n = std::make_shared<AST::LiteralNode<int>>();
             n->literalText = ctx->getText();
             n->value = std::stoi(ctx->numliteral()->INT()->getText());
-            n->type = std::make_shared<Typing::Type>();
-            n->type->primType = Typing::PRIMITIVE::INT;
+            Typing::MatrixType mn;
+            mn.rank = 0;
+            mn.primType = Typing::PRIMITIVE::INT;
+            n->type = std::make_shared<Typing::Type>(mn);
             return std::move(n);
         } else  // Implies float
         {
             auto n = std::make_shared<AST::LiteralNode<float>>();
             n->literalText = ctx->getText();
             n->value = std::stof(ctx->numliteral()->FLOAT()->getText());
-            n->type = std::make_shared<Typing::Type>();
-            n->type->primType = Typing::PRIMITIVE::FLOAT;
+            Typing::MatrixType mn;
+            mn.rank = 0;
+            mn.primType = Typing::PRIMITIVE::FLOAT;
+            n->type = std::make_shared<Typing::Type>(mn);
             return std::move(n);
         }
     }

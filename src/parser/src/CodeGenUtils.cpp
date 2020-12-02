@@ -1,7 +1,6 @@
 #include "CodeGenUtils.hpp"
 
 #include <algorithm>
-#include <iostream>
 
     llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context,
     const Typing::Type &type) {

@@ -3,8 +3,6 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Instructions.h>
 
-#include <Type.hpp>
-
 #include <map>
 #include <string>
 #include <vector>
