@@ -11,7 +11,7 @@
  * primitive type within CuMat
  * @return
  */
-int Typing::MatrixType::offset() {
+int Typing::MatrixType::offset() const {
     switch (primType) {
         case PRIMITIVE::STRING:
         case PRIMITIVE::BOOL:
@@ -23,11 +23,12 @@ int Typing::MatrixType::offset() {
             throw std::runtime_error("Invalid type for offset");
     }
 }
-int Typing::MatrixType::getLength() {
+int Typing::MatrixType::getLength() const {
     return std::accumulate(this->dimensions.begin(), this->dimensions.end(), 1,
                            std::multiplies());
 }
-llvm::Type* Typing::MatrixType::getLLVMType(llvm::Module* module) {
+
+llvm::Type* Typing::MatrixType::getLLVMType(llvm::Module* module) const {
     llvm::Type* ty;
     switch (this->primType) {
         case Typing::PRIMITIVE::INT: {
@@ -45,16 +46,15 @@ llvm::Type* Typing::MatrixType::getLLVMType(llvm::Module* module) {
             break;
         }
         default: {
-            std::cerr << "Cannot find a valid type" << std::endl;
+            std::cerr << "Cannot find a valid type for type" << std::endl;
             // Assign the type to be an integer
             ty = static_cast<llvm::Type*>(
                 llvm::Type::getInt64Ty(module->getContext()));
             break;
         }
         case Typing::PRIMITIVE::STRING:
-            break;
         case Typing::PRIMITIVE::NONE:
-            break;
+            ty = nullptr;
     }
     return ty;
 }

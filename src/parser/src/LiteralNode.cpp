@@ -54,32 +54,25 @@ llvm::Value* AST::LiteralNode<T>::codeGen(llvm::Module* module,
 }*/
 
 template <>
-llvm::Value* AST::LiteralNode<int>::codeGen(llvm::Module* module,
-                                            llvm::IRBuilder<>* Builder,
-                                            llvm::Function* fp) {
-    if (std::get<Typing::MatrixType>(*type).primType != Typing::PRIMITIVE::INT)
-        return nullptr;
-    auto ty =
-        static_cast<llvm::Type*>(llvm::Type::getInt64Ty(module->getContext()));
+llvm::Value* AST::LiteralNode<int>::codeGen(Utils::IRContext* context) {
+    Typing::MatrixType matType = std::get<Typing::MatrixType>(*type);
+    if(matType.primType != Typing::PRIMITIVE::INT) return nullptr;
+    auto ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
     return llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
 }
 
 template <>
-llvm::Value* AST::LiteralNode<float>::codeGen(llvm::Module* module,
-                                              llvm::IRBuilder<>* Builder,
-                                              llvm::Function* fp) {
-    if (std::get<Typing::MatrixType>(*type).primType !=
-        Typing::PRIMITIVE::FLOAT)
-        return nullptr;
-    auto ty = llvm::Type::getFloatTy(module->getContext());
+llvm::Value* AST::LiteralNode<float>::codeGen(Utils::IRContext* context) {
+    Typing::MatrixType matType = std::get<Typing::MatrixType>(*type);
+    if(matType.primType != Typing::PRIMITIVE::FLOAT) return nullptr;
+    auto ty = llvm::Type::getFloatTy(context->module->getContext());
     return llvm::ConstantFP::get(ty, llvm::APFloat(value));
 }
 
 template <>
-llvm::Value* AST::LiteralNode<std::string>::codeGen(llvm::Module* module,
-                                                    llvm::IRBuilder<>* Builder,
-                                                    llvm::Function* fp) {
-    llvm::Type* ty;
+llvm::Value* AST::LiteralNode<std::string>::codeGen(Utils::IRContext* context) {
+    Typing::MatrixType matType = std::get<Typing::MatrixType>(*type);
+    if(matType.primType != Typing::PRIMITIVE::STRING) return nullptr;
     return nullptr;
 }
 

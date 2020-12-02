@@ -32,14 +32,12 @@ class BinaryExprNode : public ExprNode {
     std::shared_ptr<ExprNode> lhs, rhs;
     AST::BIN_OPERATORS op;
 
-    llvm::Value* codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
-                         llvm::Function* fp) override;
+    llvm::Value* codeGen(Utils::IRContext* context) override;
 
     // Operation specific codegen
-    void plusCodeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder,
-                     llvm::Value* lhs, llvm::Value* rhs, llvm::Type* lhsType,
-                     llvm::Type* rhsType, llvm::AllocaInst* matAlloc,
-                     std::vector<int> dimension, int index = 1,
-                     int prevDim = 1);
+    void plusCodeGen(Utils::IRContext* context,
+                     llvm::Value* lhsVal, llvm::Value* rhsVal,
+                     const Typing::Type& lhsType, const Typing::Type& rhsType,
+                     llvm::AllocaInst* matAlloc);
 };
 }  // namespace AST
