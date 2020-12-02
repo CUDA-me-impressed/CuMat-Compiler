@@ -7,25 +7,7 @@
 #include "ExprASTNode.hpp"
 
 namespace AST {
-enum BIN_OPERATORS {
-    PLUS,
-    MINUS,
-    MUL,
-    DIV,
-    LOR,
-    LAND,
-    LT,
-    GT,
-    LTE,
-    GTE,
-    EQ,
-    NEQ,
-    BAND,
-    BOR,
-    POW,
-    MATM,
-    CHAIN
-};
+enum BIN_OPERATORS { PLUS, MINUS, MUL, DIV, LOR, LAND, LT, GT, LTE, GTE, EQ, NEQ, BAND, BOR, POW, MATM, CHAIN };
 
 class BinaryExprNode : public ExprNode {
    public:
