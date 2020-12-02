@@ -24,16 +24,14 @@ int Typing::MatrixType::offset() const {
     }
 }
 int Typing::MatrixType::getLength() const {
-    return std::accumulate(this->dimensions.begin(), this->dimensions.end(), 1,
-                           std::multiplies());
+    return std::accumulate(this->dimensions.begin(), this->dimensions.end(), 1, std::multiplies());
 }
 
 llvm::Type* Typing::MatrixType::getLLVMType(llvm::Module* module) const {
     llvm::Type* ty;
     switch (this->primType) {
         case Typing::PRIMITIVE::INT: {
-            ty = static_cast<llvm::Type*>(
-                llvm::Type::getInt64Ty(module->getContext()));
+            ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(module->getContext()));
             break;
         }
         case Typing::PRIMITIVE::FLOAT: {
@@ -41,15 +39,13 @@ llvm::Type* Typing::MatrixType::getLLVMType(llvm::Module* module) const {
             break;
         }
         case Typing::PRIMITIVE::BOOL: {
-            ty = static_cast<llvm::Type*>(
-                llvm::Type::getInt1Ty(module->getContext()));
+            ty = static_cast<llvm::Type*>(llvm::Type::getInt1Ty(module->getContext()));
             break;
         }
         default: {
             std::cerr << "Cannot find a valid type for type" << std::endl;
             // Assign the type to be an integer
-            ty = static_cast<llvm::Type*>(
-                llvm::Type::getInt64Ty(module->getContext()));
+            ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(module->getContext()));
             break;
         }
         case Typing::PRIMITIVE::STRING:

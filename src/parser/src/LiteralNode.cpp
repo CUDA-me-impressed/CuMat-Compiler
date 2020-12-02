@@ -56,7 +56,7 @@ llvm::Value* AST::LiteralNode<T>::codeGen(llvm::Module* module,
 template <>
 llvm::Value* AST::LiteralNode<int>::codeGen(Utils::IRContext* context) {
     Typing::MatrixType matType = std::get<Typing::MatrixType>(*type);
-    if(matType.primType != Typing::PRIMITIVE::INT) return nullptr;
+    if (matType.primType != Typing::PRIMITIVE::INT) return nullptr;
     auto ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
     return llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
 }
@@ -64,7 +64,7 @@ llvm::Value* AST::LiteralNode<int>::codeGen(Utils::IRContext* context) {
 template <>
 llvm::Value* AST::LiteralNode<float>::codeGen(Utils::IRContext* context) {
     Typing::MatrixType matType = std::get<Typing::MatrixType>(*type);
-    if(matType.primType != Typing::PRIMITIVE::FLOAT) return nullptr;
+    if (matType.primType != Typing::PRIMITIVE::FLOAT) return nullptr;
     auto ty = llvm::Type::getFloatTy(context->module->getContext());
     return llvm::ConstantFP::get(ty, llvm::APFloat(value));
 }
@@ -72,7 +72,7 @@ llvm::Value* AST::LiteralNode<float>::codeGen(Utils::IRContext* context) {
 template <>
 llvm::Value* AST::LiteralNode<std::string>::codeGen(Utils::IRContext* context) {
     Typing::MatrixType matType = std::get<Typing::MatrixType>(*type);
-    if(matType.primType != Typing::PRIMITIVE::STRING) return nullptr;
+    if (matType.primType != Typing::PRIMITIVE::STRING) return nullptr;
     return nullptr;
 }
 

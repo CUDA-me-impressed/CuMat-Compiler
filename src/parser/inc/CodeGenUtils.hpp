@@ -4,7 +4,6 @@
 #include <llvm/IR/Instructions.h>
 
 #include <Type.hpp>
-
 #include <map>
 #include <string>
 #include <vector>
@@ -17,6 +16,6 @@ struct IRContext {
     llvm::IRBuilder<>* Builder;
 };
 
-llvm::AllocaInst* createMatrix(IRContext* context, const Typing::Type &type);
+llvm::AllocaInst* createMatrix(IRContext* context, const Typing::Type& type);
 
 }  // namespace Utils

@@ -8,11 +8,11 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 
-#include "CodeGenUtils.hpp"
-
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "CodeGenUtils.hpp"
 
 namespace AST {
 class Node {
