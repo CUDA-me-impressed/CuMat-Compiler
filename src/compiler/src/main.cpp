@@ -123,11 +123,12 @@ int main(int argc, char* argv[], char* envp[]) {
     }
 
     llvm::LLVMContext TheContext;
-
     for (const auto& tree : parseTrees) {
         llvm::Module TheModule("CuMat-" + std::get<0>(tree), TheContext);
         llvm::IRBuilder<> Builder(TheContext);
-        std::get<1>(tree)->codeGen(&TheModule, &Builder, nullptr);
+        // Context containing the module and IR Builder
+        Utils::IRContext treeContext = {&TheModule, &Builder};
+        std::get<1>(tree)->codeGen(&treeContext);
     }
 
     return 0;

@@ -13,22 +13,22 @@ static llvm::AllocaInst* CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, cons
 llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     // Assumption is that our types are two evaluated matricies of compatible
     // dimensions. We first generate code for each of the l and r matricies
-    llvm::Value* lhsVal = lhs->codeGen(module, Builder, fp);
-    llvm::Value* rhsVal = rhs->codeGen(module, Builder, fp);
+    llvm::Value* lhsVal = lhs->codeGen(context);
+    llvm::Value* rhsVal = rhs->codeGen(context);
     auto lhsMatType = std::dynamic_pointer_cast<AST::MatrixNode>(this->lhs);
     auto rhsMatType = std::dynamic_pointer_cast<AST::MatrixNode>(this->rhs);
 
-    llvm::Type* lhsTy = lhsMatType->getLLVMType(module);
-    llvm::Type* rhsTy = rhsMatType->getLLVMType(module);
+    llvm::Type* lhsTy = lhsMatType->getLLVMType(context->module);
+    llvm::Type* rhsTy = rhsMatType->getLLVMType(context->module);
 
     auto lhsDimension = lhsMatType->getDimensions();
     auto rhsDimension = rhsMatType->getDimensions();
 
-    auto newMatAlloc = Utils::generateMatrixAllocation(lhsTy, lhsDimension, Builder);
+    auto newMatAlloc = Utils::createMatrix(context, *lhs->type);
 
     switch (op) {
         case PLUS: {
-            plusCodeGen(module, Builder, lhsVal, rhsVal, lhsTy, rhsTy, newMatAlloc, lhsDimension);
+//            plusCodeGen(context->module, context->Builder, lhsVal, rhsVal, lhsTy, rhsTy, newMatAlloc, lhsDimension);
             break;
         }
         default:
@@ -61,27 +61,27 @@ void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context, llvm::Value* lh
         Builder->CreateStore(val, indexAlloca);
     }
 
-    for (int i = 0; i < dimension.at(0); i++) {
-        if (dimension.size() > 1) {
-            // Create a new dimension vector with this dimension removed
-            std::vector<int> subDimension(dimension.begin() + 1, dimension.end());
-            plusCodeGen(TheModule, Builder, lhs, rhs, lhsType, rhsType, matAlloc, subDimension, (index * prevDim) + i,
-                        dimension.at(0));
-        } else {
-            // TODO: Make work with non-64 bit variables
-            auto zero = llvm::ConstantInt::get(TheModule->getContext(), llvm::APInt(64, 0, true));
-            auto indexVal = llvm::ConstantInt::get(TheModule->getContext(), llvm::APInt(64, index, true));
-            // Pointer to the index within IR
-            auto ptrLhs =
-                llvm::GetElementPtrInst::Create(matType, lhs, {zero, indexVal}, "lhs", Builder->GetInsertBlock());
-            auto ptrRhs =
-                llvm::GetElementPtrInst::Create(matType, rhs, {zero, indexVal}, "rhs", Builder->GetInsertBlock());
-            auto ptrNew =
-                llvm::GetElementPtrInst::Create(matType, matAlloc, {zero, indexVal}, "", Builder->GetInsertBlock());
-            // Compute the Addition
-            auto addSum = Builder->CreateAdd(Builder->CreateLoad(ptrLhs), Builder->CreateLoad(ptrRhs));
-            // Store the element at the correct position
-            Builder->CreateStore(addSum, ptrNew);
-        }
-    }
+//    for (int i = 0; i < dimension.at(0); i++) {
+//        if (dimension.size() > 1) {
+//            // Create a new dimension vector with this dimension removed
+//            std::vector<int> subDimension(dimension.begin() + 1, dimension.end());
+//            plusCodeGen(TheModule, Builder, lhs, rhs, lhsType, rhsType, matAlloc, subDimension, (index * prevDim) + i,
+//                        dimension.at(0));
+//        } else {
+//            // TODO: Make work with non-64 bit variables
+//            auto zero = llvm::ConstantInt::get(TheModule->getContext(), llvm::APInt(64, 0, true));
+//            auto indexVal = llvm::ConstantInt::get(TheModule->getContext(), llvm::APInt(64, index, true));
+//            // Pointer to the index within IR
+//            auto ptrLhs =
+//                llvm::GetElementPtrInst::Create(matType, lhs, {zero, indexVal}, "lhs", Builder->GetInsertBlock());
+//            auto ptrRhs =
+//                llvm::GetElementPtrInst::Create(matType, rhs, {zero, indexVal}, "rhs", Builder->GetInsertBlock());
+//            auto ptrNew =
+//                llvm::GetElementPtrInst::Create(matType, matAlloc, {zero, indexVal}, "", Builder->GetInsertBlock());
+//            // Compute the Addition
+//            auto addSum = Builder->CreateAdd(Builder->CreateLoad(ptrLhs), Builder->CreateLoad(ptrRhs));
+//            // Store the element at the correct position
+//            Builder->CreateStore(addSum, ptrNew);
+//        }
+//    }
 }

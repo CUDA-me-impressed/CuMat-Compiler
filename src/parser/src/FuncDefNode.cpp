@@ -1,6 +1,6 @@
 #include "FuncDefNode.hpp"
 
-llvm::Value* AST::FuncDefNode::codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder, llvm::Function* fp) {
+llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     /*
     // For this function, we need a new BasicBlock structure
     llvm::BasicBlock* bb = llvm::BasicBlock::Create(
