@@ -28,5 +28,10 @@ void insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* 
 llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset);
 
 llvm::AllocaInst* createMatrix(IRContext* context, const Typing::Type& type);
-std::unique_ptr<Utils::LLVMMatrixRecord> getMatrixFromPointer(IRContext* context, llvm::AllocaInst* basePtr);
+LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
+llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr,
+                                       llvm::Value* offsetIndex);
+void insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, llvm::Value* offsetIndex,
+                             llvm::Value* val);
+llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type);
 }  // namespace Utils

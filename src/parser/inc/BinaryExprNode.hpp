@@ -18,7 +18,7 @@ class BinaryExprNode : public ExprNode {
 
     // Operation specific codegen
     void plusCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
-                     const Typing::Type& lhsType, const Typing::Type& rhsType,
-                     llvm::AllocaInst* matAlloc);
+                     const Typing::MatrixType& lhsType, const Typing::MatrixType& rhsType, llvm::AllocaInst* matAlloc,
+                     const Typing::MatrixType& resType);
 };
 }  // namespace AST

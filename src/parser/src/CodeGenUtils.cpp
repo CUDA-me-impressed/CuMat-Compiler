@@ -16,7 +16,7 @@ llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context, const Typing::T
     matLength = matType.getLength();
 
     // Generate actual array with offset for dimension information
-    llvm::Type* ty = matType.getLLVMType(context->module);
+    llvm::Type* ty = matType.getLLVMType(context);
 
     //
     llvm::ArrayType* matHeaderType = llvm::ArrayType::get(ty, matType.rank + 3);
@@ -44,13 +44,21 @@ llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context, const Typing::T
     // For the matrix dimensionality
     for (int i = 0; i <= matType.rank; i++) {
         auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.dimensions.at(i)));
+
         // Offset of 3 from before
         insertRelativeToPointer(context, matHeaderType, matHeaderAlloc, i + 3, val);
     }
     return matHeaderAlloc;
 }
 
-std::unique_ptr<Utils::LLVMMatrixRecord> Utils::getMatrixFromPointer(IRContext* context, llvm::AllocaInst* basePtr) {
+llvm::Value* Utils::getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type) {
+    auto mat = Utils::getMatrixFromPointer(context, basePtr);
+    auto value = context->Builder->CreateUDiv(
+        mat.numBytes, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, (type.offset()) / 8)));
+    return value;
+}
+
+Utils::LLVMMatrixRecord Utils::getMatrixFromPointer(IRContext* context, llvm::Value* basePtr) {
     // Let us get out some base info -> All addresses in memory are 64 bit
     auto dataPtrType = llvm::Type::getInt64PtrTy(context->module->getContext());
     auto headerType = llvm::Type::getInt64Ty(context->module->getContext());
@@ -58,12 +66,7 @@ std::unique_ptr<Utils::LLVMMatrixRecord> Utils::getMatrixFromPointer(IRContext* 
     llvm::Value* dataPtr = Utils::getValueRelativeToPointer(context, dataPtrType, basePtr, 0);
     llvm::Value* rank = Utils::getValueRelativeToPointer(context, headerType, basePtr, 1);
     llvm::Value* numBytes = Utils::getValueRelativeToPointer(context, headerType, basePtr, 2);
-    auto record = std::make_unique<Utils::LLVMMatrixRecord>();
-    // Yes this is awful, no i dont care, yes the compiler will optimise it (I hope)
-    record->dataPtr = dataPtr;
-    record->rank = rank;
-    record->numBytes = numBytes;
-    return record;
+    return {dataPtr, rank, numBytes};
 }
 
 /**
@@ -91,6 +94,33 @@ llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Type* ty
         llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), 0, true));
     auto offsetIndex =
         llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), offset));
+    auto ptrOffset =
+        llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
+    return context->Builder->CreateLoad(type, ptrOffset, "");
+}
+
+/**
+ * Inserts a LLVM Value relative to a pointer and a runtime offset in number of elements
+ * @param context
+ * @param type
+ * @param ptr - Base pointer
+ * @param offset - Number of elements away (valsize in bits)
+ * @param val - Value we are storing
+ * @param valSize - Default 64 (8 Bytes)
+ */
+void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, llvm::Value* offsetIndex,
+                                    llvm::Value* val) {
+    auto zero =
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), 0, true));
+    auto offsetPtr =
+        llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
+    context->Builder->CreateStore(val, offsetPtr);
+}
+
+llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr,
+                                              llvm::Value* offsetIndex) {
+    auto zero =
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), 0, true));
     auto ptrOffset =
         llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
     return context->Builder->CreateLoad(type, ptrOffset, "");
