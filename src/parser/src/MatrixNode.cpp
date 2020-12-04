@@ -36,7 +36,8 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
             auto index = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, elIndex, true));
 
             // Get pointer to the index location within memory
-            auto ptr = llvm::GetElementPtrInst::Create(matType, matAlloc, {zero, index}, "", context->Builder->GetInsertBlock());
+            auto ptr = llvm::GetElementPtrInst::Create(matType, matAlloc, {zero, index}, "",
+                                                       context->Builder->GetInsertBlock());
             context->Builder->CreateStore(val, ptr);
         }
     }

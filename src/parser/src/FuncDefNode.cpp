@@ -18,9 +18,8 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     Utils::funcTable[this->funcName][typesRaw] = func;
 
     // For this function, we need a new BasicBlock structure
-    llvm::BasicBlock* bb =
-        llvm::BasicBlock::Create(context->module->getContext(), "func" + this->funcName,
-                                 func, context->Builder->GetInsertBlock());
+    llvm::BasicBlock* bb = llvm::BasicBlock::Create(context->module->getContext(), "func" + this->funcName, func,
+                                                    context->Builder->GetInsertBlock());
     context->Builder->SetInsertPoint(bb);
 
     // TODO: Deal with the assignments
