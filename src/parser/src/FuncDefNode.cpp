@@ -6,12 +6,12 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
     for (const auto& typeNamePair : this->parameters) {
         typesRaw.push_back(typeNamePair.second);
-        argTypes.push_back(std::get<Typing::MatrixType>(*typeNamePair.second).getLLVMType(context->module));
+        argTypes.push_back(std::get<Typing::MatrixType>(*typeNamePair.second).getLLVMType(context));
     }
 
     // Get out the type and create a function
-    llvm::FunctionType* ft = llvm::FunctionType::get(
-        std::get<Typing::MatrixType>(*this->returnType).getLLVMType(context->module), argTypes, false);
+    llvm::FunctionType* ft =
+        llvm::FunctionType::get(std::get<Typing::MatrixType>(*this->returnType).getLLVMType(context), argTypes, false);
     llvm::Function* func = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, this->funcName, context->module);
 
     // Store within the symbol table
