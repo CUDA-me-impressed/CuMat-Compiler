@@ -50,7 +50,7 @@ llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context, const Typing::T
     return matHeaderAlloc;
 }
 
-std::unique_ptr<Utils::LLVMMatrixRecord> Utils::getMatrixFromPointer(IRContext* context, llvm::AllocaInst* basePtr) {
+std::unique_ptr<Utils::LLVMMatrixRecord> Utils::getMatrixFromPointer(IRContext* context, llvm::Value* basePtr) {
     // Let us get out some base info -> All addresses in memory are 64 bit
     auto dataPtrType = llvm::Type::getInt64PtrTy(context->module->getContext());
     auto headerType = llvm::Type::getInt64Ty(context->module->getContext());
@@ -94,4 +94,44 @@ llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Type* ty
     auto ptrOffset =
         llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
     return context->Builder->CreateLoad(type, ptrOffset, "");
+}
+
+llvm::Type* Utils::convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE typePrim) {
+    llvm::Type* ty;
+    switch (typePrim) {
+        case Typing::PRIMITIVE::INT: {
+            ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
+            break;
+        }
+        case Typing::PRIMITIVE::FLOAT: {
+            ty = llvm::Type::getFloatTy(context->module->getContext());
+            break;
+        }
+        case Typing::PRIMITIVE::BOOL: {
+            ty = static_cast<llvm::Type*>(llvm::Type::getInt1Ty(context->module->getContext()));
+            break;
+        }
+        default: {
+            std::cerr << "Cannot find a valid type" << std::endl;
+            // Assign the type to be an integer
+            ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
+            break;
+        }
+        case Typing::PRIMITIVE::STRING:
+            break;
+        case Typing::PRIMITIVE::NONE:
+            break;
+    }
+    return ty;
+}
+
+template <typename T>
+llvm::Value* Utils::getValueFromLLVM(IRContext* context, T val, Typing::PRIMITIVE typePrim, bool isSigned) {
+    llvm::Type* type = convertCuMatTypeToLLVM(context, typePrim);
+    if (typePrim != Typing::PRIMITIVE::FLOAT) {
+        return llvm::ConstantInt::get(context->module->getContext(),
+                                      llvm::APInt(type->getPrimitiveSizeInBits(), val, isSigned));
+    }else{
+        return llvm::ConstantFP::get(context->module->getContext(), llvm::APFloat(val));
+    }
 }

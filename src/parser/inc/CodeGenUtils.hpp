@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <type_traits>
 
 #include "Type.hpp"
 
@@ -25,8 +26,14 @@ struct LLVMMatrixRecord {
 };
 
 void insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset, llvm::Value* val);
+
+llvm::Type* convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE typePrim);
+
+template <typename T>
+llvm::Value* getValueFromLLVM(IRContext* context, T val, Typing::PRIMITIVE typePrim, bool isSigned);
+
 llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset);
 
 llvm::AllocaInst* createMatrix(IRContext* context, const Typing::Type& type);
-std::unique_ptr<Utils::LLVMMatrixRecord> getMatrixFromPointer(IRContext* context, llvm::AllocaInst* basePtr);
+std::unique_ptr<Utils::LLVMMatrixRecord> getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
 }  // namespace Utils
