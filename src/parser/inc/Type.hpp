@@ -11,6 +11,10 @@
 #include <variant>
 #include <vector>
 
+namespace Utils {
+struct IRContext;
+}
+
 namespace Typing {
 
 enum class PRIMITIVE { STRING, INT, FLOAT, BOOL, NONE };
@@ -22,9 +26,11 @@ class MatrixType {
 
     PRIMITIVE primType;
 
-    int getLength();
-    int offset();
-    llvm::Type* getLLVMType(llvm::Module* module);
+    [[nodiscard]] int getLength() const;
+    [[nodiscard]] int offset() const;
+    [[nodiscard]] const std::vector<uint>& getDimensions() const { return this->dimensions; }
+    bool simpleDimensionCompatible(const MatrixType& val) const { return true; };  // TODO make this not a noop
+    llvm::Type* getLLVMType(Utils::IRContext* context) const;
 };
 
 class GenericType {
@@ -34,7 +40,12 @@ class GenericType {
 class FunctionType {
    public:
     MatrixType returnType;
-    std::vector<std::variant<FunctionType, MatrixType>> parameters;
+    std::vector<std::variant<FunctionType, GenericType, MatrixType>> parameters;
+
+    std::variant<FunctionType, GenericType, MatrixType> resultingType(
+        const std::vector<std::variant<FunctionType, GenericType, MatrixType>>& args) {
+        return returnType;
+    };  // TODO make this not a noop
 };
 
 using Type = std::variant<FunctionType, GenericType, MatrixType>;
