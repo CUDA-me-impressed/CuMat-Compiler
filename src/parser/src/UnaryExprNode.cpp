@@ -11,7 +11,7 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
     auto newMatAlloc = Utils::createMatrix(context, *this->type);
     // We generate the operations sequentially
     // TODO: Add Kernel call for nvptx
-//    recursiveUnaryGeneration(op, context->module, context->Builder, ty, newMatAlloc, opVal, dimension);
+    //    recursiveUnaryGeneration(op, context->module, context->Builder, ty, newMatAlloc, opVal, dimension);
     return opVal;
 }
 

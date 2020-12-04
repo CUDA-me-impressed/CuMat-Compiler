@@ -10,17 +10,19 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
     auto matRecord = Utils::getMatrixFromPointer(context, conditionEval);
     if (matRecord->rank != Utils::getValueFromLLVM(context, 0, Typing::PRIMITIVE::INT, true)) return nullptr;
     // Fetch value from matrix memory
-    llvm::Value* dataVal = Utils::getValueRelativeToPointer(context, Utils::convertCuMatTypeToLLVM(context, Typing::PRIMITIVE::BOOL), matRecord->dataPtr, 0);
+    llvm::Value* dataVal = Utils::getValueRelativeToPointer(
+        context, Utils::convertCuMatTypeToLLVM(context, Typing::PRIMITIVE::BOOL), matRecord->dataPtr, 0);
 
-    if(!dataVal->getType()->isIntegerTy(1)) return nullptr; // TODO: Handle errors gracefully
-    conditionEval = context->Builder->CreateICmpNE(dataVal, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(1, 0, true)), "ifcond");
+    if (!dataVal->getType()->isIntegerTy(1)) return nullptr;  // TODO: Handle errors gracefully
+    conditionEval = context->Builder->CreateICmpNE(
+        dataVal, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(1, 0, true)), "ifcond");
 
     // Store function ptr for later use
     llvm::Function* func = context->Builder->GetInsertBlock()->getParent();
 
-    llvm::BasicBlock *truthyBB = llvm::BasicBlock::Create(context->module->getContext(), "truthy", func);
-    llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(context->module->getContext(), "merge");
-    llvm::BasicBlock *falseyBB = llvm::BasicBlock::Create(context->module->getContext(), "falsey");
+    llvm::BasicBlock* truthyBB = llvm::BasicBlock::Create(context->module->getContext(), "truthy", func);
+    llvm::BasicBlock* mergeBB = llvm::BasicBlock::Create(context->module->getContext(), "merge");
+    llvm::BasicBlock* falseyBB = llvm::BasicBlock::Create(context->module->getContext(), "falsey");
 
     // Handle the code of the body at the correct position
     context->Builder->SetInsertPoint(truthyBB);
@@ -31,7 +33,7 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
     func->getBasicBlockList().push_back(falseyBB);
     // Insert at the correct position
     context->Builder->SetInsertPoint(falseyBB);
-    llvm::Value *falseyVal = this->falsey->codeGen(context);
+    llvm::Value* falseyVal = this->falsey->codeGen(context);
 
     // Merge the lines of execution together
     context->Builder->CreateBr(mergeBB);

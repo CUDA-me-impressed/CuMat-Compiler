@@ -131,7 +131,7 @@ llvm::Value* Utils::getValueFromLLVM(IRContext* context, T val, Typing::PRIMITIV
     if (typePrim != Typing::PRIMITIVE::FLOAT) {
         return llvm::ConstantInt::get(context->module->getContext(),
                                       llvm::APInt(type->getPrimitiveSizeInBits(), val, isSigned));
-    }else{
+    } else {
         return llvm::ConstantFP::get(context->module->getContext(), llvm::APFloat(val));
     }
 }

@@ -37,9 +37,9 @@ std::vector<std::vector<std::string>> Preprocessor::SourceFileLoader::load() {
 
     std::vector<std::vector<std::string>> completeCUs;
     // For each CU
-    for(auto cu : compileUnits){
+    for (auto cu : compileUnits) {
         std::vector<std::string> linkedCU;
-        for(auto file : cu){
+        for (auto file : cu) {
             linkedCU.push_back(file->name);
         }
         completeCUs.push_back(linkedCU);
