@@ -6,13 +6,16 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     for (const auto& typeNamePair : this->parameters) {
         argTypes.push_back(std::get<Typing::MatrixType>(*typeNamePair.second).getLLVMType(context->module));
     }
+
+    // Get out the type and create a function
     llvm::FunctionType* ft = llvm::FunctionType::get(
         std::get<Typing::MatrixType>(*this->returnType).getLLVMType(context->module), argTypes, false);
     llvm::Function* func = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, this->funcName, context->module);
+
     // For this function, we need a new BasicBlock structure
     llvm::BasicBlock* bb =
         llvm::BasicBlock::Create(context->module->getContext(), "func" + this->funcName,
-                                 context->Builder->GetInsertBlock()->getParent(), context->Builder->GetInsertBlock());
+                                 func, context->Builder->GetInsertBlock());
     context->Builder->SetInsertPoint(bb);
     // Deal with input variables
 
