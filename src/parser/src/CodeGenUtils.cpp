@@ -155,13 +155,20 @@ llvm::Type* Utils::convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE 
     return ty;
 }
 
-template <typename T>
-llvm::Value* Utils::getValueFromLLVM(IRContext* context, T val, Typing::PRIMITIVE typePrim, bool isSigned) {
+
+llvm::Value* Utils::getValueFromLLVM(IRContext* context, int val, Typing::PRIMITIVE typePrim, bool isSigned) {
     llvm::Type* type = convertCuMatTypeToLLVM(context, typePrim);
     if (typePrim != Typing::PRIMITIVE::FLOAT) {
         return llvm::ConstantInt::get(context->module->getContext(),
                                       llvm::APInt(type->getPrimitiveSizeInBits(), val, isSigned));
-    } else {
+    }
+    return nullptr;
+}
+
+llvm::Value* Utils::getValueFromLLVM(IRContext* context, float val, Typing::PRIMITIVE typePrim, bool isSigned) {
+    llvm::Type* type = convertCuMatTypeToLLVM(context, typePrim);
+    if (typePrim == Typing::PRIMITIVE::FLOAT) {
         return llvm::ConstantFP::get(context->module->getContext(), llvm::APFloat(val));
     }
+    return nullptr;
 }

@@ -8,10 +8,10 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
     if (!conditionEval) return nullptr;  // TODO: Handle errors gracefully
 
     auto matRecord = Utils::getMatrixFromPointer(context, conditionEval);
-    if (matRecord->rank != Utils::getValueFromLLVM(context, 0, Typing::PRIMITIVE::INT, true)) return nullptr;
+    if (matRecord.rank != Utils::getValueFromLLVM(context, 0, Typing::PRIMITIVE::INT, true)) return nullptr;
     // Fetch value from matrix memory
     llvm::Value* dataVal = Utils::getValueRelativeToPointer(
-        context, Utils::convertCuMatTypeToLLVM(context, Typing::PRIMITIVE::BOOL), matRecord->dataPtr, 0);
+        context, Utils::convertCuMatTypeToLLVM(context, Typing::PRIMITIVE::BOOL), matRecord.dataPtr, 0);
 
     if (!dataVal->getType()->isIntegerTy(1)) return nullptr;  // TODO: Handle errors gracefully
     conditionEval = context->Builder->CreateICmpNE(

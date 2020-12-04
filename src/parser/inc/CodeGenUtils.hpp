@@ -29,8 +29,8 @@ void insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* 
 
 llvm::Type* convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE typePrim);
 
-template <typename T>
-llvm::Value* getValueFromLLVM(IRContext* context, T val, Typing::PRIMITIVE typePrim, bool isSigned);
+llvm::Value* getValueFromLLVM(IRContext* context, int val, Typing::PRIMITIVE typePrim, bool isSigned);
+llvm::Value* getValueFromLLVM(IRContext* context, float val, Typing::PRIMITIVE typePrim, bool isSigned);
 
 llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset);
 
