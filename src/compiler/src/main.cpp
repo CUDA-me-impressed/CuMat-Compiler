@@ -7,6 +7,13 @@
 #include <tuple>
 #include <vector>
 
+#include <llvm/Support/Host.h>
+#include <llvm/Support/TargetRegistry.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Target/TargetOptions.h>
+
 #include "CompilerOptions.hpp"
 #include "CuMatASTGenerator.hpp"
 #include "Preprocessor.hpp"
@@ -108,9 +115,9 @@ int main(int argc, char* argv[], char* envp[]) {
 
     Preprocessor::SourceFileLoader loader(inputFileName);
     auto files = loader.load();
-
+    std::vector<std::string> firstCU = files.at(0);
     std::vector<std::tuple<std::string, std::shared_ptr<AST::Node>>> parseTrees;
-    for (const auto& file : files) {
+    for (const auto& file : firstCU) {
         auto tree = runParser(file);
         parseTrees.emplace_back(std::make_tuple<const std::string, std::shared_ptr<AST::Node>>(
             (const std::basic_string<char, std::char_traits<char>, std::allocator<char>>&&)file, std::move(tree)));
@@ -129,6 +136,11 @@ int main(int argc, char* argv[], char* envp[]) {
         // Context containing the module and IR Builder
         Utils::IRContext treeContext = {&TheModule, &Builder};
         std::get<1>(tree)->codeGen(&treeContext);
+
+        std::error_code EC;
+        llvm::raw_fd_ostream dest("output.ll", EC);
+        std::cout << "Printing" << std::endl;
+        treeContext.module->print(llvm::errs(), nullptr);
     }
 
     return 0;

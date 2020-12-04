@@ -19,10 +19,11 @@ class ProgramFileNode {
 
     std::vector<std::string> fileContents;
 
+    std::string name;
+
    private:
     // Info stored at each node
     bool hasExpanded = false;
-    std::string name;
 };
 
 class ProgramGraph {
