@@ -16,8 +16,7 @@
 #include "UnaryExprNode.hpp"
 
 template <class T>
-std::shared_ptr<T> pConv(std::shared_ptr<AST::Node> n)
-{
+std::shared_ptr<T> pConv(std::shared_ptr<AST::Node> n) {
     return std::static_pointer_cast<T>(n);
 }
 
@@ -82,7 +81,7 @@ antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
 
     // Parameters
     auto paramsCtx = sig->parameters();
-    if(paramsCtx) {
+    if (paramsCtx) {
         auto paramCtx = paramsCtx->parameter();
         std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> paramContainer;
         for (auto& param : paramCtx) {
