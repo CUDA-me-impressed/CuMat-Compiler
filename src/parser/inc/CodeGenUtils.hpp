@@ -32,14 +32,15 @@ llvm::Type* convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE typePri
 llvm::Value* getValueFromLLVM(IRContext* context, int val, Typing::PRIMITIVE typePrim, bool isSigned);
 llvm::Value* getValueFromLLVM(IRContext* context, float val, Typing::PRIMITIVE typePrim, bool isSigned);
 
-llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset);
-
 llvm::AllocaInst* createMatrix(IRContext* context, const Typing::Type& type);
 LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
-llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr,
-                                       llvm::Value* offsetIndex);
 
-void insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, llvm::Value* offsetIndex,llvm::Value* val);
+llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset);
+llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset, llvm::Type* retType);
+llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, llvm::Value* offsetIndex);
+llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, llvm::Value* offsetIndex, llvm::Type* retType);
+
+void insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, llvm::Value* offsetIndex, llvm::Value* val);
 void insertRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val);
 
 llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type);

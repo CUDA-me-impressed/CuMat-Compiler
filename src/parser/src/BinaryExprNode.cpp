@@ -68,8 +68,8 @@ void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context, llvm::Value* lh
 
         auto* lindex = Builder->CreateURem(index, lsize);
         auto* rindex = Builder->CreateURem(index, rsize);
-        auto* l = Utils::getValueRelativeToPointer(context, lhsType.getLLVMType(context), lhsVal, lindex);
-        auto* r = Utils::getValueRelativeToPointer(context, rhsType.getLLVMType(context), rhsVal, rindex);
+        auto* l = Utils::getValueRelativeToPointer(context, lhsVal, lindex);
+        auto* r = Utils::getValueRelativeToPointer(context, rhsVal, rindex);
         auto* add = Builder->CreateAdd(l, r, "add");
         Utils::insertRelativeToPointer(context, resType.getLLVMType(context), matAlloc, index, add);
 

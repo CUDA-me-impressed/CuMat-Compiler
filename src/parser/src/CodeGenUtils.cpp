@@ -62,9 +62,9 @@ Utils::LLVMMatrixRecord Utils::getMatrixFromPointer(IRContext* context, llvm::Va
     auto dataPtrType = llvm::Type::getInt64PtrTy(context->module->getContext());
     auto headerType = llvm::Type::getInt64Ty(context->module->getContext());
 
-    llvm::Value* dataPtr = Utils::getValueRelativeToPointer(context, dataPtrType, basePtr, 0);
-    llvm::Value* rank = Utils::getValueRelativeToPointer(context, headerType, basePtr, 1);
-    llvm::Value* numBytes = Utils::getValueRelativeToPointer(context, headerType, basePtr, 2);
+    llvm::Value* dataPtr = Utils::getValueRelativeToPointer(context, basePtr, 0, dataPtrType);
+    llvm::Value* rank = Utils::getValueRelativeToPointer(context, basePtr, 1, headerType);
+    llvm::Value* numBytes = Utils::getValueRelativeToPointer(context, basePtr, 2, headerType);
     return {dataPtr, rank, numBytes};
 }
 
@@ -88,15 +88,28 @@ void Utils::insertRelativeToPointer(IRContext* context, llvm::Value* ptr, int of
     context->Builder->CreateStore(val, offsetPtr);
 }
 
-llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset) {
+llvm::Value * Utils::getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, llvm::Value* offsetIndex, llvm::Type* retType) {
     int size = 64;
+    llvm::Type* type = ptr->getType();
     auto zero =
         llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(size, 0, true));
-    auto offsetIndex =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(size, offset));
     auto ptrOffset =
-        llvm::GetElementPtrInst::Create(ptr->getType()->getPointerElementType(), ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
-    return context->Builder->CreateLoad(type, ptrOffset, "");
+        llvm::GetElementPtrInst::Create(type->getPointerElementType(), ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
+    return context->Builder->CreateLoad(retType, ptrOffset, "");
+}
+
+llvm::Value * Utils::getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset, llvm::Type* retType) {
+    auto* offsetVal = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, offset));
+    return Utils::getValueRelativeToPointer(context, ptr, offsetVal, retType);
+}
+
+llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, llvm::Value* offsetIndex) {
+    return Utils::getValueRelativeToPointer(context, ptr, offsetIndex, ptr->getType());
+}
+
+llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset) {
+    auto* offsetVal = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, offset));
+    return Utils::getValueRelativeToPointer(context, ptr, offsetVal, ptr->getType());
 }
 
 /**
@@ -110,21 +123,14 @@ llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Type* ty
  */
 void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, llvm::Value* offsetIndex,
                                     llvm::Value* val) {
+    int headerBitSize = 64;
     auto zero =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), 0, true));
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, 0, true));
     auto offsetPtr =
-        llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
+        llvm::GetElementPtrInst::Create(ptr->getType()->getPointerElementType(), ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
     context->Builder->CreateStore(val, offsetPtr);
 }
 
-llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr,
-                                              llvm::Value* offsetIndex) {
-    auto zero =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), 0, true));
-    auto ptrOffset =
-        llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
-    return context->Builder->CreateLoad(type, ptrOffset, "");
-}
 
 llvm::Type* Utils::convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE typePrim) {
     llvm::Type* ty;
