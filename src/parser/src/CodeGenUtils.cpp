@@ -155,7 +155,6 @@ llvm::Type* Utils::convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE 
     return ty;
 }
 
-
 llvm::Value* Utils::getValueFromLLVM(IRContext* context, int val, Typing::PRIMITIVE typePrim, bool isSigned) {
     llvm::Type* type = convertCuMatTypeToLLVM(context, typePrim);
     if (typePrim != Typing::PRIMITIVE::FLOAT) {
