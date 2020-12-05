@@ -1,7 +1,7 @@
 func int add(int num1, int num2) {
-    ret = num1 + num2
+    return num1 + num2
 }
 
 func int main {
-    ret = add (1) (2)
+    return add (1) (2)
 }
