@@ -15,6 +15,12 @@
 #include "TernaryExprNode.hpp"
 #include "UnaryExprNode.hpp"
 
+template <class T>
+std::shared_ptr<T> pConv(std::shared_ptr<AST::Node> n)
+{
+    return std::static_pointer_cast<T>(n);
+}
+
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
@@ -27,7 +33,8 @@ antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitImports(CuMatParser::ImportsContext* ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children = this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
+    auto childrenAny = this->visitChildren(ctx);
+    auto children = childrenAny.as<std::vector<std::shared_ptr<AST::Node>>>();
     for (auto& child : children) {
         n->addChild(std::move(child));
     }
@@ -74,19 +81,22 @@ antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
     n->funcName = ctx->signature()->funcname()->getText();
 
     // Parameters
-    auto paramCtx = sig->parameters()->parameter();
-    std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> paramContainer;
-    for (auto& param : paramCtx) {
-        std::pair<std::string, std::shared_ptr<Typing::Type>> p(param->varname()->getText(),
-                                                                std::move(visit(param->typespec())));
-        paramContainer.emplace_back(p);
+    auto paramsCtx = sig->parameters();
+    if(paramsCtx) {
+        auto paramCtx = paramsCtx->parameter();
+        std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> paramContainer;
+        for (auto& param : paramCtx) {
+            std::pair<std::string, std::shared_ptr<Typing::Type>> p(param->varname()->getText(),
+                                                                    std::move(visit(param->typespec())));
+            paramContainer.emplace_back(p);
+        }
+        n->parameters = std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>>(paramContainer);
     }
-    n->parameters = std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>>(paramContainer);
 
     // Block
     n->block = std::move(visit(ctx->block()));
 
-    return std::move(n);
+    return std::move(pConv<AST::Node>(n));
 }
 
 // NOTE: Returns a Type instead of a Node
@@ -188,7 +198,7 @@ antlrcpp::Any CuMatVisitor::visitExp_if(CuMatParser::Exp_ifContext* ctx) {
     ifN->truthy = std::move(visit(ctx->expression(1)));
     ifN->falsey = std::move(visit(ctx->expression(2)));
 
-    return std::move(ifN);
+    return std::move(pConv<AST::ExprNode>(ifN));
 }
 
 bool CuMatVisitor::compareTokenTypes(size_t a, size_t b) const {
@@ -220,7 +230,7 @@ antlrcpp::Any CuMatVisitor::visitExp_logic(CuMatParser::Exp_logicContext* ctx) {
             }
             n->lhs = std::move(visit(*it));
             n->literalText = n->lhs->literalText + (op->getText()) + n->rhs->literalText;
-            rightSide = std::move(n);
+            rightSide = std::move(pConv<AST::ExprNode>(n));
         }
         return std::move(rightSide);
     } else {
@@ -261,7 +271,7 @@ antlrcpp::Any CuMatVisitor::visitExp_comp(CuMatParser::Exp_compContext* ctx) {
             }
             n->lhs = std::move(visit(*it));
             n->literalText = n->lhs->literalText + (op->getText()) + n->rhs->literalText;
-            rightSide = std::move(n);
+            rightSide = std::move(pConv<AST::ExprNode>(n));
         }
         return std::move(rightSide);
     } else {
@@ -294,7 +304,7 @@ antlrcpp::Any CuMatVisitor::visitExp_bit(CuMatParser::Exp_bitContext* ctx) {
             }
             n->lhs = std::move(visit(*it));
             n->literalText = n->lhs->literalText + (op->getText()) + n->rhs->literalText;
-            rightSide = std::move(n);
+            rightSide = std::move(pConv<AST::ExprNode>(n));
         }
         return std::move(rightSide);
     } else {
@@ -327,7 +337,7 @@ antlrcpp::Any CuMatVisitor::visitExp_sum(CuMatParser::Exp_sumContext* ctx) {
             }
             n->lhs = std::move(visit(*it));
             n->literalText = n->lhs->literalText + (op->getText()) + n->rhs->literalText;
-            rightSide = std::move(n);
+            rightSide = std::move(pConv<AST::ExprNode>(n));
         }
         return std::move(rightSide);
     } else {
@@ -361,7 +371,7 @@ antlrcpp::Any CuMatVisitor::visitExp_mult(CuMatParser::Exp_multContext* ctx) {
             }
             n->lhs = std::move(visit(*it));
             n->literalText = n->lhs->literalText + (op->getText()) + n->rhs->literalText;
-            rightSide = std::move(n);
+            rightSide = std::move(pConv<AST::ExprNode>(n));
         }
         return std::move(rightSide);
     } else {
@@ -386,7 +396,7 @@ antlrcpp::Any CuMatVisitor::visitExp_pow(CuMatParser::Exp_powContext* ctx) {
             n->rhs = std::move(visit(it));
             n->literalText =
                 n->lhs->literalText + (this->parserVocab->getLiteralName(CuMatLexer::POW)) + n->rhs->literalText;
-            leftSide = std::move(n);
+            leftSide = std::move(pConv<AST::ExprNode>(n));
         }
         return std::move(leftSide);
     } else {
@@ -411,7 +421,7 @@ antlrcpp::Any CuMatVisitor::visitExp_mat(CuMatParser::Exp_matContext* ctx) {
             n->lhs = std::move(visit(*it));
             n->literalText =
                 n->lhs->literalText + (this->parserVocab->getLiteralName(CuMatLexer::MATM)) + n->rhs->literalText;
-            rightSide = std::move(n);
+            rightSide = std::move(pConv<AST::ExprNode>(n));
         }
         return std::move(rightSide);
     } else {
@@ -429,7 +439,7 @@ antlrcpp::Any CuMatVisitor::visitExp_neg(CuMatParser::Exp_negContext* ctx) {
         n->literalText = ctx->getText();
         n->op = AST::UNA_OPERATORS::NEG;
         n->operand = std::move(visit(ctx->exp_bnot()));
-        return std::move(n);
+        return std::move(pConv<AST::ExprNode>(n));
     }
 }
 
@@ -443,7 +453,7 @@ antlrcpp::Any CuMatVisitor::visitExp_bnot(CuMatParser::Exp_bnotContext* ctx) {
         n->literalText = ctx->getText();
         n->op = AST::UNA_OPERATORS::BNOT;
         n->operand = std::move(visit(ctx->exp_not()));
-        return std::move(n);
+        return std::move(pConv<AST::ExprNode>(n));
     }
 }
 
@@ -457,7 +467,7 @@ antlrcpp::Any CuMatVisitor::visitExp_not(CuMatParser::Exp_notContext* ctx) {
         n->literalText = ctx->getText();
         n->op = AST::UNA_OPERATORS::LNOT;
         n->operand = std::move(visit(ctx->exp_chain()));
-        return std::move(n);
+        return std::move(pConv<AST::ExprNode>(n));
     }
 }
 
@@ -478,7 +488,7 @@ antlrcpp::Any CuMatVisitor::visitExp_chain(CuMatParser::Exp_chainContext* ctx) {
             n->rhs = std::move(visit(it));
             n->literalText =
                 n->lhs->literalText + (this->parserVocab->getLiteralName(CuMatLexer::CHAIN)) + n->rhs->literalText;
-            leftSide = std::move(n);
+            leftSide = std::move(pConv<AST::ExprNode>(n));
         }
         return std::move(leftSide);
     } else {
@@ -489,7 +499,8 @@ antlrcpp::Any CuMatVisitor::visitExp_chain(CuMatParser::Exp_chainContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext* ctx) {
     auto fN = std::make_shared<AST::FunctionExprNode>();
     fN->literalText = ctx->getText();
-    fN->nonAppliedFunction = std::move(visit(ctx->value()));
+    auto value = visit(ctx->value());
+    fN->nonAppliedFunction = std::move(value);
     if (!ctx->args().empty()) {
         std::vector<std::shared_ptr<AST::ExprNode>> arguments;
         for (auto arg : ctx->args()) {
@@ -501,7 +512,7 @@ antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext* ctx) {
                                           // to use the copy semantics. We'll see
     }
 
-    return std::move(fN);
+    return std::move(pConv<AST::ExprNode>(fN));
 }
 
 antlrcpp::Any CuMatVisitor::visitValue(CuMatParser::ValueContext* ctx) {
@@ -561,7 +572,7 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
     t.dimensions = std::vector<uint>(dimensions);
     t.rank = dimensions.size();
     mN->type = std::make_shared<Typing::Type>(t);
-    return std::move(mN);
+    return std::move(pConv<AST::ExprNode>(mN));
 }
 
 antlrcpp::Any CuMatVisitor::visitScalarliteral(CuMatParser::ScalarliteralContext* ctx) {
@@ -573,7 +584,7 @@ antlrcpp::Any CuMatVisitor::visitScalarliteral(CuMatParser::ScalarliteralContext
         mn.rank = 0;
         mn.primType = Typing::PRIMITIVE::STRING;
         n->type = std::make_shared<Typing::Type>(mn);
-        return std::move(n);
+        return std::move(pConv<AST::ExprNode>(n));
     } else  // Implies numLiteral is not a nullptr
     {
         if (ctx->numliteral()->INT() != nullptr) {
@@ -584,7 +595,7 @@ antlrcpp::Any CuMatVisitor::visitScalarliteral(CuMatParser::ScalarliteralContext
             mn.rank = 0;
             mn.primType = Typing::PRIMITIVE::INT;
             n->type = std::make_shared<Typing::Type>(mn);
-            return std::move(n);
+            return std::move(pConv<AST::ExprNode>(n));
         } else  // Implies float
         {
             auto n = std::make_shared<AST::LiteralNode<float>>();
@@ -594,7 +605,7 @@ antlrcpp::Any CuMatVisitor::visitScalarliteral(CuMatParser::ScalarliteralContext
             mn.rank = 0;
             mn.primType = Typing::PRIMITIVE::FLOAT;
             n->type = std::make_shared<Typing::Type>(mn);
-            return std::move(n);
+            return std::move(pConv<AST::ExprNode>(n));
         }
     }
 }
@@ -626,7 +637,10 @@ antlrcpp::Any CuMatVisitor::visitCmtypedef(CuMatParser::CmtypedefContext* ctx) {
     return n;
 }
 
-antlrcpp::Any CuMatVisitor::defaultResult() { return nullptr; }
+antlrcpp::Any CuMatVisitor::defaultResult() {
+    std::vector<std::shared_ptr<AST::Node>> emptyContainer;
+    return emptyContainer;
+}
 
 antlrcpp::Any CuMatVisitor::aggregateResult(antlrcpp::Any aggregate, const antlrcpp::Any& nextResult) {
     if (aggregate.isNull()) {
