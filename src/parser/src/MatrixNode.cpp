@@ -11,33 +11,34 @@
 
 #include "CodeGenUtils.hpp"
 
-llvm::Value* AST::MatrixNode::codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder, llvm::Function* fp) {
+llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
     // Get the LLVM type out for the basic type
-    llvm::Type* ty = this->getLLVMType(module);
+    llvm::Type* ty = this->getLLVMType(context->module);
     // Get function to store this data within
     llvm::ArrayType* matType = llvm::ArrayType::get(ty, this->numElements());
 
     // Create a store instance for the correct precision and data type
     // Address space set to zero
-    auto matAlloc = Builder->CreateAlloca(ty, 0, nullptr, "matVar");
+    auto matAlloc = context->Builder->CreateAlloca(ty, 0, nullptr, "matVar");
 
     // We need to fill in the data for each of the elements of the array:
     std::vector<llvm::Value*> matElements(this->numElements());
-    auto zero = llvm::ConstantInt::get(module->getContext(), llvm::APInt(64, 0, true));
+    auto zero = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, 0, true));
     for (int row = 0; row < data.size(); row++) {
         for (int column = 0; column < data[row].size(); column++) {
             // Generate the code for the element -> The Value* will be what
             // we store within the matrix location so depending on what we are
             // storing, it must be sufficient to run
             size_t elIndex = row * data.size() + column;
-            llvm::Value* val = data[row][column]->codeGen(module, Builder, fp);
+            llvm::Value* val = data[row][column]->codeGen(context);
 
             // Create index for current index of the value
-            auto index = llvm::ConstantInt::get(module->getContext(), llvm::APInt(64, elIndex, true));
+            auto index = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, elIndex, true));
 
             // Get pointer to the index location within memory
-            auto ptr = llvm::GetElementPtrInst::Create(matType, matAlloc, {zero, index}, "", Builder->GetInsertBlock());
-            Builder->CreateStore(val, ptr);
+            auto ptr = llvm::GetElementPtrInst::Create(matType, matAlloc, {zero, index}, "",
+                                                       context->Builder->GetInsertBlock());
+            context->Builder->CreateStore(val, ptr);
         }
     }
 

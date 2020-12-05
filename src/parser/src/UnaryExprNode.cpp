@@ -3,18 +3,15 @@
 #include "CodeGenUtils.hpp"
 #include "MatrixNode.hpp"
 
-llvm::Value* AST::UnaryExprNode::codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder, llvm::Function* fp) {
+llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
     // opval should be an evaluated matrix for which we can create a new matrix
-    llvm::Value* opVal = this->operand->codeGen(module, Builder, fp);
+    llvm::Value* opVal = this->operand->codeGen(context);
     // We go through and apply the relevant unary operator to each element of
     // the matrix
-    auto matType = std::dynamic_pointer_cast<AST::MatrixNode>(this->operand);
-    llvm::Type* ty = matType->getLLVMType(module);
-    auto dimension = matType->getDimensions();
-    auto newMatAlloc = Utils::generateMatrixAllocation(ty, dimension, Builder);
+    auto newMatAlloc = Utils::createMatrix(context, *this->type);
     // We generate the operations sequentially
     // TODO: Add Kernel call for nvptx
-    recursiveUnaryGeneration(op, module, Builder, ty, newMatAlloc, opVal, dimension);
+    //    recursiveUnaryGeneration(op, context->module, context->Builder, ty, newMatAlloc, opVal, dimension);
     return opVal;
 }
 

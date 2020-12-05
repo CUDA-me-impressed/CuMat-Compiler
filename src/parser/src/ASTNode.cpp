@@ -14,8 +14,8 @@ void Node::semanticPass() {
     for (auto const& child : this->children) child->semanticPass();
 }
 
-llvm::Value* Node::codeGen(llvm::Module* TheModule, llvm::IRBuilder<>* Builder, llvm::Function* fp) {
-    for (auto const& child : this->children) child->codeGen(TheModule, Builder, fp);
+llvm::Value* Node::codeGen(Utils::IRContext* context) {
+    for (auto const& child : this->children) child->codeGen(context);
     return nullptr;
 }
 

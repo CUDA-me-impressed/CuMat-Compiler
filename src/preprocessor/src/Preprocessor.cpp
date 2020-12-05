@@ -14,7 +14,9 @@
  * assumed as from pwd.
  * @return
  */
-std::vector<std::string> Preprocessor::SourceFileLoader::load() {
+std::vector<std::vector<std::string>> Preprocessor::SourceFileLoader::load() {
+    std::vector<std::vector<std::shared_ptr<ProgramFileNode>>> compileUnits;
+
     if (lookupPath.empty()) {
         // We will load the files from the current directory
         auto fileLines = load(this->rootFile);
@@ -28,13 +30,22 @@ std::vector<std::string> Preprocessor::SourceFileLoader::load() {
         std::unique_ptr<ProgramGraph> program = std::make_unique<ProgramGraph>(rootNode);
         // We should have the entire program loaded into memory now, let us sort
         // the graph
-        std::vector<std::vector<std::shared_ptr<ProgramFileNode>>> compileUnits;
         program->generateCompileUnits(compileUnits);
     } else {
         // Assume we have a lookup of the various file paths
     }
 
-    return std::vector<std::string>();
+    std::vector<std::vector<std::string>> completeCUs;
+    // For each CU
+    for (auto cu : compileUnits) {
+        std::vector<std::string> linkedCU;
+        for (auto file : cu) {
+            linkedCU.push_back(file->name);
+        }
+        completeCUs.push_back(linkedCU);
+    }
+
+    return completeCUs;
 }
 
 std::unique_ptr<std::vector<std::string>> Preprocessor::SourceFileLoader::load(const std::string& file) {

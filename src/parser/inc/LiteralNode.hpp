@@ -8,6 +8,6 @@ class LiteralNode : public ExprNode {
    public:
     T value;
 
-    llvm::Value* codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder, llvm::Function* fp) override;
+    llvm::Value* codeGen(Utils::IRContext* context) override;
 };
 }  // namespace AST
