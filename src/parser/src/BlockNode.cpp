@@ -9,6 +9,7 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
     // TODO: Deal with the assignments
 
     // Generate Return statement code
-    llvm::Value* retVal = context->Builder->CreateRet(retVal);
+    llvm::Value* returnExprVal = this->returnExpr->codeGen(context);
+    llvm::Value* retVal = context->Builder->CreateRet(returnExprVal);
     return retVal;
 }
