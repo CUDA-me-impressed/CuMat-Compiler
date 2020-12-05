@@ -138,7 +138,7 @@ int main(int argc, char* argv[], char* envp[]) {
         std::get<1>(tree)->codeGen(&treeContext);
 
         std::error_code EC;
-        llvm::raw_fd_ostream dest("output.ll", EC);
+        llvm::raw_fd_ostream dest("CuMat-" + std::get<0>(tree) + ".ll", EC);
         std::cout << "Printing" << std::endl;
         treeContext.module->print(dest, nullptr);
     }
