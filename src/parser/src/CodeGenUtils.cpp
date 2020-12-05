@@ -29,24 +29,24 @@ llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context, const Typing::T
 
     // Allocation pointers for header and end
     auto matAlloc = context->Builder->CreateAlloca(matDataType, 0, matSizeLLVM, "matVar");
-    auto matHeaderAlloc = context->Builder->CreateAlloca(headerTy, 0, matSizeHeader, "headerAlloc");
+    auto matHeaderAlloc = context->Builder->CreateAlloca(matHeaderType, 0, matSizeHeader, "headerAlloc");
 
     auto rank = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.rank));
     auto numBytes = llvm::ConstantInt::get(context->module->getContext(),
                                            llvm::APInt(64, (matType.getLength() * matType.offset()) / 8));
 
     // Insert header into data
-    insertRelativeToPointer(context, matHeaderAlloc, 0, rank);  // For the pointer to the data
-//    insertRelativeToPointer(context, matHeaderAlloc, 1, rank);      // For rank of matrix
-//    insertRelativeToPointer(context, matHeaderAlloc, 2, numBytes);  // For number of bytes in matrix
-//
-//    // For the matrix dimensionality
-//    for (int i = 0; i <= matType.rank; i++) {
-//        auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.dimensions.at(i)));
-//
-//        // Offset of 3 from before
-//        insertRelativeToPointer(context, matHeaderAlloc, i + 3, val);
-//    }
+    insertRelativeToPointer(context, matHeaderAlloc, 0, matAlloc);  // For the pointer to the data
+    insertRelativeToPointer(context, matHeaderAlloc, 1, rank);      // For rank of matrix
+    insertRelativeToPointer(context, matHeaderAlloc, 2, numBytes);  // For number of bytes in matrix
+
+    // For the matrix dimensionality
+    for (int i = 0; i < matType.rank; i++) {
+        auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.dimensions.at(i)));
+
+        // Offset of 3 from before
+        insertRelativeToPointer(context, matHeaderAlloc, i + 3, val);
+    }
     return matHeaderAlloc;
 }
 
@@ -78,23 +78,24 @@ Utils::LLVMMatrixRecord Utils::getMatrixFromPointer(IRContext* context, llvm::Va
  * @param valSize - Default 64 (8 Bytes)
  */
 void Utils::insertRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val) {
-    int headerBitSize = ptr->getType()->getPointerElementType()->getIntegerBitWidth();
+    int headerBitSize = 64;
     auto zero =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, 0, false));
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, 0, true));
     auto offsetIndex =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, offset));
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, offset, true));
     auto offsetPtr =
-        llvm::GetElementPtrInst::Create(offsetIndex->getType(), ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
+        llvm::GetElementPtrInst::Create(ptr->getType()->getPointerElementType(), ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
     context->Builder->CreateStore(val, offsetPtr);
 }
 
 llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset) {
+    int size = 64;
     auto zero =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), 0, true));
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(size, 0, true));
     auto offsetIndex =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), offset));
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(size, offset));
     auto ptrOffset =
-        llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
+        llvm::GetElementPtrInst::Create(ptr->getType()->getPointerElementType(), ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
     return context->Builder->CreateLoad(type, ptrOffset, "");
 }
 

@@ -57,7 +57,6 @@ void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context, llvm::Value* lh
     llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), "add.done", parent);
 
     auto indexAlloca = CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
-    return;
     auto* lsize = Utils::getLength(context, lhsVal, lhsType);
     auto* rsize = Utils::getLength(context, rhsVal, rhsType);
     auto* nsize = Utils::getLength(context, matAlloc, resType);
