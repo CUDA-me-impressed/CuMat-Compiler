@@ -17,37 +17,36 @@ llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context, const Typing::T
 
     // Generate actual array with offset for dimension information
     llvm::Type* ty = matType.getLLVMType(context);
-
+    auto* headerTy = llvm::IntegerType::getInt64Ty(context->module->getContext());
     //
-    llvm::ArrayType* matHeaderType = llvm::ArrayType::get(ty, matType.rank + 3);
+    llvm::ArrayType* matHeaderType = llvm::ArrayType::get(headerTy, matType.rank + 3);
     llvm::ArrayType* matDataType = llvm::ArrayType::get(ty, matLength);
 
     llvm::ConstantInt* matSizeLLVM =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matLength, true));
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matLength, false));
     llvm::ConstantInt* matSizeHeader =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.rank + 3, true));
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.rank + 3, false));
 
     // Allocation pointers for header and end
-    auto matAlloc = context->Builder->CreateAlloca(ty, 0, matSizeLLVM, "matVar");
-    auto matHeaderAlloc = context->Builder->CreateAlloca(llvm::Type::getInt64Ty(context->module->getContext()), 0,
-                                                         matSizeHeader, "matHeader");
+    auto matAlloc = context->Builder->CreateAlloca(matDataType, 0, matSizeLLVM, "matVar");
+    auto matHeaderAlloc = context->Builder->CreateAlloca(headerTy, 0, matSizeHeader, "headerAlloc");
 
     auto rank = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.rank));
     auto numBytes = llvm::ConstantInt::get(context->module->getContext(),
                                            llvm::APInt(64, (matType.getLength() * matType.offset()) / 8));
 
     // Insert header into data
-    insertRelativeToPointer(context, matHeaderType, matHeaderAlloc, 0, matAlloc);  // For the pointer to the data
-    insertRelativeToPointer(context, matHeaderType, matHeaderAlloc, 1, rank);      // For rank of matrix
-    insertRelativeToPointer(context, matHeaderType, matHeaderAlloc, 2, numBytes);  // For number of bytes in matrix
-
-    // For the matrix dimensionality
-    for (int i = 0; i <= matType.rank; i++) {
-        auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.dimensions.at(i)));
-
-        // Offset of 3 from before
-        insertRelativeToPointer(context, matHeaderType, matHeaderAlloc, i + 3, val);
-    }
+    insertRelativeToPointer(context, matHeaderAlloc, 0, rank);  // For the pointer to the data
+//    insertRelativeToPointer(context, matHeaderAlloc, 1, rank);      // For rank of matrix
+//    insertRelativeToPointer(context, matHeaderAlloc, 2, numBytes);  // For number of bytes in matrix
+//
+//    // For the matrix dimensionality
+//    for (int i = 0; i <= matType.rank; i++) {
+//        auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.dimensions.at(i)));
+//
+//        // Offset of 3 from before
+//        insertRelativeToPointer(context, matHeaderAlloc, i + 3, val);
+//    }
     return matHeaderAlloc;
 }
 
@@ -78,14 +77,14 @@ Utils::LLVMMatrixRecord Utils::getMatrixFromPointer(IRContext* context, llvm::Va
  * @param val - Value we are storing
  * @param valSize - Default 64 (8 Bytes)
  */
-void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset,
-                                    llvm::Value* val) {
+void Utils::insertRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val) {
+    int headerBitSize = ptr->getType()->getPointerElementType()->getIntegerBitWidth();
     auto zero =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), 0, true));
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, 0, false));
     auto offsetIndex =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), offset));
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, offset));
     auto offsetPtr =
-        llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
+        llvm::GetElementPtrInst::Create(offsetIndex->getType(), ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
     context->Builder->CreateStore(val, offsetPtr);
 }
 

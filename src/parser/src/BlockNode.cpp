@@ -2,7 +2,7 @@
 
 llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
     // For this function, we need a new BasicBlock structure
-    llvm::BasicBlock* bb = llvm::BasicBlock::Create(context->module->getContext(), "func",
+    llvm::BasicBlock* bb = llvm::BasicBlock::Create(context->module->getContext(), "func"+this->callingFunctionName,
                                                     context->function, context->Builder->GetInsertBlock());
     context->Builder->SetInsertPoint(bb);
 
