@@ -20,14 +20,15 @@ std::shared_ptr<T> pConv(std::shared_ptr<AST::Node> n) {
     return std::static_pointer_cast<T>(n);
 }
 
-// TODO Implement
 antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children = this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
-    }
-    return n;
+    auto i = visit(ctx->imports());
+    auto d = visit(ctx->definitions());
+
+    n->addChild(std::move(i));
+    n->addChild(std::move(d));
+
+    return std::move(n);
 }
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitImports(CuMatParser::ImportsContext* ctx) {
@@ -37,7 +38,7 @@ antlrcpp::Any CuMatVisitor::visitImports(CuMatParser::ImportsContext* ctx) {
     for (auto& child : children) {
         n->addChild(std::move(child));
     }
-    return n;
+    return std::move(n);
 }
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitCmimport(CuMatParser::CmimportContext* ctx) {
@@ -55,7 +56,7 @@ antlrcpp::Any CuMatVisitor::visitDefinitions(CuMatParser::DefinitionsContext* ct
     for (auto& child : children) {
         n->addChild(std::move(child));
     }
-    return n;
+    return std::move(n);
 }
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitDefinition(CuMatParser::DefinitionContext* ctx) {
@@ -64,7 +65,7 @@ antlrcpp::Any CuMatVisitor::visitDefinition(CuMatParser::DefinitionContext* ctx)
     for (auto& child : children) {
         n->addChild(std::move(child));
     }
-    return n;
+    return std::move(n);
 }
 // TODO Complete Implementing
 antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
@@ -642,8 +643,9 @@ antlrcpp::Any CuMatVisitor::defaultResult() {
 }
 
 antlrcpp::Any CuMatVisitor::aggregateResult(antlrcpp::Any aggregate, const antlrcpp::Any& nextResult) {
-    if (aggregate.isNull()) {
+    if (!aggregate.is<std::vector<std::shared_ptr<AST::Node>>>()) {
         std::vector<std::shared_ptr<AST::Node>> container;
+        container.push_back(nextResult.as<std::shared_ptr<AST::Node>>());
         return container;
     }
 
