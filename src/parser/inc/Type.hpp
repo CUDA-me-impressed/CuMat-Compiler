@@ -7,6 +7,7 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Type.h>
 
+#include <memory>
 #include <string>
 #include <variant>
 #include <vector>
@@ -18,6 +19,12 @@ struct IRContext;
 namespace Typing {
 
 enum class PRIMITIVE { STRING, INT, FLOAT, BOOL, NONE };
+
+class MatrixType;
+class GenericType;
+class FunctionType;
+
+using Type = std::variant<FunctionType, GenericType, MatrixType>;
 
 class MatrixType {
    public:
@@ -39,14 +46,7 @@ class GenericType {
 
 class FunctionType {
    public:
-    MatrixType returnType;
-    std::vector<std::variant<FunctionType, GenericType, MatrixType>> parameters;
-
-    std::variant<FunctionType, GenericType, MatrixType> resultingType(
-        const std::vector<std::variant<FunctionType, GenericType, MatrixType>>& args) {
-        return returnType;
-    };  // TODO make this not a noop
+    std::shared_ptr<Type> returnType;
+    std::vector<std::shared_ptr<Type>> parameters;
 };
-
-using Type = std::variant<FunctionType, GenericType, MatrixType>;
 }  // namespace Typing
