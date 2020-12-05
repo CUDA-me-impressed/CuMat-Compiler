@@ -26,7 +26,6 @@ struct LLVMMatrixRecord {
     llvm::Value* numBytes;  // Signed
 };
 
-
 llvm::Type* convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE typePrim);
 
 llvm::Value* getValueFromLLVM(IRContext* context, int val, Typing::PRIMITIVE typePrim, bool isSigned);
@@ -38,9 +37,11 @@ LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
 llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset);
 llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset, llvm::Type* retType);
 llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, llvm::Value* offsetIndex);
-llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, llvm::Value* offsetIndex, llvm::Type* retType);
+llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, llvm::Value* offsetIndex,
+                                       llvm::Type* retType);
 
-void insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, llvm::Value* offsetIndex, llvm::Value* val);
+void insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, llvm::Value* offsetIndex,
+                             llvm::Value* val);
 void insertRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val);
 
 llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type);

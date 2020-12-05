@@ -55,11 +55,11 @@ template <>
 llvm::Value* AST::LiteralNode<int>::codeGen(Utils::IRContext* context) {
     if (std::get<Typing::MatrixType>(*type).primType != Typing::PRIMITIVE::INT) return nullptr;
 
-    Typing::MatrixType matType {0, std::vector<uint>(), Typing::PRIMITIVE::INT};
+    Typing::MatrixType matType{0, std::vector<uint>(), Typing::PRIMITIVE::INT};
     auto* matAlloc = Utils::createMatrix(context, matType);
     auto* dataPtr = Utils::getValueRelativeToPointer(context, matAlloc, 0);
     auto ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
-    auto* val =  llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
+    auto* val = llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
     Utils::insertRelativeToPointer(context, dataPtr, 0, val);
     return matAlloc;
 }
