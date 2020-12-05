@@ -22,9 +22,10 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
                                                     context->Builder->GetInsertBlock());
     context->Builder->SetInsertPoint(bb);
 
+    // TODO: MOVE TO BLOCK CODEGEN
     // TODO: Deal with the assignments
 
-    // Generate Return statement code
-    llvm::Value* retVal = returnExpr->codeGen(context);
+    // CodeGen for Block
+    llvm::Value* retVal = block->codeGen(context);
     context->Builder->CreateRet(retVal);
 }
