@@ -10,10 +10,10 @@
 namespace AST {
 class FunctionExprNode : public ExprNode {
    public:
+    std::string funcName;
     std::shared_ptr<ExprNode> nonAppliedFunction;
     std::vector<std::shared_ptr<ExprNode>> args;
 
-    llvm::Value* codeGen(llvm::Module* module, llvm::IRBuilder<>* Builder,
-                         llvm::Function* fp) override;
+    llvm::Value* codeGen(Utils::IRContext* context) override;
 };
 }  // namespace AST

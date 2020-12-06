@@ -16,16 +16,11 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
     antlrcpp::Any visitImports(CuMatParser::ImportsContext* ctx) override;
     antlrcpp::Any visitCmimport(CuMatParser::CmimportContext* ctx) override;
 
-    antlrcpp::Any visitDefinitions(
-        CuMatParser::DefinitionsContext* ctx) override;
+    antlrcpp::Any visitDefinitions(CuMatParser::DefinitionsContext* ctx) override;
     antlrcpp::Any visitDefinition(CuMatParser::DefinitionContext* ctx) override;
 
     antlrcpp::Any visitFuncdef(CuMatParser::FuncdefContext* ctx) override;
-    antlrcpp::Any visitSignature(CuMatParser::SignatureContext* ctx) override;
-    antlrcpp::Any visitParameters(CuMatParser::ParametersContext* ctx) override;
     antlrcpp::Any visitTypespec(CuMatParser::TypespecContext* ctx) override;
-    antlrcpp::Any visitDimensionspec(
-        CuMatParser::DimensionspecContext* ctx) override;
 
     antlrcpp::Any visitBlock(CuMatParser::BlockContext* ctx) override;
 
@@ -48,14 +43,11 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
     antlrcpp::Any visitExp_func(CuMatParser::Exp_funcContext* ctx) override;
 
     antlrcpp::Any visitValue(CuMatParser::ValueContext* ctx) override;
-    antlrcpp::Any visitMatrixliteral(
-        CuMatParser::MatrixliteralContext* ctx) override;
-    antlrcpp::Any visitScalarliteral(
-        CuMatParser::ScalarliteralContext* ctx) override;
+    antlrcpp::Any visitMatrixliteral(CuMatParser::MatrixliteralContext* ctx) override;
+    antlrcpp::Any visitScalarliteral(CuMatParser::ScalarliteralContext* ctx) override;
 
     antlrcpp::Any visitVariable(CuMatParser::VariableContext* ctx) override;
-    antlrcpp::Any visitCmnamespace(
-        CuMatParser::CmnamespaceContext* ctx) override;
+    antlrcpp::Any visitCmnamespace(CuMatParser::CmnamespaceContext* ctx) override;
 
     antlrcpp::Any visitCmtypedef(CuMatParser::CmtypedefContext* ctx) override;
 
@@ -63,8 +55,7 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
     antlrcpp::Any defaultResult() override;
     // Aggregate results use vectors of type:
     // std::vector<std::shared_ptr<AST::Node>>
-    antlrcpp::Any aggregateResult(antlrcpp::Any aggregate,
-                                  const antlrcpp::Any& nextResult) override;
+    antlrcpp::Any aggregateResult(antlrcpp::Any aggregate, const antlrcpp::Any& nextResult) override;
 
    private:
     [[nodiscard]] bool compareTokenTypes(size_t a, size_t b) const;

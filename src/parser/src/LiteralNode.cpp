@@ -17,23 +17,21 @@
  * @param fp
  * @return
  */
-template <class T>
-llvm::Value* AST::LiteralNode<T>::codeGen(llvm::Module* module,
-                                          llvm::IRBuilder<>* Builder,
-                                          llvm::Function* fp) {
+/*template <class T>
+llvm::Value* AST::LiteralNode<T>::codeGen(Utils::IRContext* context) {
     llvm::Type* ty;
     switch (this->type->primType) {
         case Typing::PRIMITIVE::INT: {
-            type = static_cast<llvm::Type*>(
+            ty = static_cast<llvm::Type*>(
                 llvm::Type::getInt64Ty(module->getContext()));
             return llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
         }
         case Typing::PRIMITIVE::FLOAT: {
-            type = llvm::Type::getFloatTy(module->getContext());
+            ty = llvm::Type::getFloatTy(module->getContext());
             return llvm::ConstantFP::get(ty, llvm::APFloat(value));
         }
         case Typing::PRIMITIVE::BOOL: {
-            type = static_cast<llvm::Type*>(
+            ty = static_cast<llvm::Type*>(
                 llvm::Type::getInt1Ty(module->getContext()));
             return llvm::ConstantInt::get(ty, llvm::APInt(1, value, false));
         }
@@ -41,7 +39,7 @@ llvm::Value* AST::LiteralNode<T>::codeGen(llvm::Module* module,
             std::cerr << "Cannot find a valid type for " << this->literalText
                       << std::endl;
             // Assign the type to be an integer
-            type = static_cast<llvm::Type*>(
+            ty = static_cast<llvm::Type*>(
                 llvm::Type::getInt64Ty(module->getContext()));
             break;
         }
@@ -51,4 +49,28 @@ llvm::Value* AST::LiteralNode<T>::codeGen(llvm::Module* module,
             break;
     }
     return nullptr;
+}*/
+
+template <>
+llvm::Value* AST::LiteralNode<int>::codeGen(Utils::IRContext* context) {
+    if (std::get<Typing::MatrixType>(*type).primType != Typing::PRIMITIVE::INT) return nullptr;
+    auto ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
+    return llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
 }
+
+template <>
+llvm::Value* AST::LiteralNode<float>::codeGen(Utils::IRContext* context) {
+    if (std::get<Typing::MatrixType>(*type).primType != Typing::PRIMITIVE::FLOAT) return nullptr;
+    auto ty = llvm::Type::getFloatTy(context->module->getContext());
+    return llvm::ConstantFP::get(ty, llvm::APFloat(value));
+}
+
+template <>
+llvm::Value* AST::LiteralNode<std::string>::codeGen(Utils::IRContext* context) {
+    llvm::Type* ty;
+    return nullptr;
+}
+
+template class AST::LiteralNode<float>;
+template class AST::LiteralNode<int>;
+template class AST::LiteralNode<std::string>;
