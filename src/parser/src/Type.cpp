@@ -29,7 +29,7 @@ int Typing::MatrixType::getLength() const {
     return std::accumulate(this->dimensions.begin(), this->dimensions.end(), 1, std::multiplies());
 }
 llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) const {
-    llvm::Type* ty;
+    llvm::Type* ty = nullptr;
     switch (this->primType) {
         case Typing::PRIMITIVE::INT: {
             ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
@@ -56,3 +56,7 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) const {
     }
     return ty;
 }
+const std::vector<uint>& Typing::MatrixType::getDimensions() const { return this->dimensions; }
+
+// TODO make this not a noop
+bool Typing::MatrixType::simpleDimensionCompatible(const Typing::MatrixType& val) const { return true; }
