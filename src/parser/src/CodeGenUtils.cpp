@@ -112,6 +112,13 @@ llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Value* p
     return Utils::getValueRelativeToPointer(context, ptr, offsetVal, ptr->getType());
 }
 
+void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset, llvm::Value* val) {
+    int headerBitSize = 64;
+    auto offsetIndex =
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, offset, true));
+    insertRelativeToPointer(context, type, ptr, offsetIndex, val);
+}
+
 /**
  * Inserts a LLVM Value relative to a pointer and a runtime offset in number of elements
  * @param context
@@ -128,7 +135,8 @@ void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::
         llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, 0, true));
     auto offsetPtr =
         llvm::GetElementPtrInst::Create(ptr->getType()->getPointerElementType(), ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
-    context->Builder->CreateStore(val, offsetPtr);
+    auto bitcastPtr = context->Builder->CreateBitCast(offsetPtr, type);
+    context->Builder->CreateStore(val, bitcastPtr);
 }
 
 
