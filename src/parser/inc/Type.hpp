@@ -19,6 +19,8 @@ class Type {
     std::string name;
     // If !isPrimitive then NONE
     PRIMITIVE primType;
+
+    int offset();
 };
 
 class FunctionType : public Type {
