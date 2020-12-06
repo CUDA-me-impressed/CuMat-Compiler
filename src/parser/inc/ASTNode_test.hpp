@@ -9,14 +9,14 @@
 #include <catch2/trompeloeil.hpp>
 
 #include "ASTNode.hpp"
-#include "BinaryExprASTNode.hpp"
+#include "BinaryExprNode.hpp"
 
 namespace AST::Test {
 
 class NodeMock : public AST::Node {
    public:
     MAKE_MOCK0(semanticPass, void(), override);
-    MAKE_MOCK1(codeGen, void(llvm::Module*), override);
+    MAKE_MOCK1(codeGen, llvm::Value*(Utils::IRContext*), override);
 };
 
 }  // namespace AST::Test

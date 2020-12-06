@@ -4,39 +4,42 @@
 
 #include "ASTNode_test.hpp"
 
-SCENARIO("AST Nodes propagate calls to their children", "[AST::Node]") {
-    constexpr int NUM_MOCKS = 1;
+using namespace trompeloeil;
 
-    GIVEN("An AST::Node with some children") {
-        AST::Node root;
+TEST_CASE("ASTNode default implementation forwards calls to its children", "[AST::Node]") {
+    constexpr size_t NUM_MOCKS = 3;
 
-        for (int i = 0; i < NUM_MOCKS; i++) {
-            root.addChild(
-                std::shared_ptr<AST::Node>{new AST::Test::NodeMock()});
+    // object under test
+    AST::Node testNode{};
+
+    // mock objects
+    std::vector<std::shared_ptr<AST::Test::NodeMock>> mocks;
+    for (size_t i = 0; i < NUM_MOCKS; i++) {
+        auto mock = std::make_shared<AST::Test::NodeMock>();
+        mocks.push_back(mock);
+        testNode.addChild(mock);
+    }
+
+    // allow REQUIRE_CALLs to live beyond their loop iteration
+    using expectation = std::unique_ptr<trompeloeil::expectation>;
+    std::vector<expectation> exps;
+
+    SECTION("semanticPass") {
+        for (auto& mock : mocks) {
+            exps.push_back(NAMED_REQUIRE_CALL(*mock, semanticPass()));
         }
 
-        WHEN("semanticPass() is called on the root") {
-            root.semanticPass();
+        testNode.semanticPass();
+    }
 
-            THEN("semanticPass() is called once on each child") {
-                for (auto& node : root.children) {
-                    auto& mock = dynamic_cast<AST::Test::NodeMock&>(*node);
-                    REQUIRE_CALL(mock, semanticPass());
-                }
-            }
+    SECTION("codeGen") {
+        // create a blank context
+        Utils::IRContext ctx{};
+
+        for (auto& mock : mocks) {
+            exps.push_back(NAMED_REQUIRE_CALL(*mock, codeGen(&ctx)).RETURN(nullptr));
         }
 
-        WHEN("codeGen(nullptr) is called on the root") {
-            llvm::Module* const ptr = nullptr;
-            root.codeGen(ptr);
-
-            THEN("codeGen(nullptr) is called once on each child") {
-                for (auto& node : root.children) {
-                    auto& mock = dynamic_cast<AST::Test::NodeMock&>(*node);
-                    REQUIRE_CALL(mock,
-                                 codeGen(trompeloeil::eq<llvm::Module*>(ptr)));
-                }
-            }
-        }
+        REQUIRE(testNode.codeGen(&ctx) == nullptr);
     }
 }
