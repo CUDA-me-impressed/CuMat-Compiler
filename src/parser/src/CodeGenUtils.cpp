@@ -79,11 +79,8 @@ Utils::LLVMMatrixRecord Utils::getMatrixFromPointer(IRContext* context, llvm::Va
  */
 void Utils::insertRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val) {
     int headerBitSize = 64;
-    auto zero = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, 0, true));
     auto offsetIndex = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, offset, true));
-    auto offsetPtr = llvm::GetElementPtrInst::Create(ptr->getType()->getPointerElementType(), ptr, {zero, offsetIndex},
-                                                     "", context->Builder->GetInsertBlock());
-    context->Builder->CreateStore(val, offsetPtr);
+    insertRelativeToPointer(context, val->getType(), ptr, offsetIndex, val);
 }
 
 llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, llvm::Value* offsetIndex,
@@ -132,8 +129,8 @@ void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::
     auto zero =
         llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, 0, true));
     auto offsetPtr =
-        llvm::GetElementPtrInst::Create(ptr->getType()->getPointerElementType(), ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
-    auto bitcastPtr = context->Builder->CreateBitCast(offsetPtr, type);
+        llvm::GetElementPtrInst::Create(ptr->getType()->getPointerElementType(), ptr, {zero, offsetIndex}, "ptrOffset", context->Builder->GetInsertBlock());
+    auto bitcastPtr = context->Builder->CreateBitCast(val, type);
     context->Builder->CreateStore(val, bitcastPtr);
 }
 
