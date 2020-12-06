@@ -1,4 +1,5 @@
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Host.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
@@ -138,8 +139,13 @@ int main(int argc, char* argv[], char* envp[]) {
         std::get<1>(tree)->codeGen(&treeContext);
 
         std::error_code EC;
-        llvm::raw_fd_ostream dest("output.ll", EC);
-        std::cout << "Printing" << std::endl;
+        llvm::raw_fd_ostream dest("CuMat-" + std::get<0>(tree) + ".ll", EC, llvm::sys::fs::F_None);
+        std::cout << "CuMat-" + std::get<0>(tree) + ".ll" << std::endl;
+        if (EC) {
+            llvm::errs() << "Could not open file: " << EC.message();
+            return 1;
+        }
+        std::cout << std::endl << "Printing" << std::endl;
         treeContext.module->print(dest, nullptr);
     }
 

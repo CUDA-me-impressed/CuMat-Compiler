@@ -135,6 +135,8 @@ antlrcpp::Any CuMatVisitor::visitTypespec(CuMatParser::TypespecContext* ctx) {
                 }
             }
             m.dimensions = std::vector<uint>(dims);
+        } else {
+            m.rank = 0;
         }
 
         return std::make_shared<Typing::Type>(m);
