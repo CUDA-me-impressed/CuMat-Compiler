@@ -54,6 +54,7 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) const {
             ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
             break;
         case Typing::PRIMITIVE::NONE:
+            ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
             break;
     }
     return ty;
