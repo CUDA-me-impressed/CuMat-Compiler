@@ -2,6 +2,7 @@
 
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
+#include <TypeException.hpp>
 
 static llvm::AllocaInst* CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName,
                                                 llvm::Type* Type) {
@@ -32,8 +33,32 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
 
             auto newMatAlloc = Utils::createMatrix(context, *resultType);
 
+            // TODO: Move to separate file and call from semantic pass function of AST nodes
+            llvm::Type* intType = llvm::Type::getInt64Ty(context->module->getContext());
+            llvm::Type* floatType = llvm::Type::getFloatTy(context->module->getContext());
+            llvm::Type* lhsLLVMType = lhsType->getLLVMType(context);
+            llvm::Type* rhsLLVMType = rhsType->getLLVMType(context);
+
+            bool sameType = lhsLLVMType == rhsLLVMType;
+            bool intOrFloat = (lhsLLVMType == intType or lhsLLVMType == floatType) and
+                              (rhsLLVMType == intType or rhsLLVMType == floatType);
+
             switch (op) {
                 case PLUS: {
+                    if (not (sameType and intOrFloat)) {
+                        if (not sameType) {
+                            Typing::mismatchTypeException("Types do not match");
+                            std::exit(2);
+                        } else {
+                            if (not (lhsLLVMType == intType or lhsLLVMType == floatType)) {
+                                Typing::wrongTypeException("Incorrect or unsupported type used", intType, lhsLLVMType);
+                                std::exit(2);
+                            } else {
+                                Typing::wrongTypeException("Incorrect or unsupported type used", intType, rhsLLVMType);
+                                std::exit(2);
+                            }
+                        }
+                    }
                     plusCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, newMatAlloc, *resultType);
                     break;
                 }
