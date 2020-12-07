@@ -32,5 +32,11 @@ target_link_libraries(llvm_interface INTERFACE ${llvm_libs})
 target_include_directories(llvm_interface INTERFACE ${LLVM_INCLUDE_DIRS})
 target_compile_definitions(llvm_interface INTERFACE ${LLVM_DEFINITIONS})
 
+if ($ENV{CLION_IDE})
+    message(STATUS "Using extra llvm include files as CLion can't follow WSL symlinks")
+    target_include_directories(llvm_interface INTERFACE "/usr/include/llvm-10")
+endif ()
+
+
 link_libraries(-lstdc++fs)
 add_subdirectory(src)
