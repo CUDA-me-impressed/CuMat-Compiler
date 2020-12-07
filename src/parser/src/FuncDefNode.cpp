@@ -11,7 +11,7 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
 
     // Get out the type and create a function
     auto mt = std::get<Typing::MatrixType>(*this->returnType);
-    //TODO: Figure out if we should be passing a pointer or the whole struct
+    // TODO: Figure out if we should be passing a pointer or the whole struct
     auto* mtType = mt.getLLVMType(context)->getPointerTo();
     llvm::FunctionType* ft = llvm::FunctionType::get(mtType, argTypes, false);
     llvm::Function* func = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, this->funcName, context->module);
