@@ -45,12 +45,12 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
 
             switch (op) {
                 case PLUS: {
-                    if (not (sameType and intOrFloat)) {
+                    if (not(sameType and intOrFloat)) {
                         if (not sameType) {
                             Typing::mismatchTypeException("Types do not match");
                             std::exit(2);
                         } else {
-                            if (not (lhsLLVMType == intType or lhsLLVMType == floatType)) {
+                            if (not(lhsLLVMType == intType or lhsLLVMType == floatType)) {
                                 Typing::wrongTypeException("Incorrect or unsupported type used", intType, lhsLLVMType);
                                 std::exit(2);
                             } else {
