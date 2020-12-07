@@ -50,8 +50,11 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) const {
             break;
         }
         case Typing::PRIMITIVE::STRING:
+            // TODO: Replace
+            ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
             break;
         case Typing::PRIMITIVE::NONE:
+            ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
             break;
     }
     return ty;

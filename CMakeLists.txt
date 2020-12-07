@@ -3,17 +3,13 @@ project(CuMat_Compiler LANGUAGES CXX)
 enable_testing()
 
 find_program(CLANG_10 "clang++-10")
-IF (CLANG_10)
-    set(CMAKE_CXX_COMPILER "${CLANG_10}")
-    find_program(CLANG_TIDY_10 clang-tidy-10 REQUIRED)
-    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_10}")
-ELSE ()
-    find_program(CLANG "clang++" REQUIRED)
-    find_program(CLANG_TIDY "clang-tidy" REQUIRED)
-
-    set(CMAKE_CXX_COMPILER "${CLANG}")
-    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY}")
-ENDIF ()
+if (CLANG_10)
+    set(CMAKE_CXX_COMPILER clang++-10)
+    set(CMAKE_CXX_CLANG_TID clang-tidy-10)
+elseif ()
+    set(CMAKE_CXX_COMPILER clang++)
+    set(CMAKE_CXX_CLANG_TIDY clang-tidy)
+endif ()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -26,15 +22,20 @@ find_package(LLVM 10 REQUIRED CONFIG
         PATHS /usr/lib/llvm-10/lib/cmake/llvm/)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-if(${LLVM_PACKAGE_VERSION} VERSION_LESS 10 OR ${LLVM_PACKAGE_VERSION} VERSION_GREATER_EQUAL 11)
+message(STATUS "Normal LLVM Include headers found in: ${LLVM_INCLUDE_DIRS}")
+if (${LLVM_PACKAGE_VERSION} VERSION_LESS 10 OR ${LLVM_PACKAGE_VERSION} VERSION_GREATER_EQUAL 11)
     message(FATAL_ERROR "LLVM Version is ${LLVM_PACKAGE_VERSION}, not 10")
-endif()
+endif ()
 
 # include all of the components, may need to include nvvm at some point
 llvm_map_components_to_libnames(llvm_libs support core irreader)
 add_library(llvm_interface INTERFACE)
 target_link_libraries(llvm_interface INTERFACE ${llvm_libs})
 target_include_directories(llvm_interface INTERFACE ${LLVM_INCLUDE_DIRS})
+if ($ENV{CLION_IDE})
+    message(STATUS "Using extra llvm include files as CLion can't follow WSL symlinks")
+    target_include_directories(llvm_interface INTERFACE "/usr/include/llvm-10")
+endif ()
 target_compile_definitions(llvm_interface INTERFACE ${LLVM_DEFINITIONS})
 
 # Include Catch2

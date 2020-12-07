@@ -13,13 +13,14 @@
 
 llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
     // Get the LLVM type out for the basic type
-    llvm::Type* ty = this->getLLVMType(context->module);
+    Typing::MatrixType matTypeAST = std::get<Typing::MatrixType>(*this->type);
+    llvm::Type* ty = matTypeAST.getLLVMType(context);
     // Get function to store this data within
     llvm::ArrayType* matType = llvm::ArrayType::get(ty, this->numElements());
 
     // Create a store instance for the correct precision and data type
     // Address space set to zero
-    auto matAlloc = context->Builder->CreateAlloca(ty, 0, nullptr, "matVar");
+    auto matAlloc = context->Builder->CreateAlloca(matType, 0, nullptr, "matVar");
 
     // We need to fill in the data for each of the elements of the array:
     std::vector<llvm::Value*> matElements(this->numElements());
