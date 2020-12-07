@@ -28,16 +28,20 @@ using Type = std::variant<FunctionType, GenericType, MatrixType>;
 
 class MatrixType {
    public:
-    uint rank;  // 1 = Vector, 2 = Matrix, 3 = 3D matrix...
-    std::vector<uint> dimensions;
+    uint rank{0};  // 1 = Vector, 2 = Matrix, 3 = 3D matrix...
+    std::vector<uint> dimensions{};
 
-    PRIMITIVE primType;
+    PRIMITIVE primType{PRIMITIVE::NONE};
 
     [[nodiscard]] int getLength() const;
     [[nodiscard]] int offset() const;
-    [[nodiscard]] const std::vector<uint>& getDimensions() const { return this->dimensions; }
-    bool simpleDimensionCompatible(const MatrixType& val) const { return true; };  // TODO make this not a noop
-    llvm::Type* getLLVMType(Utils::IRContext* context) const;
+    [[nodiscard]] const std::vector<uint>& getDimensions() const;
+
+    // TODO make this not a noop
+    [[nodiscard]] bool simpleDimensionCompatible(const MatrixType& val) const { return true; };
+
+    llvm::Type* getLLVMType(Utils::IRContext* context);
+    llvm::Type* getLLVMPrimitiveType(Utils::IRContext* context) const;
 };
 
 class GenericType {

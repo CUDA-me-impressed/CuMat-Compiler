@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iostream>
 
+// TODO: USE NEW getLLVMType change to get the proper type
 llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context, const Typing::Type& type) {
     // We need a prefix that has some basic information
     Typing::MatrixType matType;
@@ -16,38 +17,35 @@ llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context, const Typing::T
     matLength = matType.getLength();
 
     // Generate actual array with offset for dimension information
-    llvm::Type* ty = matType.getLLVMType(context);
+    llvm::Type* ty = matType.getLLVMPrimitiveType(context);
+    auto* matHeaderType = matType.getLLVMType(context);
 
-    //
-    llvm::ArrayType* matHeaderType = llvm::ArrayType::get(ty, matType.rank + 3);
     llvm::ArrayType* matDataType = llvm::ArrayType::get(ty, matLength);
-
     llvm::ConstantInt* matSizeLLVM =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matLength, true));
-    llvm::ConstantInt* matSizeHeader =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.rank + 3, true));
-
-    // Allocation pointers for header and end
-    auto matAlloc = context->Builder->CreateAlloca(ty, 0, matSizeLLVM, "matVar");
-    auto matHeaderAlloc = context->Builder->CreateAlloca(llvm::Type::getInt64Ty(context->module->getContext()), 0,
-                                                         matSizeHeader, "matHeader");
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matLength, false));
 
     auto rank = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.rank));
     auto numBytes = llvm::ConstantInt::get(context->module->getContext(),
                                            llvm::APInt(64, (matType.getLength() * matType.offset()) / 8));
 
-    // Insert header into data
-    insertRelativeToPointer(context, matHeaderType, matHeaderAlloc, 0, matAlloc);  // For the pointer to the data
-    insertRelativeToPointer(context, matHeaderType, matHeaderAlloc, 1, rank);      // For rank of matrix
-    insertRelativeToPointer(context, matHeaderType, matHeaderAlloc, 2, numBytes);  // For number of bytes in matrix
+    auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
+    auto matAlloc = context->Builder->CreateAlloca(matDataType, matSizeLLVM, "matArr");
+    auto matAllocPtr = context->Builder->CreateGEP(matAlloc, zeroOffset, "matArrPtr");
+
+    auto matHeaderAlloc = context->Builder->CreateAlloca(matHeaderType, nullptr, "matStruct");
+
+    insertValueAtPointerOffset(context, matHeaderAlloc, 0, matAllocPtr);
+    insertValueAtPointerOffset(context, matHeaderAlloc, 1, rank);
+    insertValueAtPointerOffset(context, matHeaderAlloc, 2, numBytes);
 
     // For the matrix dimensionality
-    for (int i = 0; i <= matType.rank; i++) {
+    for (int i = 0; i < matType.rank; i++) {
         auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.dimensions.at(i)));
 
         // Offset of 3 from before
-        insertRelativeToPointer(context, matHeaderType, matHeaderAlloc, i + 3, val);
+        insertValueAtPointerOffset(context, matHeaderAlloc, i + 3, val);
     }
+
     return matHeaderAlloc;
 }
 
@@ -63,67 +61,10 @@ Utils::LLVMMatrixRecord Utils::getMatrixFromPointer(IRContext* context, llvm::Va
     auto dataPtrType = llvm::Type::getInt64PtrTy(context->module->getContext());
     auto headerType = llvm::Type::getInt64Ty(context->module->getContext());
 
-    llvm::Value* dataPtr = Utils::getValueRelativeToPointer(context, dataPtrType, basePtr, 0);
-    llvm::Value* rank = Utils::getValueRelativeToPointer(context, headerType, basePtr, 1);
-    llvm::Value* numBytes = Utils::getValueRelativeToPointer(context, headerType, basePtr, 2);
+    llvm::Value* dataPtr = Utils::getValueFromPointerOffset(context, basePtr, 0, "dataPtr");
+    llvm::Value* rank = Utils::getValueFromPointerOffset(context, basePtr, 1, "rankVal");
+    llvm::Value* numBytes = Utils::getValueFromPointerOffset(context, basePtr, 2, "numBytesVal");
     return {dataPtr, rank, numBytes};
-}
-
-/**
- * Inserts a LLVM Value relative to a pointer and an offset in number of elements
- * @param context
- * @param type
- * @param ptr - Base pointer
- * @param offset - Number of elements away (valsize in bits)
- * @param val - Value we are storing
- * @param valSize - Default 64 (8 Bytes)
- */
-void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset,
-                                    llvm::Value* val) {
-    auto zero =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), 0, true));
-    auto offsetIndex =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), offset));
-    auto offsetPtr =
-        llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
-    context->Builder->CreateStore(val, offsetPtr);
-}
-
-llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset) {
-    auto zero =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), 0, true));
-    auto offsetIndex =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), offset));
-    auto ptrOffset =
-        llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
-    return context->Builder->CreateLoad(type, ptrOffset, "");
-}
-
-/**
- * Inserts a LLVM Value relative to a pointer and a runtime offset in number of elements
- * @param context
- * @param type
- * @param ptr - Base pointer
- * @param offset - Number of elements away (valsize in bits)
- * @param val - Value we are storing
- * @param valSize - Default 64 (8 Bytes)
- */
-void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, llvm::Value* offsetIndex,
-                                    llvm::Value* val) {
-    auto zero =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), 0, true));
-    auto offsetPtr =
-        llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
-    context->Builder->CreateStore(val, offsetPtr);
-}
-
-llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr,
-                                              llvm::Value* offsetIndex) {
-    auto zero =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(type->getPrimitiveSizeInBits(), 0, true));
-    auto ptrOffset =
-        llvm::GetElementPtrInst::Create(type, ptr, {zero, offsetIndex}, "", context->Builder->GetInsertBlock());
-    return context->Builder->CreateLoad(type, ptrOffset, "");
 }
 
 llvm::Type* Utils::convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE typePrim) {
@@ -170,4 +111,46 @@ llvm::Value* Utils::getValueFromLLVM(IRContext* context, float val, Typing::PRIM
         return llvm::ConstantFP::get(context->module->getContext(), llvm::APFloat(val));
     }
     return nullptr;
+}
+
+/**
+ * Inserts a LLVM Value relative to a pointer and an offset in number of elements
+ * @param context
+ * @param ptr - Base pointer
+ * @param offset - Number of elements away (valsize in bits)
+ * @param val - Value we are storing
+ */
+void Utils::insertValueAtPointerOffset(Utils::IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val) {
+    auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
+    auto xOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), offset);
+    auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset});
+    context->Builder->CreateStore(val, offsetPtr);
+}
+
+void Utils::insertValueAtPointerOffsetValue(Utils::IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue,
+                                            llvm::Value* val) {
+    auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
+    auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, offsetValue});
+    context->Builder->CreateStore(val, offsetPtr);
+}
+
+/**
+ * Get a value from a pointer at an offset
+ * @param context
+ * @param ptr - Base pointer
+ * @param offset - Number of elements away
+ * @param name - Name to be stored as in IR
+ */
+llvm::Value* Utils::getValueFromPointerOffset(Utils::IRContext* context, llvm::Value* ptr, int offset,
+                                              std::string name) {
+    auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
+    auto xOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), offset);
+    auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset});
+    return context->Builder->CreateLoad(offsetPtr, name);
+}
+llvm::Value* Utils::getValueFromPointerOffsetValue(Utils::IRContext* context, llvm::Value* ptr,
+                                                   llvm::Value* offsetValue, std::string name) {
+    auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
+    auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, offsetValue});
+    return context->Builder->CreateLoad(offsetPtr, name);
 }
