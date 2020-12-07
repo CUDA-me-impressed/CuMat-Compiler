@@ -54,17 +54,18 @@ void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context, llvm::Value* lh
     llvm::Function* parent = Builder->GetInsertBlock()->getParent();
 
     llvm::BasicBlock* addBB = llvm::BasicBlock::Create(Builder->getContext(), "add.loop", parent);
-    llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), "add.done", parent);
+    llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), "add.done");
 
     auto indexAlloca = CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
     auto* lsize = Utils::getLength(context, lhsVal, lhsType);
     auto* rsize = Utils::getLength(context, rhsVal, rhsType);
     auto* nsize = Utils::getLength(context, matAlloc, resType);
+    // parent->getBasicBlockList().push_back(addBB);
     Builder->CreateBr(addBB);
 
     Builder->SetInsertPoint(addBB);
     {
-        auto* index = Builder->CreateLoad(indexAlloca, "add.loadcounter");
+        auto* index = Builder->CreateLoad(indexAlloca);
 
         auto* lindex = Builder->CreateURem(index, lsize);
         auto* rindex = Builder->CreateURem(index, rsize);
