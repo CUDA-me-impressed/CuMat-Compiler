@@ -68,15 +68,15 @@ void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context, llvm::Value* lh
 
         auto* lindex = Builder->CreateURem(index, lsize);
         auto* rindex = Builder->CreateURem(index, rsize);
-        auto* l = Utils::getValueFromPointerOffsetValue(context, lhsVal, lindex, "lhs");
-        auto* r = Utils::getValueFromPointerOffsetValue(context, rhsVal, rindex, "rhs");
+        auto* l = Utils::getValueFromMatrixPtr(context, lhsVal, lindex, "lhs");
+        auto* r = Utils::getValueFromMatrixPtr(context, rhsVal, rindex, "rhs");
         auto* add = Builder->CreateAdd(l, r, "add");
-        Utils::insertValueAtPointerOffsetValue(context, matAlloc, index, add);
+        Utils::setValueFromMatrixPtr(context, matAlloc, index, add);
 
         // Update counter
         auto* next = Builder->CreateAdd(
             index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "add");
-        Builder->CreateStore(next, indexAlloca, "add.storecounter");
+        Builder->CreateStore(next, indexAlloca);
 
         // Test if completed list
         auto* done = Builder->CreateICmpUGE(next, nsize);
