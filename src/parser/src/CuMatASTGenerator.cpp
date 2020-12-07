@@ -2,8 +2,8 @@
 
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
-#include <strstream>
 
 #include "CuMatLexer.h"
 #include "CuMatParser.h"
@@ -12,7 +12,7 @@
 
 void SimpleErrorListener::syntaxError(antlr4::Recognizer* recognizer, antlr4::Token* offendingSymbol, size_t line,
                                       size_t charPositionInLine, const std::string& msg, std::exception_ptr e) {
-    std::ostrstream s;
+    std::ostringstream s;
     s << "At " << line << ":" << charPositionInLine << ", error " << msg;
     throw std::invalid_argument(s.str());
 }

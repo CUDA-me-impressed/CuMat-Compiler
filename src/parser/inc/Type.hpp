@@ -35,8 +35,11 @@ class MatrixType {
 
     [[nodiscard]] int getLength() const;
     [[nodiscard]] int offset() const;
-    [[nodiscard]] const std::vector<uint>& getDimensions() const { return this->dimensions; }
-    bool simpleDimensionCompatible(const MatrixType& val) const { return true; };  // TODO make this not a noop
+    [[nodiscard]] const std::vector<uint>& getDimensions() const;
+
+    // TODO make this not a noop
+    [[nodiscard]] bool simpleDimensionCompatible(const MatrixType& val) const { return true; };
+
     llvm::Type* getLLVMType(Utils::IRContext* context) const;
 };
 

@@ -46,3 +46,16 @@ target_include_directories(Parser PUBLIC
 target_link_libraries(Parser PUBLIC
         llvm_interface
         parser_gen)
+
+# Create a test target for parser
+set(test_srcs
+        test_main.cpp
+        ASTNode_test.cpp)
+add_executable(Parser_test
+        ${test_srcs})
+target_link_libraries(Parser_test PRIVATE
+        Parser
+        Catch2
+        Trompeloeil)
+add_test(NAME Parser_test
+        COMMAND Parser_test)

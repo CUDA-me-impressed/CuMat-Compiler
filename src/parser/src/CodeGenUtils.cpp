@@ -32,9 +32,9 @@ llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context, const Typing::T
 
     std::vector<llvm::Type*> headerTypes;
     headerTypes.push_back(matDataType);
-    headerTypes.push_back(headerTy);        // Rank
-    headerTypes.push_back(headerTy);     // # of bytes
-    for(int i = 0; i < matType.rank; i++){  // Dimensions
+    headerTypes.push_back(headerTy);          // Rank
+    headerTypes.push_back(headerTy);          // # of bytes
+    for (int i = 0; i < matType.rank; i++) {  // Dimensions
         headerTypes.push_back(headerTy);
     }
 
@@ -92,7 +92,6 @@ llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Value* p
 llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset, llvm::Type* retType) {
     auto* offsetVal = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, offset));
     return Utils::getValueRelativeToPointer(context, ptr, offsetVal, retType);
-
 }
 
 llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, llvm::Value* offsetIndex) {
@@ -121,9 +120,11 @@ void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::
     context->Builder->CreateStore(bitcastVal, offsetPtr);
 }
 
-void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset, llvm::Value* val) {
+void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset,
+                                    llvm::Value* val) {
     int headerBitSize = 64;
-    auto* offsetPtr = context->Builder->CreateInBoundsGEP(ptr, llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), offset), "");
+    auto* offsetPtr = context->Builder->CreateInBoundsGEP(
+        ptr, llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), offset), "");
     auto bitcastVal = context->Builder->CreateBitCast(val, offsetPtr->getType());
     context->Builder->CreateStore(bitcastVal, offsetPtr);
 }
