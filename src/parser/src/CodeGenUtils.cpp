@@ -84,8 +84,7 @@ llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Value* p
     int size = 64;
     llvm::Type* type = ptr->getType();
     auto zero = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(size, 0, true));
-    auto ptrOffset = llvm::GetElementPtrInst::Create(type->getPointerElementType(), ptr, {zero, offsetIndex}, "",
-                                                     context->Builder->GetInsertBlock());
+    auto ptrOffset = context->Builder->CreateInBoundsGEP(ptr, offsetIndex, "");
     return context->Builder->CreateLoad(retType, ptrOffset, "");
 }
 
@@ -115,17 +114,14 @@ llvm::Value* Utils::getValueRelativeToPointer(IRContext* context, llvm::Value* p
  */
 void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, llvm::Value* offsetIndex,
                                     llvm::Value* val) {
-    int headerBitSize = 64;
     auto* offsetPtr = context->Builder->CreateInBoundsGEP(ptr, offsetIndex, "");
     auto bitcastVal = context->Builder->CreateBitCast(val, offsetPtr->getType());
     context->Builder->CreateStore(bitcastVal, offsetPtr);
 }
 
 void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset, llvm::Value* val) {
-    int headerBitSize = 64;
     auto* offsetPtr = context->Builder->CreateInBoundsGEP(ptr, llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), offset), "");
-    auto bitcastVal = context->Builder->CreateBitCast(val, offsetPtr->getType());
-    context->Builder->CreateStore(bitcastVal, offsetPtr);
+    insertRelativeToPointer(context, type, ptr, offsetPtr, val);
 }
 
 /**
@@ -138,7 +134,7 @@ void Utils::insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::
  * @param valSize - Default 64 (8 Bytes)
  */
 void Utils::insertRelativeToPointer(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val) {
-    int headerBitSize = 64;
+    int headerBitSize = 32;
     auto offsetIndex = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(headerBitSize, offset, true));
     insertRelativeToPointer(context, val->getType(), ptr, offsetIndex, val);
 }
