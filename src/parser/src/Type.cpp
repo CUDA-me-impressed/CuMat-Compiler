@@ -29,7 +29,7 @@ int Typing::MatrixType::getLength() const {
     return std::accumulate(this->dimensions.begin(), this->dimensions.end(), 1, std::multiplies());
 }
 llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) const {
-    llvm::Type* ty;
+    llvm::Type* ty = nullptr;
     switch (this->primType) {
         case Typing::PRIMITIVE::INT: {
             ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
@@ -49,8 +49,10 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) const {
             ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
             break;
         }
+
+        // TODO: Replace with proper types
+        // NOLINTNEXTLINE duplicate case
         case Typing::PRIMITIVE::STRING:
-            // TODO: Replace
             ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
             break;
         case Typing::PRIMITIVE::NONE:
@@ -59,3 +61,5 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) const {
     }
     return ty;
 }
+
+const std::vector<uint>& Typing::MatrixType::getDimensions() const { return this->dimensions; }
