@@ -49,8 +49,10 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) const {
             ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
             break;
         }
+
+        // TODO: Replace with proper types
+        // NOLINTNEXTLINE duplicate case
         case Typing::PRIMITIVE::STRING:
-            // TODO: Replace
             ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
             break;
         case Typing::PRIMITIVE::NONE:
@@ -59,7 +61,5 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) const {
     }
     return ty;
 }
-const std::vector<uint>& Typing::MatrixType::getDimensions() const { return this->dimensions; }
 
-// TODO make this not a noop
-bool Typing::MatrixType::simpleDimensionCompatible(const Typing::MatrixType& val) const { return true; }
+const std::vector<uint>& Typing::MatrixType::getDimensions() const { return this->dimensions; }
