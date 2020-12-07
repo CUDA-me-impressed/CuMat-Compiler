@@ -8,6 +8,7 @@
 namespace AST {
 class BlockNode : public Node {
    public:
+    std::string callingFunctionName;
     std::vector<std::shared_ptr<Node>> assignments;
     std::shared_ptr<ExprNode> returnExpr;
 
