@@ -57,10 +57,10 @@ llvm::Value* AST::LiteralNode<int>::codeGen(Utils::IRContext* context) {
 
     Typing::MatrixType matType{0, std::vector<uint>(), Typing::PRIMITIVE::INT};
     auto* matAlloc = Utils::createMatrix(context, matType);
-    auto* dataPtr = Utils::getValueRelativeToPointer(context, matAlloc, 0);
+    auto* dataPtr = Utils::getValueFromPointerOffset(context, matAlloc, 0, "matArrPtr");
     auto ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
     auto* val = llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
-    Utils::insertRelativeToPointer(context, matAlloc->getType(), dataPtr, 0, val);
+    Utils::insertValueAtPointerOffset(context, dataPtr, 0, val);
     return matAlloc;
 }
 

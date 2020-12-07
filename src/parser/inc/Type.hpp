@@ -40,7 +40,8 @@ class MatrixType {
     // TODO make this not a noop
     [[nodiscard]] bool simpleDimensionCompatible(const MatrixType& val) const { return true; };
 
-    llvm::Type* getLLVMType(Utils::IRContext* context) const;
+    llvm::Type* getLLVMType(Utils::IRContext* context);
+    llvm::Type* getLLVMPrimitiveType(Utils::IRContext* context) const;
 };
 
 class GenericType {

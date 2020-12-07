@@ -40,6 +40,10 @@ llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, llv
 llvm::Value* getValueRelativeToPointer(IRContext* context, llvm::Value* ptr, llvm::Value* offsetIndex,
                                        llvm::Type* retType);
 
+void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val);
+void insertValueAtPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, llvm::Value* val);
+llvm::Value* getValueFromPointerOffset(IRContext* context, llvm::Value* ptr, int offset, std::string name);
+
 void insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, int offset, llvm::Value* val);
 void insertRelativeToPointer(IRContext* context, llvm::Type* type, llvm::Value* ptr, llvm::Value* offsetIndex,
                              llvm::Value* val);

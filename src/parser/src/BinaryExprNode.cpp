@@ -71,7 +71,7 @@ void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context, llvm::Value* lh
         auto* l = Utils::getValueRelativeToPointer(context, lhsVal, lindex);
         auto* r = Utils::getValueRelativeToPointer(context, rhsVal, rindex);
         auto* add = Builder->CreateAdd(l, r, "add");
-        Utils::insertRelativeToPointer(context, resType.getLLVMType(context), matAlloc, index, add);
+        Utils::insertValueAtPointerOffsetValue(context, matAlloc, index, add);
 
         // Update counter
         auto* next = Builder->CreateAdd(
