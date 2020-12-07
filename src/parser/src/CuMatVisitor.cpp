@@ -95,6 +95,7 @@ antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
 
     // Block
     n->block = std::move(visit(ctx->block()));
+    n->block->callingFunctionName = n->funcName;
 
     return std::move(pConv<AST::Node>(n));
 }
@@ -134,6 +135,8 @@ antlrcpp::Any CuMatVisitor::visitTypespec(CuMatParser::TypespecContext* ctx) {
                 }
             }
             m.dimensions = std::vector<uint>(dims);
+        } else {
+            m.rank = 0;
         }
 
         return std::make_shared<Typing::Type>(m);
@@ -499,6 +502,10 @@ antlrcpp::Any CuMatVisitor::visitExp_chain(CuMatParser::Exp_chainContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext* ctx) {
     auto fN = std::make_shared<AST::FunctionExprNode>();
     fN->literalText = ctx->getText();
+    // If no arguments applied, just pass it up
+    if (ctx->args().empty()) {
+        return std::move(visit(ctx->value()));
+    }
     auto value = visit(ctx->value());
     fN->nonAppliedFunction = std::move(value);
     if (!ctx->args().empty()) {
