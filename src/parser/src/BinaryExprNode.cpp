@@ -36,8 +36,8 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
             // TODO: Move to separate file and call from semantic pass function of AST nodes
             llvm::Type* intType = llvm::Type::getInt64Ty(context->module->getContext());
             llvm::Type* floatType = llvm::Type::getFloatTy(context->module->getContext());
-            llvm::Type* lhsLLVMType = lhsType->getLLVMType(context);
-            llvm::Type* rhsLLVMType = rhsType->getLLVMType(context);
+            llvm::Type* lhsLLVMType = lhsType->getLLVMPrimitiveType(context);
+            llvm::Type* rhsLLVMType = rhsType->getLLVMPrimitiveType(context);
 
             bool sameType = lhsLLVMType == rhsLLVMType;
             bool intOrFloat = (lhsLLVMType == intType or lhsLLVMType == floatType) and
