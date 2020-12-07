@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#include "CodeGenUtils.hpp"
+
 namespace AST {
 class Node {
    public:
@@ -28,8 +30,6 @@ class Node {
 
     // Default implementations just call the function on their children
     virtual void semanticPass();
-    virtual llvm::Value* codeGen(llvm::Module* TheModule,
-                                 llvm::IRBuilder<>* Builder,
-                                 llvm::Function* fp);
+    virtual llvm::Value* codeGen(Utils::IRContext* context);
 };
 }  // namespace AST

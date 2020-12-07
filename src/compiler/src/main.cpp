@@ -1,4 +1,11 @@
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Host.h>
+#include <llvm/Support/TargetRegistry.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Target/TargetOptions.h>
 
 #include <algorithm>
 #include <iostream>
@@ -24,8 +31,7 @@ int main(int argc, char* argv[], char* envp[]) {
     std::string inputFileName;
     std::string outputFile;
 
-    const std::set<std::string> validFlags = {
-        "-Wall", "-Winfo", "-Wnone", "-Oall", "-Onone", "-Oexp", "-o"};
+    const std::set<std::string> validFlags = {"-Wall", "-Winfo", "-Wnone", "-Oall", "-Onone", "-Oexp", "-o"};
 
     // First argument is always name of exe, ignore
     for (int i = 1; i < argc; ++i) {
@@ -34,8 +40,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
         if (validFlags.find(arg) != validFlags.end()) {
             args.emplace_back(arg);
-        } else if (!args.empty() && args.back() == "-o" &&
-                   outputFile.empty())  // Output and at least one additional
+        } else if (!args.empty() && args.back() == "-o" && outputFile.empty())  // Output and at least one additional
         {
             outputFile = arg;
         } else if (inputFileName.empty()) {
@@ -110,15 +115,13 @@ int main(int argc, char* argv[], char* envp[]) {
 
     Preprocessor::SourceFileLoader loader(inputFileName);
     auto files = loader.load();
-
+    std::vector<std::string> firstCU = files.at(0);
     std::vector<std::tuple<std::string, std::shared_ptr<AST::Node>>> parseTrees;
-    for (const auto& file : files) {
+    for (const auto& file : firstCU) {
         auto tree = runParser(file);
-        parseTrees.emplace_back(
-            std::make_tuple<const std::string, std::shared_ptr<AST::Node>>(
-                (const std::basic_string<char, std::char_traits<char>,
-                                         std::allocator<char>>&&)file,
-                std::move(tree)));
+        std::cout << "Parsed: " << file << std::endl;
+        parseTrees.emplace_back(std::make_tuple<const std::string, std::shared_ptr<AST::Node>>(
+            (const std::basic_string<char, std::char_traits<char>, std::allocator<char>>&&)file, std::move(tree)));
     }
 
     // Pretty printing for test
@@ -128,11 +131,22 @@ int main(int argc, char* argv[], char* envp[]) {
     }
 
     llvm::LLVMContext TheContext;
-
     for (const auto& tree : parseTrees) {
         llvm::Module TheModule("CuMat-" + std::get<0>(tree), TheContext);
         llvm::IRBuilder<> Builder(TheContext);
-        std::get<1>(tree)->codeGen(&TheModule, &Builder, nullptr);
+        // Context containing the module and IR Builder
+        Utils::IRContext treeContext = {&TheModule, &Builder};
+        std::get<1>(tree)->codeGen(&treeContext);
+
+        std::error_code EC;
+        llvm::raw_fd_ostream dest("CuMat-" + std::get<0>(tree) + ".ll", EC, llvm::sys::fs::F_None);
+        std::cout << "CuMat-" + std::get<0>(tree) + ".ll" << std::endl;
+        if (EC) {
+            llvm::errs() << "Could not open file: " << EC.message();
+            return 1;
+        }
+        std::cout << std::endl << "Printing" << std::endl;
+        treeContext.module->print(dest, nullptr);
     }
 
     return 0;
