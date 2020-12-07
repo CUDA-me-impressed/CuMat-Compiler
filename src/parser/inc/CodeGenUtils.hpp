@@ -17,6 +17,7 @@ static std::map<std::string, std::map<std::vector<std::shared_ptr<Typing::Type>>
 struct IRContext {
     llvm::Module* module;
     llvm::IRBuilder<>* Builder;
+    llvm::Function* function;
 };
 
 struct LLVMMatrixRecord {

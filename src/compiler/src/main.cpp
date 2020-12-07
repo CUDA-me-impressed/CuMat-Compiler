@@ -118,6 +118,7 @@ int main(int argc, char* argv[], char* envp[]) {
     std::vector<std::tuple<std::string, std::shared_ptr<AST::Node>>> parseTrees;
     for (const auto& file : firstCU) {
         auto tree = runParser(file);
+        std::cout << "Parsed: " << file << std::endl;
         parseTrees.emplace_back(std::make_tuple<const std::string, std::shared_ptr<AST::Node>>(
             (const std::basic_string<char, std::char_traits<char>, std::allocator<char>>&&)file, std::move(tree)));
     }
@@ -139,7 +140,7 @@ int main(int argc, char* argv[], char* envp[]) {
         std::error_code EC;
         llvm::raw_fd_ostream dest("output.ll", EC);
         std::cout << "Printing" << std::endl;
-        treeContext.module->print(llvm::errs(), nullptr);
+        treeContext.module->print(dest, nullptr);
     }
 
     return 0;

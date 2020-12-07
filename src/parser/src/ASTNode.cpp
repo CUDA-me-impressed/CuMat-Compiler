@@ -3,6 +3,7 @@
 //
 
 #include "ASTNode.hpp"
+
 namespace AST {
 Node::Node(std::string textRep) { this->literalText = std::move(textRep); }
 
@@ -15,7 +16,9 @@ void Node::semanticPass() {
 }
 
 llvm::Value* Node::codeGen(Utils::IRContext* context) {
-    for (auto const& child : this->children) child->codeGen(context);
+    for (auto const& child : this->children) {
+        child->codeGen(context);
+    }
     return nullptr;
 }
 
