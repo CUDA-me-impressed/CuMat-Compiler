@@ -54,29 +54,30 @@ void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context, llvm::Value* lh
     llvm::Function* parent = Builder->GetInsertBlock()->getParent();
 
     llvm::BasicBlock* addBB = llvm::BasicBlock::Create(Builder->getContext(), "add.loop", parent);
-    llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), "add.done", parent);
+    llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), "add.done");
 
     auto indexAlloca = CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
     auto* lsize = Utils::getLength(context, lhsVal, lhsType);
     auto* rsize = Utils::getLength(context, rhsVal, rhsType);
     auto* nsize = Utils::getLength(context, matAlloc, resType);
+    // parent->getBasicBlockList().push_back(addBB);
     Builder->CreateBr(addBB);
 
     Builder->SetInsertPoint(addBB);
     {
-        auto* index = Builder->CreateLoad(indexAlloca, "add.loadcounter");
+        auto* index = Builder->CreateLoad(indexAlloca);
 
         auto* lindex = Builder->CreateURem(index, lsize);
         auto* rindex = Builder->CreateURem(index, rsize);
-        auto* l = Utils::getValueFromPointerOffsetValue(context, lhsVal, lindex, "lhs");
-        auto* r = Utils::getValueFromPointerOffsetValue(context, rhsVal, rindex, "rhs");
+        auto* l = Utils::getValueFromMatrixPtr(context, lhsVal, lindex, "lhs");
+        auto* r = Utils::getValueFromMatrixPtr(context, rhsVal, rindex, "rhs");
         auto* add = Builder->CreateAdd(l, r, "add");
-        Utils::insertValueAtPointerOffsetValue(context, matAlloc, index, add);
+        Utils::setValueFromMatrixPtr(context, matAlloc, index, add);
 
         // Update counter
         auto* next = Builder->CreateAdd(
             index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "add");
-        Builder->CreateStore(next, indexAlloca, "add.storecounter");
+        Builder->CreateStore(next, indexAlloca);
 
         // Test if completed list
         auto* done = Builder->CreateICmpUGE(next, nsize);
