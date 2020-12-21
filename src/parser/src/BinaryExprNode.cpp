@@ -35,8 +35,7 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
             switch (op) {
                 case PLUS:
                 case MINUS:
-                case LOR:
-                {
+                case LOR: {
                     elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, newMatAlloc, *resultType);
                     break;
                 }
@@ -57,7 +56,7 @@ void AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Va
     llvm::Function* parent = Builder->GetInsertBlock()->getParent();
     std::string opName = AST::BIN_OP_ENUM_STRING[this->op];
 
-    llvm::BasicBlock* addBB = llvm::BasicBlock::Create(Builder->getContext(),  opName + ".loop", parent);
+    llvm::BasicBlock* addBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".loop", parent);
     llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".done");
 
     auto indexAlloca = CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
@@ -75,7 +74,7 @@ void AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Va
         auto* rindex = Builder->CreateURem(index, rsize);
         auto* l = Utils::getValueFromMatrixPtr(context, lhsVal, lindex, "lhs");
         auto* r = Utils::getValueFromMatrixPtr(context, rhsVal, rindex, "rhs");
-        auto* opResult = applyOperatorToOperands(context, this->op, l,r, opName);
+        auto* opResult = applyOperatorToOperands(context, this->op, l, r, opName);
         Utils::setValueFromMatrixPtr(context, matAlloc, index, opResult);
 
         // Update counter
@@ -100,10 +99,10 @@ void AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Va
  * @param name
  * @return
  */
-llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* context, const AST::BIN_OPERATORS& op, llvm::Value* lhs,
-                                                          llvm::Value* rhs, const std::string& name) {
+llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* context, const AST::BIN_OPERATORS& op,
+                                                          llvm::Value* lhs, llvm::Value* rhs, const std::string& name) {
     // TODO: Currently only works with integer values, will need to be extended to FP
-    switch(op){
+    switch (op) {
         case PLUS: {
             return context->Builder->CreateAdd(lhs, rhs, name);
         }
