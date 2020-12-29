@@ -3,7 +3,6 @@
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
 
-
 llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     // Assumption is that our types are two evaluated matricies of compatible
     // dimensions. We first generate code for each of the l and r matricies

@@ -11,7 +11,6 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
     auto operandMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->operand);
 
     if (auto* operandType = std::get_if<Typing::MatrixType>(&*operandMatNode->type)) {
-
         auto newMatAlloc = Utils::createMatrix(context, *operandType);
 
         // We generate the operations sequentially
@@ -35,8 +34,8 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
 
             auto* lindex = Builder->CreateURem(index, matSize);
             auto* v = Utils::getValueFromMatrixPtr(context, operand, lindex, "lhs");
-            llvm::Value * opResult;
-            switch(op){
+            llvm::Value* opResult;
+            switch (op) {
                 case NEG: {
                     opResult = context->Builder->CreateNeg(v, UNA_OP_ENUM_STRING[op]);
                     break;

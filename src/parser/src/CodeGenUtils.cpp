@@ -167,7 +167,7 @@ void Utils::setValueFromMatrixPtr(Utils::IRContext* context, llvm::Value* mPtr, 
 }
 
 llvm::AllocaInst* Utils::CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName,
-                                         llvm::Type* Type) {
+                                                llvm::Type* Type) {
     llvm::IRBuilder<> TmpB(&Builder.GetInsertBlock()->getParent()->getEntryBlock(),
                            Builder.GetInsertBlock()->getParent()->getEntryBlock().begin());
     return TmpB.CreateAlloca(Type, nullptr, VarName);
