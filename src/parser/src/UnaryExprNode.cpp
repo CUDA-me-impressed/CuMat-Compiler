@@ -4,94 +4,61 @@
 #include "MatrixNode.hpp"
 
 llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
-    // opval should be an evaluated matrix for which we can create a new matrix
-    llvm::Value* opVal = this->operand->codeGen(context);
     // We go through and apply the relevant unary operator to each element of
     // the matrix
-    auto newMatAlloc = Utils::createMatrix(context, *this->type);
-    // We generate the operations sequentially
-    // TODO: Add Kernel call for nvptx
-    //    recursiveUnaryGeneration(op, context->module, context->Builder, ty, newMatAlloc, opVal, dimension);
-    return opVal;
-}
+    llvm::Value* operand = this->operand->codeGen(context);
 
-/**
- * Generates LLVM IR for the Unary Expression via a recursive pass over each
- * element of the matrix in a column major systematic search. This will output
- * code that NVPTX should be able to identifiy and use to generate PTX compliant
- * code optimised for CUDA.
- *
- * Note, final two paramaters, index and prevDim can be excluded as they are
- * used within the function to recursively generate the index offset. By default
- * they are set to the identity element (1) and will not impact the result.
- * @param op
- * @param module
- * @param Builder
- * @param ty
- * @param matAlloc
- * @param opVal
- * @param dimension
- * @param index
- * @param prevDim
- */
-void AST::UnaryExprNode::recursiveUnaryGeneration(const UNA_OPERATORS& op, llvm::Module* module,
-                                                  llvm::IRBuilder<>* Builder, llvm::Type* ty,
-                                                  llvm::AllocaInst* matAlloc, llvm::Value* opVal,
-                                                  std::vector<int> dimension, int index, int prevDim) {
-    // Store of a type for the matrix (only need this for the final pass)
-    llvm::ArrayType* matType;
-    if (dimension.size() == 1) {
-        matType = llvm::ArrayType::get(ty, index * dimension.at(0));
-    }
+    auto operandMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->operand);
 
-    for (int i = 0; i < dimension.at(0); i++) {
-        // If we have more than one dimension, we need to explore the matrix
-        // more
-        if (dimension.size() > 1) {
-            // Create a new dimension vector with this dimension removed
-            std::vector<int> subDimension(dimension.begin() + 1, dimension.end());
-            recursiveUnaryGeneration(op, module, Builder, ty, matAlloc, opVal, subDimension, (index * prevDim) + i,
-                                     dimension.at(0));
-        } else {
-            // At this point, the element that will be contained is the most raw
-            // llvm value, indexed at position
-            // TODO: Offset needs to work with non-64 bit variables
-            auto zero = llvm::ConstantInt::get(module->getContext(), llvm::APInt(64, 0, true));
-            auto indexVal = llvm::ConstantInt::get(module->getContext(), llvm::APInt(64, index, true));
-            // Pointer to the index within IR
-            auto ptrOld =
-                llvm::GetElementPtrInst::Create(matType, opVal, {zero, indexVal}, "", Builder->GetInsertBlock());
-            auto ptrNew =
-                llvm::GetElementPtrInst::Create(matType, matAlloc, {zero, indexVal}, "", Builder->GetInsertBlock());
-            // Generate the code for each valid operation and type
-            /*TODO: Probably needs syntax checking, leaving this for someone
-             * with a better understanding of programming language theory
-             * */
-            switch (this->op) {
+    if (auto* operandType = std::get_if<Typing::MatrixType>(&*operandMatNode->type)) {
+
+        auto newMatAlloc = Utils::createMatrix(context, *operandType);
+
+        // We generate the operations sequentially
+        // TODO: Add Kernel call for nvptx
+        auto Builder = context->Builder;
+        llvm::Function* parent = Builder->GetInsertBlock()->getParent();
+        std::string opName = AST::UNA_OP_ENUM_STRING[this->op];
+
+        llvm::BasicBlock* addBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".loop", parent);
+        llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".done");
+
+        auto indexAlloca = Utils::CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
+        auto* matSize = Utils::getLength(context, operand, *operandType);
+        auto* nsize = Utils::getLength(context, newMatAlloc, *operandType);
+        // parent->getBasicBlockList().push_back(addBB);
+        Builder->CreateBr(addBB);
+
+        Builder->SetInsertPoint(addBB);
+        {
+            auto* index = Builder->CreateLoad(indexAlloca);
+
+            auto* lindex = Builder->CreateURem(index, matSize);
+            auto* v = Utils::getValueFromMatrixPtr(context, operand, lindex, "lhs");
+            llvm::Value * opResult;
+            switch(op){
                 case NEG: {
-                    if (ty->isIntegerTy()) {
-                        auto neg =
-                            llvm::BinaryOperator::CreateNeg(Builder->CreateLoad(ptrOld), "", Builder->GetInsertBlock());
-                        // Insert
-                        llvm::StoreInst(neg, ptrNew, false, Builder->GetInsertBlock());
-                    } else if (ty->isFloatTy()) {
-                        auto neg = llvm::BinaryOperator::CreateFNeg(Builder->CreateLoad(ptrOld), "",
-                                                                    Builder->GetInsertBlock());
-                        llvm::StoreInst(neg, ptrNew, false, Builder->GetInsertBlock());
-                    }
+                    opResult = context->Builder->CreateNeg(v, UNA_OP_ENUM_STRING[op]);
                     break;
                 }
                 case LNOT: {
-                    // TODO: Linear not? Can someone check on this? Same for
-                    // BNOT
-                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptrOld), "", Builder->GetInsertBlock());
-                    break;
-                }
-                case BNOT: {
-                    llvm::BinaryOperator::CreateNot(Builder->CreateLoad(ptrOld), "", Builder->GetInsertBlock());
-                    break;
+                    opResult = context->Builder->CreateNot(v, UNA_OP_ENUM_STRING[op]);
                 }
             }
+            Utils::setValueFromMatrixPtr(context, newMatAlloc, index, opResult);
+
+            // Update counter
+            auto* next = Builder->CreateAdd(
+                index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "add");
+            Builder->CreateStore(next, indexAlloca);
+
+            // Test if completed list
+            auto* done = Builder->CreateICmpUGE(next, nsize);
+            Builder->CreateCondBr(done, endBB, addBB);
         }
+
+        parent->getBasicBlockList().push_back(endBB);
+        Builder->SetInsertPoint(endBB);
     }
+    return nullptr;
 }

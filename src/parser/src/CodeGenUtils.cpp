@@ -165,3 +165,10 @@ void Utils::setValueFromMatrixPtr(Utils::IRContext* context, llvm::Value* mPtr, 
     auto* dataPtr = getValueFromPointerOffset(context, mPtr, 0, "dataPtr");
     insertValueAtPointerOffsetValue(context, dataPtr, offset, val);
 }
+
+llvm::AllocaInst* Utils::CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName,
+                                         llvm::Type* Type) {
+    llvm::IRBuilder<> TmpB(&Builder.GetInsertBlock()->getParent()->getEntryBlock(),
+                           Builder.GetInsertBlock()->getParent()->getEntryBlock().begin());
+    return TmpB.CreateAlloca(Type, nullptr, VarName);
+}

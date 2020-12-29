@@ -3,12 +3,6 @@
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
 
-static llvm::AllocaInst* CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName,
-                                                llvm::Type* Type) {
-    llvm::IRBuilder<> TmpB(&Builder.GetInsertBlock()->getParent()->getEntryBlock(),
-                           Builder.GetInsertBlock()->getParent()->getEntryBlock().begin());
-    return TmpB.CreateAlloca(Type, nullptr, VarName);
-}
 
 llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     // Assumption is that our types are two evaluated matricies of compatible
@@ -59,7 +53,7 @@ void AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Va
     llvm::BasicBlock* addBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".loop", parent);
     llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".done");
 
-    auto indexAlloca = CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
+    auto indexAlloca = Utils::CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
     auto* lsize = Utils::getLength(context, lhsVal, lhsType);
     auto* rsize = Utils::getLength(context, rhsVal, rhsType);
     auto* nsize = Utils::getLength(context, matAlloc, resType);

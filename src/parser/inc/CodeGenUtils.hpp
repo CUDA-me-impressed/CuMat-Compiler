@@ -31,6 +31,8 @@ llvm::Type* convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE typePri
 llvm::Value* getValueFromLLVM(IRContext* context, int val, Typing::PRIMITIVE typePrim, bool isSigned);
 llvm::Value* getValueFromLLVM(IRContext* context, float val, Typing::PRIMITIVE typePrim, bool isSigned);
 
+llvm::AllocaInst* CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName, llvm::Type* Type);
+
 llvm::AllocaInst* createMatrix(IRContext* context, const Typing::Type& type);
 LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
 
