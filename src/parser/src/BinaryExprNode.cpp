@@ -4,13 +4,6 @@
 #include <MatrixNode.hpp>
 #include <TypeException.hpp>
 
-static llvm::AllocaInst* CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName,
-                                                llvm::Type* Type) {
-    llvm::IRBuilder<> TmpB(&Builder.GetInsertBlock()->getParent()->getEntryBlock(),
-                           Builder.GetInsertBlock()->getParent()->getEntryBlock().begin());
-    return TmpB.CreateAlloca(Type, nullptr, VarName);
-}
-
 llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     // Assumption is that our types are two evaluated matricies of compatible
     // dimensions. We first generate code for each of the l and r matricies
@@ -44,7 +37,9 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                               (rhsLLVMType == intType or rhsLLVMType == floatType);
 
             switch (op) {
-                case PLUS: {
+                case PLUS:
+                case MINUS:
+                case LOR: {
                     if (not(sameType and intOrFloat)) {
                         if (not sameType) {
                             Typing::mismatchTypeException("Types do not match");
@@ -59,7 +54,7 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                             }
                         }
                     }
-                    plusCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, newMatAlloc, *resultType);
+                    elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, newMatAlloc, *resultType);
                     break;
                 }
                 default:
@@ -72,36 +67,38 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     return nullptr;
 }
 
-void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
-                                      const Typing::MatrixType& lhsType, const Typing::MatrixType& rhsType,
-                                      llvm::AllocaInst* matAlloc, const Typing::MatrixType& resType) {
+void AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
+                                             const Typing::MatrixType& lhsType, const Typing::MatrixType& rhsType,
+                                             llvm::AllocaInst* matAlloc, const Typing::MatrixType& resType) {
     auto Builder = context->Builder;
     llvm::Function* parent = Builder->GetInsertBlock()->getParent();
+    std::string opName = AST::BIN_OP_ENUM_STRING[this->op];
 
-    llvm::BasicBlock* addBB = llvm::BasicBlock::Create(Builder->getContext(), "add.loop", parent);
-    llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), "add.done", parent);
+    llvm::BasicBlock* addBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".loop", parent);
+    llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".done");
 
-    auto indexAlloca = CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
+    auto indexAlloca = Utils::CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
     auto* lsize = Utils::getLength(context, lhsVal, lhsType);
     auto* rsize = Utils::getLength(context, rhsVal, rhsType);
     auto* nsize = Utils::getLength(context, matAlloc, resType);
+    // parent->getBasicBlockList().push_back(addBB);
     Builder->CreateBr(addBB);
 
     Builder->SetInsertPoint(addBB);
     {
-        auto* index = Builder->CreateLoad(indexAlloca, "add.loadcounter");
+        auto* index = Builder->CreateLoad(indexAlloca);
 
         auto* lindex = Builder->CreateURem(index, lsize);
         auto* rindex = Builder->CreateURem(index, rsize);
-        auto* l = Utils::getValueFromPointerOffsetValue(context, lhsVal, lindex, "lhs");
-        auto* r = Utils::getValueFromPointerOffsetValue(context, rhsVal, rindex, "rhs");
-        auto* add = Builder->CreateAdd(l, r, "add");
-        Utils::insertValueAtPointerOffsetValue(context, matAlloc, index, add);
+        auto* l = Utils::getValueFromMatrixPtr(context, lhsVal, lindex, "lhs");
+        auto* r = Utils::getValueFromMatrixPtr(context, rhsVal, rindex, "rhs");
+        auto* opResult = applyOperatorToOperands(context, this->op, l, r, opName);
+        Utils::setValueFromMatrixPtr(context, matAlloc, index, opResult);
 
         // Update counter
         auto* next = Builder->CreateAdd(
             index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "add");
-        Builder->CreateStore(next, indexAlloca, "add.storecounter");
+        Builder->CreateStore(next, indexAlloca);
 
         // Test if completed list
         auto* done = Builder->CreateICmpUGE(next, nsize);
@@ -110,4 +107,28 @@ void AST::BinaryExprNode::plusCodeGen(Utils::IRContext* context, llvm::Value* lh
 
     parent->getBasicBlockList().push_back(endBB);
     Builder->SetInsertPoint(endBB);
+}
+
+/**
+ * Abstraction out of LLVM CallInst to return the correct type for our binary tree.
+ * @param op
+ * @param lhs
+ * @param rhs
+ * @param name
+ * @return
+ */
+llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* context, const AST::BIN_OPERATORS& op,
+                                                          llvm::Value* lhs, llvm::Value* rhs, const std::string& name) {
+    // TODO: Currently only works with integer values, will need to be extended to FP
+    switch (op) {
+        case PLUS: {
+            return context->Builder->CreateAdd(lhs, rhs, name);
+        }
+        case MINUS: {
+            return context->Builder->CreateSub(lhs, rhs, name);
+        }
+        case LOR: {
+            return context->Builder->CreateOr(lhs, rhs, name);
+        }
+    }
 }

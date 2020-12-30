@@ -154,3 +154,21 @@ llvm::Value* Utils::getValueFromPointerOffsetValue(Utils::IRContext* context, ll
     auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, offsetValue});
     return context->Builder->CreateLoad(offsetPtr, name);
 }
+
+llvm::Value* Utils::getValueFromMatrixPtr(Utils::IRContext* context, llvm::Value* mPtr, llvm::Value* offset,
+                                          std::string name) {
+    auto* dataPtr = getValueFromPointerOffset(context, mPtr, 0, "dataPtr");
+    return getValueFromPointerOffsetValue(context, dataPtr, offset, "matValue");
+}
+
+void Utils::setValueFromMatrixPtr(Utils::IRContext* context, llvm::Value* mPtr, llvm::Value* offset, llvm::Value* val) {
+    auto* dataPtr = getValueFromPointerOffset(context, mPtr, 0, "dataPtr");
+    insertValueAtPointerOffsetValue(context, dataPtr, offset, val);
+}
+
+llvm::AllocaInst* Utils::CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName,
+                                                llvm::Type* Type) {
+    llvm::IRBuilder<> TmpB(&Builder.GetInsertBlock()->getParent()->getEntryBlock(),
+                           Builder.GetInsertBlock()->getParent()->getEntryBlock().begin());
+    return TmpB.CreateAlloca(Type, nullptr, VarName);
+}
