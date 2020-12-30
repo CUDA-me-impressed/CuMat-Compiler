@@ -50,6 +50,7 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
                 }
                 case LNOT: {
                     opResult = context->Builder->CreateNot(v, UNA_OP_ENUM_STRING[op]);
+                    break;
                 }
             }
             Utils::setValueFromMatrixPtr(context, matAlloc, index, opResult);
