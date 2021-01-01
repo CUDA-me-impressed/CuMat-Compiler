@@ -3,6 +3,7 @@
 //
 
 #include "TypeCheckingUtils.hpp"
+
 #include "Type.hpp"
 
 std::shared_ptr<Typing::Type> makeGenericType(std::string typeString) {

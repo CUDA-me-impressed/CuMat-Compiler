@@ -113,5 +113,3 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) {
 
     return matHeaderType;
 }
-
-
