@@ -11,6 +11,8 @@ void Node::addChild(std::shared_ptr<Node> n) { this->children.push_back(std::mov
 
 std::string Node::toString() const { return this->literalText; }
 
+Typing::Type Node::getType() const { return this->type; }
+
 void Node::semanticPass() {
     for (auto const& child : this->children) child->semanticPass();
 }
