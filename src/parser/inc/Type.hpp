@@ -45,6 +45,7 @@ class MatrixType {
 };
 
 class GenericType {
+   public:
     std::string name;
 };
 

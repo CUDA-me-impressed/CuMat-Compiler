@@ -19,7 +19,7 @@ namespace AST {
 class Node {
    public:
     std::string literalText;
-    Typing::Type type;
+    std::shared_ptr<Typing::Type> type;
 
     std::vector<std::shared_ptr<Node>> children;
 
@@ -29,7 +29,8 @@ class Node {
     void addChild(std::shared_ptr<Node> n);
 
     [[nodiscard]] std::string toString() const;
-    Typing::Type getType() const;
+    [[nodiscard]] std::shared_ptr<Typing::Type> getType() const;
+    void setType(std::shared_ptr<Typing::Type> ty);
 
     // Default implementations just call the function on their children
     virtual void semanticPass();
