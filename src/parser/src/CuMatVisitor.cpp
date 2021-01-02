@@ -34,7 +34,7 @@ antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitImports(CuMatParser::ImportsContext* ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
     auto is = ctx->cmimport();
-    for(auto& import : is) {
+    for (auto& import : is) {
         auto i = visit(import);
         n->addChild(std::move(i));
     }
@@ -48,7 +48,7 @@ antlrcpp::Any CuMatVisitor::visitCmimport(CuMatParser::CmimportContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitDefinitions(CuMatParser::DefinitionsContext* ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
     auto defs = ctx->definition();
-    for(auto& def : defs) {
+    for (auto& def : defs) {
         auto d = visit(def);
         n->addChild(std::move(d));
     }
@@ -56,18 +56,15 @@ antlrcpp::Any CuMatVisitor::visitDefinitions(CuMatParser::DefinitionsContext* ct
 }
 
 antlrcpp::Any CuMatVisitor::visitDefinition(CuMatParser::DefinitionContext* ctx) {
-    if(ctx->funcdef() != nullptr)
-    {
+    if (ctx->funcdef() != nullptr) {
         return std::move(visit(ctx->funcdef()));
     }
 
-    if(ctx->cmtypedef() != nullptr)
-    {
+    if (ctx->cmtypedef() != nullptr) {
         return std::move(visit(ctx->cmtypedef()));
     }
 
-    if(ctx->assignment() != nullptr)
-    {
+    if (ctx->assignment() != nullptr) {
         return std::move(visit(ctx->assignment()));
     }
 
