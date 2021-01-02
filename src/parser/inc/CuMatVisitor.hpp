@@ -51,12 +51,6 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
 
     antlrcpp::Any visitCmtypedef(CuMatParser::CmtypedefContext* ctx) override;
 
-   protected:
-    antlrcpp::Any defaultResult() override;
-    // Aggregate results use vectors of type:
-    // std::vector<std::shared_ptr<AST::Node>>
-    antlrcpp::Any aggregateResult(antlrcpp::Any aggregate, const antlrcpp::Any& nextResult) override;
-
    private:
     [[nodiscard]] bool compareTokenTypes(size_t a, size_t b) const;
 };
