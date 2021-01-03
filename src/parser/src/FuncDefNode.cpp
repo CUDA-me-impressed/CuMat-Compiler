@@ -2,7 +2,7 @@
 
 llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     // We need to handle scope within the function
-    Utils::AllocSymbolTable.emplace_back();
+    Utils::VarSymbolTable.emplace_back();
 
     // Let us generate a new function -> We will first generate the function argument types
     std::vector<llvm::Type*> argTypes;
