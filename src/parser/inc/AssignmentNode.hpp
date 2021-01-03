@@ -4,14 +4,13 @@
 #include "VariableNode.hpp"
 
 namespace AST {
-    class AssignmentNode : public Node {
-       public:
+class AssignmentNode : public Node {
+   public:
+    std::shared_ptr<VariableNode> lVal;
+    std::shared_ptr<ExprNode> rVal;
 
-        std::shared_ptr<VariableNode> lVal;
-        std::shared_ptr<ExprNode> rVal;
+    std::string name;
 
-        std::string name;
-
-        llvm::Value* codegen(Utils::IRContext* context);
-    };
-}
+    llvm::Value* codegen(Utils::IRContext* context);
+};
+}  // namespace AST
