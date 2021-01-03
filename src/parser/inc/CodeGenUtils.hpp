@@ -12,7 +12,7 @@
 #include "Type.hpp"
 
 namespace Utils {
-static std::map<std::string, llvm::AllocaInst*> AllocSymbolTable;
+static std::vector<std::map<std::string, llvm::Value*>> AllocSymbolTable;
 static std::map<std::string, std::map<std::vector<std::shared_ptr<Typing::Type>>, llvm::Function*>> funcTable;
 struct IRContext {
     llvm::Module* module;
