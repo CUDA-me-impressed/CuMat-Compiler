@@ -34,12 +34,11 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
 
     // Allocation of the matrix data
-    auto * intPtrType = llvm::Type::getInt32Ty(context->module->getContext());
+    auto* intPtrType = llvm::Type::getInt32Ty(context->module->getContext());
     llvm::Constant* matAllocaSize = llvm::ConstantExpr::getSizeOf(matDataType);
     // This will by default be i64, need to cast to i32 (I think its safe)
     matAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(matAllocaSize, intPtrType);
-    auto * matAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(),
-                                                  intPtrType, matDataType,
+    auto* matAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), intPtrType, matDataType,
                                                   matAllocaSize, nullptr, nullptr, "");
     context->Builder->Insert(matAlloc, "matArrData");
 
@@ -50,9 +49,8 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
     intPtrType = llvm::Type::getInt32Ty(context->module->getContext());
     llvm::Constant* matHeaderAllocaSize = llvm::ConstantExpr::getSizeOf(matHeaderType);
     matHeaderAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(matHeaderAllocaSize, intPtrType);
-    auto * matHeaderAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(),
-                                                         intPtrType, matHeaderType,
-                                                         matHeaderAllocaSize, nullptr, nullptr, "");
+    auto* matHeaderAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), intPtrType, matHeaderType,
+                                                        matHeaderAllocaSize, nullptr, nullptr, "");
     // LLVM requires us to actually insert the instruction when using CallInst
     context->Builder->Insert(matHeaderAlloc, "matStruct");
 
