@@ -33,7 +33,7 @@ llvm::Value* getValueFromLLVM(IRContext* context, float val, Typing::PRIMITIVE t
 
 llvm::AllocaInst* CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName, llvm::Type* Type);
 
-llvm::AllocaInst* createMatrix(IRContext* context, const Typing::Type& type);
+llvm::Instruction* createMatrix(IRContext* context, const Typing::Type& type);
 LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
 
 void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val);

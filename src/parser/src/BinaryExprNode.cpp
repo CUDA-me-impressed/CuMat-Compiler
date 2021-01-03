@@ -44,7 +44,7 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
 
 void AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
                                              const Typing::MatrixType& lhsType, const Typing::MatrixType& rhsType,
-                                             llvm::AllocaInst* matAlloc, const Typing::MatrixType& resType) {
+                                             llvm::Instruction* matAlloc, const Typing::MatrixType& resType) {
     auto Builder = context->Builder;
     llvm::Function* parent = Builder->GetInsertBlock()->getParent();
     std::string opName = AST::BIN_OP_ENUM_STRING[this->op];
