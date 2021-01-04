@@ -6,6 +6,7 @@
 #include <exception>
 
 #include "ASTNode.hpp"
+#include "AssignmentNode.hpp"
 #include "BinaryExprNode.hpp"
 #include "CuMatLexer.h"
 #include "FuncDefNode.hpp"
@@ -14,6 +15,7 @@
 #include "MatrixNode.hpp"
 #include "TernaryExprNode.hpp"
 #include "UnaryExprNode.hpp"
+#include "VariableNode.hpp"
 
 template <class T>
 std::shared_ptr<T> pConv(std::shared_ptr<AST::Node> n) {
@@ -162,13 +164,25 @@ antlrcpp::Any CuMatVisitor::visitBlock(CuMatParser::BlockContext* ctx) {
     n->returnExpr = std::move(visit(ctx->expression()));
     return std::move(n);
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitAssignment(CuMatParser::AssignmentContext* ctx) {
-    throw std::runtime_error("Unsupported feature: Assignments");
-}
-// TODO Implement
-antlrcpp::Any CuMatVisitor::visitVarname(CuMatParser::VarnameContext* ctx) {
-    throw std::runtime_error("Unsupported feature: Variable Names");
+    auto n = std::make_shared<AST::AssignmentNode>();
+    n->literalText = ctx->getText();
+
+    if (ctx->asstarget()->varname() != nullptr) {
+        auto name = ctx->asstarget()->varname()->identifier()->getText();
+        n->name = name;
+    } else if (ctx->asstarget()->decomp() != nullptr) {
+        // TODO Figure out what to do with decomposition
+        n->lVal = nullptr;
+        visit(ctx->asstarget()->decomp());
+    } else {
+        throw std::runtime_error("No Asstarget found at: " + n->literalText);
+    }
+
+    n->rVal = std::move(visit(ctx->expression()));
+
+    return std::move(n);
 }
 
 antlrcpp::Any CuMatVisitor::visitExpression(CuMatParser::ExpressionContext* ctx) {
@@ -609,9 +623,23 @@ antlrcpp::Any CuMatVisitor::visitScalarliteral(CuMatParser::ScalarliteralContext
         }
     }
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitVariable(CuMatParser::VariableContext* ctx) {
-    throw std::runtime_error("Unsupported feature: Variables");
+    auto n = std::make_shared<AST::VariableNode>();
+    n->literalText = ctx->getText();
+    n->name = ctx->varname()->identifier()->getText();
+
+    if (ctx->cmnamespace() != nullptr) {
+        // TODO deal with namespacing
+        visit(ctx->cmnamespace());
+    }
+
+    if (ctx->slice() != nullptr) {
+        // TODO deal with slicing
+        visit(ctx->slice());
+    }
+
+    return std::move(n);
 }
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitCmnamespace(CuMatParser::CmnamespaceContext* ctx) {
@@ -620,4 +648,12 @@ antlrcpp::Any CuMatVisitor::visitCmnamespace(CuMatParser::CmnamespaceContext* ct
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitCmtypedef(CuMatParser::CmtypedefContext* ctx) {
     throw std::runtime_error("Unsupported feature: Type Definitions");
+}
+// TODO Implement
+antlrcpp::Any CuMatVisitor::visitDecomp(CuMatParser::DecompContext* ctx) {
+    throw std::runtime_error("Unsupported feature: Decomposition");
+}
+// TODO Implement
+antlrcpp::Any CuMatVisitor::visitSlice(CuMatParser::SliceContext* ctx) {
+    throw std::runtime_error("Unsupported feature: Slicing");
 }
