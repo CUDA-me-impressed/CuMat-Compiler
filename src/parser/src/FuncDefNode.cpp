@@ -1,6 +1,9 @@
 #include "FuncDefNode.hpp"
 
 llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
+    // We need to handle scope within the function
+    Utils::VarSymbolTable.emplace_back();
+
     // Let us generate a new function -> We will first generate the function argument types
     std::vector<llvm::Type*> argTypes;
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
