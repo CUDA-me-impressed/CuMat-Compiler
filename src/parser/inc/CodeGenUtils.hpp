@@ -10,14 +10,15 @@
 #include <vector>
 
 #include "Type.hpp"
+#include "SymbolTable.hpp"
 
 namespace Utils {
-static std::vector<std::map<std::string, llvm::Value*>> VarSymbolTable;
 static std::map<std::string, std::map<std::vector<std::shared_ptr<Typing::Type>>, llvm::Function*>> funcTable;
 struct IRContext {
     llvm::Module* module;
     llvm::IRBuilder<>* Builder;
     llvm::Function* function;
+    SymbolTable* symbolTable;
 };
 
 struct LLVMMatrixRecord {
