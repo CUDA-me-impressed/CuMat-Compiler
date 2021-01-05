@@ -10,7 +10,7 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
     context->Builder->SetInsertPoint(bb);
 
     // Loop over each assignment in order
-    for(auto ass : this->assignments){
+    for (auto ass : this->assignments) {
         ass->codegen(context);
     }
 

@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "Type.hpp"
 #include "SymbolTable.hpp"
+#include "Type.hpp"
 
 namespace Utils {
 static std::map<std::string, std::map<std::vector<std::shared_ptr<Typing::Type>>, llvm::Function*>> funcTable;
