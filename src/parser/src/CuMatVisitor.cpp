@@ -155,13 +155,14 @@ antlrcpp::Any CuMatVisitor::visitBlock(CuMatParser::BlockContext* ctx) {
     auto n = std::make_shared<AST::BlockNode>();
     n->literalText = ctx->getText();
 
-    std::vector<std::shared_ptr<AST::Node>> assigns;
+    std::vector<std::shared_ptr<AST::AssignmentNode>> assigns;
     for (auto& ass : ctx->assignments) {
         assigns.emplace_back(std::move(visit(ass)));
     }
-    n->assignments = std::vector<std::shared_ptr<AST::Node>>(assigns);
+    n->assignments = std::vector<std::shared_ptr<AST::AssignmentNode>>(assigns);
 
-    n->returnExpr = std::move(visit(ctx->expression()));
+    auto e = visit(ctx->expression());
+    n->returnExpr = std::move(e);
     return std::move(n);
 }
 
@@ -639,7 +640,7 @@ antlrcpp::Any CuMatVisitor::visitVariable(CuMatParser::VariableContext* ctx) {
         visit(ctx->slice());
     }
 
-    return std::move(n);
+    return std::move(pConv<AST::ExprNode>(n));
 }
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitCmnamespace(CuMatParser::CmnamespaceContext* ctx) {

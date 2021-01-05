@@ -67,11 +67,11 @@ scalarliteral               : stringliteral | numliteral ;
 stringliteral               : STRING ;
 numliteral                  : INT | FLOAT ;
 
-variable                    : cmnamespace varname (LSQB slice RSQB)? ;
+variable                    : cmnamespace? varname (LSQB slice RSQB)? ;
 slice                       : sliceelement (COMMA sliceelement)* ;
 sliceelement                : INT? (COLON INT?)? | STAR ;
 
-cmnamespace                 : (identifier DOT)* ;
+cmnamespace                 : (identifier DOT)+ ;
 
 args                        : LPAR (expression (COMMA expression)*)? RPAR ;
 
