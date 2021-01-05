@@ -25,7 +25,8 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
     antlrcpp::Any visitBlock(CuMatParser::BlockContext* ctx) override;
 
     antlrcpp::Any visitAssignment(CuMatParser::AssignmentContext* ctx) override;
-    antlrcpp::Any visitVarname(CuMatParser::VarnameContext* ctx) override;
+    antlrcpp::Any visitDecomp(CuMatParser::DecompContext* ctx) override;
+    antlrcpp::Any visitSlice(CuMatParser::SliceContext* ctx) override;
 
     antlrcpp::Any visitExpression(CuMatParser::ExpressionContext* ctx) override;
     antlrcpp::Any visitExp_if(CuMatParser::Exp_ifContext* ctx) override;
