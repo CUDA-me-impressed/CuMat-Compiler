@@ -11,6 +11,10 @@
 
 #include "CodeGenUtils.hpp"
 
+void AST::MatrixNode::semanticPass() {
+
+}
+
 llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
     // Get the LLVM type out for the basic type
     Typing::MatrixType matTypeAST = std::get<Typing::MatrixType>(*this->type);
