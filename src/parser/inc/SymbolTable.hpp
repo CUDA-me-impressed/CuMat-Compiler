@@ -7,19 +7,26 @@
 #include <utility>
 #include <vector>
 
+#include "Type.hpp"
+
 namespace Utils {
+
+struct SymbolTableEntry {
+    std::shared_ptr<Typing::Type> type;
+    llvm::Value* llvmVal;
+};
+
 class SymbolTable {
    private:
     // Vector that stores names of variables along with the depth we find them
-    std::vector<std::map<std::string, llvm::Value*>> data;
-    std::map<std::string, std::vector<int>> variableLocations;
+    std::map<std::string, std::map<std::string, SymbolTableEntry>> data;
 
    public:
-    void newScope();
-    void exitScope();
+    std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName, const std::string& funcName,
+                                               const std::string& funcNamespace = "");
 
-    llvm::Value* getValue(const std::string& symbolName);
-    void setValue(const std::string& symbolName, llvm::Value* storeVal);
+    void setValue(std::shared_ptr<Typing::Type> type, llvm::Value* storeVal, const std::string& symbolName,
+                  const std::string& funcName, const std::string& funcNamespace = "");
 
     bool inScope(const std::string& symbolName);
 };
