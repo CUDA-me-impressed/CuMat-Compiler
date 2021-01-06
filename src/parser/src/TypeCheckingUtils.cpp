@@ -7,8 +7,8 @@
 #include "Type.hpp"
 
 std::shared_ptr<Typing::Type> makeGenericType(std::string typeString) {
-    auto ty = std::make_shared<Typing::GenericType>();
-    ty->name = typeString;
-    std::shared_ptr<Typing::Type> type = static_pointer_cast<Typing::Type>(ty);
+    auto ty = Typing::GenericType();
+    ty.name = typeString;
+    std::shared_ptr<Typing::Type> type = std::make_shared<Typing::Type>(ty);
     return type;
 }
