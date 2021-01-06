@@ -23,6 +23,6 @@ class BinaryExprNode : public ExprNode {
     // Operation specific codegen
     void elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
                             const Typing::MatrixType& lhsType, const Typing::MatrixType& rhsType,
-                            llvm::AllocaInst* matAlloc, const Typing::MatrixType& resType);
+                            llvm::Instruction* matAlloc, const Typing::MatrixType& resType);
 };
 }  // namespace AST

@@ -46,8 +46,6 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
             context->Builder->CreateStore(val, ptr);
         }
     }
-
-    Utils::AllocSymbolTable[this->literalText] = matAlloc;
     return matAlloc;
 }
 

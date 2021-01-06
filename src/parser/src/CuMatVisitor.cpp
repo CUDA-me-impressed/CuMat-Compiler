@@ -6,6 +6,7 @@
 #include <exception>
 
 #include "ASTNode.hpp"
+#include "AssignmentNode.hpp"
 #include "BinaryExprNode.hpp"
 #include "CuMatLexer.h"
 #include "FuncDefNode.hpp"
@@ -14,6 +15,7 @@
 #include "MatrixNode.hpp"
 #include "TernaryExprNode.hpp"
 #include "UnaryExprNode.hpp"
+#include "VariableNode.hpp"
 
 template <class T>
 std::shared_ptr<T> pConv(std::shared_ptr<AST::Node> n) {
@@ -30,44 +32,47 @@ antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
 
     return std::move(n);
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitImports(CuMatParser::ImportsContext* ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto childrenAny = this->visitChildren(ctx);
-    auto children = childrenAny.as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    auto is = ctx->cmimport();
+    for (auto& import : is) {
+        auto i = visit(import);
+        n->addChild(std::move(i));
     }
     return std::move(n);
 }
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitCmimport(CuMatParser::CmimportContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children = this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
-    }
-    return n;
+    throw std::runtime_error("Unsupported Feature: Imports");
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitDefinitions(CuMatParser::DefinitionsContext* ctx) {
     auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children = this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    auto defs = ctx->definition();
+    for (auto& def : defs) {
+        auto d = visit(def);
+        n->addChild(std::move(d));
     }
     return std::move(n);
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitDefinition(CuMatParser::DefinitionContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children = this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    if (ctx->funcdef() != nullptr) {
+        return std::move(visit(ctx->funcdef()));
     }
-    return std::move(n);
+
+    if (ctx->cmtypedef() != nullptr) {
+        return std::move(visit(ctx->cmtypedef()));
+    }
+
+    if (ctx->assignment() != nullptr) {
+        return std::move(visit(ctx->assignment()));
+    }
+
+    throw std::runtime_error("No definition found");
 }
-// TODO Complete Implementing
+// TODO Check if anything extra is needed
 antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
     auto n = std::make_shared<AST::FuncDefNode>();
     n->literalText = ctx->getText();
@@ -142,7 +147,7 @@ antlrcpp::Any CuMatVisitor::visitTypespec(CuMatParser::TypespecContext* ctx) {
         return std::make_shared<Typing::Type>(m);
     } else {
         // TODO deal with customTypes
-        return nullptr;
+        throw std::runtime_error("Unsupported feature: Custom Types");
     }
 }
 
@@ -150,32 +155,35 @@ antlrcpp::Any CuMatVisitor::visitBlock(CuMatParser::BlockContext* ctx) {
     auto n = std::make_shared<AST::BlockNode>();
     n->literalText = ctx->getText();
 
-    std::vector<std::shared_ptr<AST::Node>> assigns;
+    std::vector<std::shared_ptr<AST::AssignmentNode>> assigns;
     for (auto& ass : ctx->assignments) {
         assigns.emplace_back(std::move(visit(ass)));
     }
-    n->assignments = std::vector<std::shared_ptr<AST::Node>>(assigns);
+    n->assignments = std::vector<std::shared_ptr<AST::AssignmentNode>>(assigns);
 
-    n->returnExpr = std::move(visit(ctx->expression()));
+    auto e = visit(ctx->expression());
+    n->returnExpr = std::move(e);
     return std::move(n);
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitAssignment(CuMatParser::AssignmentContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children = this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    auto n = std::make_shared<AST::AssignmentNode>();
+    n->literalText = ctx->getText();
+
+    if (ctx->asstarget()->varname() != nullptr) {
+        auto name = ctx->asstarget()->varname()->identifier()->getText();
+        n->name = name;
+    } else if (ctx->asstarget()->decomp() != nullptr) {
+        // TODO Figure out what to do with decomposition
+        n->lVal = nullptr;
+        visit(ctx->asstarget()->decomp());
+    } else {
+        throw std::runtime_error("No Asstarget found at: " + n->literalText);
     }
-    return n;
-}
-// TODO Implement
-antlrcpp::Any CuMatVisitor::visitVarname(CuMatParser::VarnameContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children = this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
-    }
-    return n;
+
+    n->rVal = std::move(visit(ctx->expression()));
+
+    return std::move(n);
 }
 
 antlrcpp::Any CuMatVisitor::visitExpression(CuMatParser::ExpressionContext* ctx) {
@@ -191,7 +199,7 @@ antlrcpp::Any CuMatVisitor::visitExpression(CuMatParser::ExpressionContext* ctx)
         return std::move(visit(ctx->exp_if()));
     }
 
-    return nullptr;
+    throw std::runtime_error("Expression type not found");
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_if(CuMatParser::Exp_ifContext* ctx) {
@@ -616,46 +624,37 @@ antlrcpp::Any CuMatVisitor::visitScalarliteral(CuMatParser::ScalarliteralContext
         }
     }
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitVariable(CuMatParser::VariableContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children = this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
+    auto n = std::make_shared<AST::VariableNode>();
+    n->literalText = ctx->getText();
+    n->name = ctx->varname()->identifier()->getText();
+
+    if (ctx->cmnamespace() != nullptr) {
+        // TODO deal with namespacing
+        visit(ctx->cmnamespace());
     }
-    return n;
+
+    if (ctx->slice() != nullptr) {
+        // TODO deal with slicing
+        visit(ctx->slice());
+    }
+
+    return std::move(pConv<AST::ExprNode>(n));
 }
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitCmnamespace(CuMatParser::CmnamespaceContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children = this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
-    }
-    return n;
+    throw std::runtime_error("Unsupported feature: Namespacing");
 }
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitCmtypedef(CuMatParser::CmtypedefContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto children = this->visitChildren(ctx).as<std::vector<std::shared_ptr<AST::Node>>>();
-    for (auto& child : children) {
-        n->addChild(std::move(child));
-    }
-    return n;
+    throw std::runtime_error("Unsupported feature: Type Definitions");
 }
-
-antlrcpp::Any CuMatVisitor::defaultResult() {
-    std::vector<std::shared_ptr<AST::Node>> emptyContainer;
-    return emptyContainer;
+// TODO Implement
+antlrcpp::Any CuMatVisitor::visitDecomp(CuMatParser::DecompContext* ctx) {
+    throw std::runtime_error("Unsupported feature: Decomposition");
 }
-
-antlrcpp::Any CuMatVisitor::aggregateResult(antlrcpp::Any aggregate, const antlrcpp::Any& nextResult) {
-    if (!aggregate.is<std::vector<std::shared_ptr<AST::Node>>>()) {
-        std::vector<std::shared_ptr<AST::Node>> container;
-        container.push_back(nextResult.as<std::shared_ptr<AST::Node>>());
-        return container;
-    }
-
-    aggregate.as<std::vector<std::shared_ptr<AST::Node>>>().push_back(nextResult.as<std::shared_ptr<AST::Node>>());
-    return aggregate;
+// TODO Implement
+antlrcpp::Any CuMatVisitor::visitSlice(CuMatParser::SliceContext* ctx) {
+    throw std::runtime_error("Unsupported feature: Slicing");
 }

@@ -9,15 +9,16 @@
 #include <utility>
 #include <vector>
 
+#include "SymbolTable.hpp"
 #include "Type.hpp"
 
 namespace Utils {
-static std::map<std::string, llvm::AllocaInst*> AllocSymbolTable;
 static std::map<std::string, std::map<std::vector<std::shared_ptr<Typing::Type>>, llvm::Function*>> funcTable;
 struct IRContext {
     llvm::Module* module;
     llvm::IRBuilder<>* Builder;
     llvm::Function* function;
+    SymbolTable* symbolTable;
 };
 
 struct LLVMMatrixRecord {
@@ -33,7 +34,7 @@ llvm::Value* getValueFromLLVM(IRContext* context, float val, Typing::PRIMITIVE t
 
 llvm::AllocaInst* CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName, llvm::Type* Type);
 
-llvm::AllocaInst* createMatrix(IRContext* context, const Typing::Type& type);
+llvm::Instruction* createMatrix(IRContext* context, const Typing::Type& type);
 LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
 
 void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val);
