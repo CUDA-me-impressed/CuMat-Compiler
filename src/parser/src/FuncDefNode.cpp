@@ -1,6 +1,9 @@
 #include "FuncDefNode.hpp"
 
 llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
+    // Update function stack for symbol table
+    context->symbolTable->addFunction(this->funcName);
+
     // Let us generate a new function -> We will first generate the function argument types
     std::vector<llvm::Type*> argTypes;
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
@@ -21,5 +24,8 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     context->function = func;
 
     auto* funcRet = this->block->codeGen(context);
+
+    // Pop the function as we leave the definition of the code
+    context->symbolTable->escapeFunction();
     return funcRet;
 }

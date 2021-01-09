@@ -1,9 +1,6 @@
 #include "BlockNode.hpp"
 
 llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
-    // We need to handle scope within the block
-    context->symbolTable->newScope();
-
     // For this function, we need a new BasicBlock structure
     llvm::BasicBlock* bb = llvm::BasicBlock::Create(context->module->getContext(), "func" + this->callingFunctionName,
                                                     context->function, context->Builder->GetInsertBlock());
@@ -18,7 +15,6 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
     llvm::Value* returnExprVal = this->returnExpr->codeGen(context);
     llvm::Value* retVal = context->Builder->CreateRet(returnExprVal);
 
-    context->symbolTable->exitScope();
 
     return retVal;
 }
