@@ -28,34 +28,33 @@ void Utils::SymbolTable::setValue(std::shared_ptr<Typing::Type> type, llvm::Valu
 }
 
 void Utils::SymbolTable::escapeFunction() {
-    if(this->functionStack.empty())
+    if (this->functionStack.empty())
         throw std::runtime_error("Failed to escape the function within code-block generation. No function!");
     this->functionStack.erase(this->functionStack.end());
 }
-std::string Utils::SymbolTable::getCurrentFunction() { return this->functionStack.at(this->functionStack.size()-1); }
+std::string Utils::SymbolTable::getCurrentFunction() { return this->functionStack.at(this->functionStack.size() - 1); }
 
-
-bool Utils::SymbolTable::inSymbolTable(const std::string& symbolName, const std::string &funcName, const std::string& funcNamespace) {
+bool Utils::SymbolTable::inSymbolTable(const std::string& symbolName, const std::string& funcName,
+                                       const std::string& funcNamespace) {
     // Check if we store the function name itself first
-    if(!this->data.contains(funcName))
-        return false;
+    if (!this->data.contains(funcName)) return false;
 
     // Check if the symbol and its corresponding namespace exists within the symbol table
     std::string fullSymbolName = funcNamespace + "::" + symbolName;
     return this->data[funcName].contains(fullSymbolName);
 }
 
-void Utils::SymbolTable::updateValue(llvm::Value* value, const std::string& symbolName,
-                                     const std::string& funcName, const std::string& funcNamespace) {
-    if(!this->data.contains(funcName)){
+void Utils::SymbolTable::updateValue(llvm::Value* value, const std::string& symbolName, const std::string& funcName,
+                                     const std::string& funcNamespace) {
+    if (!this->data.contains(funcName)) {
         throw std::runtime_error("[Internal Error] Could not update " + symbolName + " to new value function [" +
                                  funcName + "] not found!");
     }
 
     std::string fullSymbolName = funcNamespace + "::" + symbolName;
-    if(!this->data[funcName].contains(fullSymbolName)){
+    if (!this->data[funcName].contains(fullSymbolName)) {
         throw std::runtime_error("[Internal Error] Could not update " + symbolName + " to new value [" +
-                                     fullSymbolName + "] not found!");
+                                 fullSymbolName + "] not found!");
     }
     this->data[funcName][fullSymbolName] = {this->data[funcName][fullSymbolName].type, value};
 }
@@ -67,7 +66,7 @@ void Utils::SymbolTable::updateValue(llvm::Value* value, const std::string& symb
  * @return
  */
 bool Utils::SymbolTable::isFunctionDefined(const std::string& funcName, const std::string& funcNamespace) {
-    return this->funcTable.contains(funcNamespace+"::"+funcName);
+    return this->funcTable.contains(funcNamespace + "::" + funcName);
 }
 
 /**
@@ -76,16 +75,14 @@ bool Utils::SymbolTable::isFunctionDefined(const std::string& funcName, const st
  * @param params
  * @param func
  */
-void Utils::SymbolTable::setFunctionData(const std::string& funcName,
-                                         std::vector<std::shared_ptr<Typing::Type>> params,
-                                         llvm::Function* func,
-                                         const std::string &funcNamespace) {
+void Utils::SymbolTable::setFunctionData(const std::string& funcName, std::vector<std::shared_ptr<Typing::Type>> params,
+                                         llvm::Function* func, const std::string& funcNamespace) {
     // Safety checks
-    if(!isFunctionDefined(funcName, funcNamespace)){
+    if (!isFunctionDefined(funcName, funcNamespace)) {
         throw std::runtime_error("Function [" + funcName + "] not defined!");
     }
     const std::string fullFuncName = funcNamespace + "::" + funcName;
-    if(!this->funcTable[fullFuncName].contains(params)){
+    if (!this->funcTable[fullFuncName].contains(params)) {
         // TODO: Either done in typing or made to actually report type issues
         throw std::runtime_error("Function [" + fullFuncName + "] expected different parameters");
     }
@@ -100,8 +97,8 @@ void Utils::SymbolTable::setFunctionData(const std::string& funcName,
  * @return
  */
 bool Utils::SymbolTable::isFunctionDefinedParam(const std::string& funcName,
-                                                const std::vector<std::shared_ptr<Typing::Type>> &params,
-                                                const std::string &funcNamespace) {
+                                                const std::vector<std::shared_ptr<Typing::Type>>& params,
+                                                const std::string& funcNamespace) {
     const std::string fullFuncName = funcNamespace + "::" + funcName;
     if (!isFunctionDefined(funcName)) {
         throw std::runtime_error("Function [" + funcName + "] not defined!");
@@ -118,9 +115,9 @@ bool Utils::SymbolTable::isFunctionDefinedParam(const std::string& funcName,
  */
 Utils::FunctionTableEntry Utils::SymbolTable::getFunction(const std::string& funcName,
                                                           std::vector<std::shared_ptr<Typing::Type>> params,
-                                                          const std::string &funcNamespace) {
+                                                          const std::string& funcNamespace) {
     const std::string fullFuncName = funcNamespace + "::" + funcName;
-    if(!isFunctionDefinedParam(funcName, params, funcNamespace)){
+    if (!isFunctionDefinedParam(funcName, params, funcNamespace)) {
         throw std::runtime_error("[Internal Error] Cannot retrieve function, not defined");
     }
     return this->funcTable[fullFuncName][params];
@@ -132,16 +129,14 @@ Utils::FunctionTableEntry Utils::SymbolTable::getFunction(const std::string& fun
  * @param params
  * @param funcNamespace
  */
-void Utils::SymbolTable::addNewFunction(const std::string& funcName,
-                                        std::vector<std::shared_ptr<Typing::Type>> params,
-                                        const std::string &funcNamespace) {
+void Utils::SymbolTable::addNewFunction(const std::string& funcName, std::vector<std::shared_ptr<Typing::Type>> params,
+                                        const std::string& funcNamespace) {
     const std::string fullFuncName = funcNamespace + "::" + funcName;
     this->functionStack.emplace_back(fullFuncName);
     // If we have no override
-    if(!this->isFunctionDefined(funcName, funcNamespace)){
+    if (!this->isFunctionDefined(funcName, funcNamespace)) {
         this->funcTable[fullFuncName] = {};
     }
 
     this->funcTable[fullFuncName][params] = {};
 }
-

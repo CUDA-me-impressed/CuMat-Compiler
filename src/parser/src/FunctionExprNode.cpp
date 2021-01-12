@@ -9,7 +9,7 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
 
     // We need to generate types and codegen for arguments
     const std::string funcName = this->nonAppliedFunction->literalText;
-    if(!context->symbolTable->isFunctionDefined(funcName)){
+    if (!context->symbolTable->isFunctionDefined(funcName)) {
         // If we failed to identify this issue until here, we fucked up internally
         // Semantic checking during the parse tree Antlr generation NEEDS to pick this up!
         throw std::runtime_error("[Internal error] Function [" + funcName +
@@ -21,10 +21,10 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
         argTypesRaw.push_back(typeNamePair->type);
     }
 
-//    if(!context->symbolTable->isFunctionDefinedParam(funcName, argTypesRaw)){
-//        throw std::runtime_error("[Internal error] Function [" + funcName +
-//                                 "] defined however parameters do not match");
-//    }
+    //    if(!context->symbolTable->isFunctionDefinedParam(funcName, argTypesRaw)){
+    //        throw std::runtime_error("[Internal error] Function [" + funcName +
+    //                                 "] defined however parameters do not match");
+    //    }
     auto* func = context->symbolTable->getFunction(funcName, argTypesRaw).func;
 
     if (func->arg_size() != this->args.size()) return nullptr;  // TODO: Handle graceful error message

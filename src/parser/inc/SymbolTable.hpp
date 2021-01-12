@@ -52,11 +52,9 @@ struct FunctionParamCompare {
 class SymbolTable {
    private:
     // Vector that stores names of variables along with the depth we find them
-    std::map<std::string,
-             std::map<std::string,
-                      SymbolTableEntry>> data;
+    std::map<std::string, std::map<std::string, SymbolTableEntry>> data;
 
-    std::vector<std::string> functionStack; // Used to identify which function we should be inside
+    std::vector<std::string> functionStack;  // Used to identify which function we should be inside
 
     // Function part separate to variables
     std::map<std::string,
@@ -65,33 +63,27 @@ class SymbolTable {
 
    public:
     // Symbol data
-    std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName,
-                                               const std::string& funcName,
+    std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName, const std::string& funcName,
                                                const std::string& funcNamespace = "");
 
     void setValue(std::shared_ptr<Typing::Type> type, llvm::Value* storeVal, const std::string& symbolName,
                   const std::string& funcName, const std::string& funcNamespace = "");
-    void updateValue(llvm::Value* value, const std::string& symbolName,
-                     const std::string& funcName, const std::string& funcNamespace = "");
+    void updateValue(llvm::Value* value, const std::string& symbolName, const std::string& funcName,
+                     const std::string& funcNamespace = "");
 
-    bool inSymbolTable(const std::string& symbolName, const std::string& funcName, const std::string& funcNamespace = "");
+    bool inSymbolTable(const std::string& symbolName, const std::string& funcName,
+                       const std::string& funcNamespace = "");
 
     // Function data
-    void addNewFunction(const std::string &funcName,
-                        std::vector<std::shared_ptr<Typing::Type>> params,
-                        const std::string &funcNamespace = "");
-    void setFunctionData(const std::string &funcName,
-                         std::vector<std::shared_ptr<Typing::Type>> params,
-                         llvm::Function* func,
-                         const std::string &funcNamespace = "");
-    FunctionTableEntry getFunction(const std::string& funcName,
-                                   std::vector<std::shared_ptr<Typing::Type>> params,
-                                   const std::string &funcNamespace = "");
-    bool isFunctionDefined(const std::string& funcName,
-                           const std::string& funcNamespace = "");
-    bool isFunctionDefinedParam(const std::string& funcName,
-                                const std::vector<std::shared_ptr<Typing::Type>> &params,
-                                const std::string &funcNamespace = "");
+    void addNewFunction(const std::string& funcName, std::vector<std::shared_ptr<Typing::Type>> params,
+                        const std::string& funcNamespace = "");
+    void setFunctionData(const std::string& funcName, std::vector<std::shared_ptr<Typing::Type>> params,
+                         llvm::Function* func, const std::string& funcNamespace = "");
+    FunctionTableEntry getFunction(const std::string& funcName, std::vector<std::shared_ptr<Typing::Type>> params,
+                                   const std::string& funcNamespace = "");
+    bool isFunctionDefined(const std::string& funcName, const std::string& funcNamespace = "");
+    bool isFunctionDefinedParam(const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
+                                const std::string& funcNamespace = "");
     // Function stack
     void escapeFunction();
     std::string getCurrentFunction();
