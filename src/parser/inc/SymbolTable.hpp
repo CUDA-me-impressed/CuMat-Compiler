@@ -21,29 +21,29 @@ struct FunctionTableEntry {
 };
 
 struct FunctionParamCompare {
-    bool equalType(const std::shared_ptr<Typing::Type>& l, const std::shared_ptr<Typing::Type>& r) const {
+    [[nodiscard]] bool equalType(const std::shared_ptr<Typing::Type>& l, const std::shared_ptr<Typing::Type>& r) const {
+        bool retVal = false;
         if (std::get_if<Typing::MatrixType>(l.get()) != nullptr) {
             // Matrix type checking
-            return std::get_if<Typing::MatrixType>(r.get()) != nullptr &&
-                   std::get_if<Typing::MatrixType>(l.get())->primType <
-                       std::get_if<Typing::MatrixType>(r.get())->primType;
+            retVal =
+                std::get_if<Typing::MatrixType>(r.get()) != nullptr &&
+                std::get_if<Typing::MatrixType>(l.get())->primType < std::get_if<Typing::MatrixType>(r.get())->primType;
         } else if (std::get_if<Typing::FunctionType>(l.get()) != nullptr) {
             // Function type checks (for functions supplied as arguments)
-            return std::get_if<Typing::FunctionType>(r.get()) != nullptr &&
-                   equalType(std::get_if<Typing::FunctionType>(l.get())->returnType,
-                             std::get_if<Typing::FunctionType>(r.get())->returnType);
+            retVal = std::get_if<Typing::FunctionType>(r.get()) != nullptr &&
+                     equalType(std::get_if<Typing::FunctionType>(l.get())->returnType,
+                               std::get_if<Typing::FunctionType>(r.get())->returnType);
         } else if (std::get_if<Typing::GenericType>(l.get()) != nullptr) {
             // Generic type checking
-            return std::get_if<Typing::GenericType>(r.get()) == nullptr;
-        } else {
-            return false;
+            retVal = std::get_if<Typing::GenericType>(r.get()) == nullptr;
         }
+        return retVal;
     }
     bool operator()(const std::vector<std::shared_ptr<Typing::Type>>& l,
                     const std::vector<std::shared_ptr<Typing::Type>>& r) const {
         // This is the worst possible way to do this but I really really really am out of options here fuck it
         if (l.size() != r.size()) {
-            return l < r;  // If not even the same size, use the memory addresses
+            return l.size() < r.size();  // If not even the same size, use the memory addresses
         }
 
         bool retVal = true;  // Optimistic assumption
