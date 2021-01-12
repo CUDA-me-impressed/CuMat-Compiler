@@ -1,53 +1,147 @@
 #include "SymbolTable.hpp"
 
+std::shared_ptr<Utils::SymbolTableEntry> Utils::SymbolTable::getValue(const std::string& symbolName,
+                                                                      const std::string& funcName,
+                                                                      const std::string& funcNamespace) {
+    const std::string fullSymbolName = funcNamespace + "::" + symbolName;
+    if (data.contains(funcName)) {
+        if (data[funcName].contains(fullSymbolName)) {
+            return std::make_shared<SymbolTableEntry>(data[funcName][fullSymbolName]);
+        } else {
+            throw std::runtime_error("Symbol [" + fullSymbolName + "] out of scope");
+        }
+    } else {
+        throw std::runtime_error("Cannot find function [" + funcName + "] for symbol [" + fullSymbolName + "]");
+    }
+}
+void Utils::SymbolTable::setValue(std::shared_ptr<Typing::Type> type, llvm::Value* storeVal,
+                                  const std::string& symbolName, const std::string& funcName,
+                                  const std::string& funcNamespace) {
+    const std::string fullSymbolName = funcNamespace + "::" + symbolName;
+    if (!data.contains(funcName)) {
+        // let us add an empty map
+        this->data[funcName] = std::map<std::string, SymbolTableEntry>();
+    }
+
+    // Symbol table does not check if previously added, will override
+    this->data[funcName][fullSymbolName] = {type, storeVal};
+}
+
+void Utils::SymbolTable::escapeFunction() {
+    if(this->functionStack.empty())
+        throw std::runtime_error("Failed to escape the function within code-block generation. No function!");
+    this->functionStack.erase(this->functionStack.end());
+}
+std::string Utils::SymbolTable::getCurrentFunction() { return this->functionStack.at(this->functionStack.size()-1); }
+
+
+bool Utils::SymbolTable::inSymbolTable(const std::string& symbolName, const std::string &funcName, const std::string& funcNamespace) {
+    // Check if we store the function name itself first
+    if(!this->data.contains(funcName))
+        return false;
+
+    // Check if the symbol and its corresponding namespace exists within the symbol table
+    std::string fullSymbolName = funcNamespace + "::" + symbolName;
+    return this->data[funcName].contains(fullSymbolName);
+}
+
+void Utils::SymbolTable::updateValue(llvm::Value* value, const std::string& symbolName,
+                                     const std::string& funcName, const std::string& funcNamespace) {
+    if(!this->data.contains(funcName)){
+        throw std::runtime_error("[Internal Error] Could not update " + symbolName + " to new value function [" +
+                                 funcName + "] not found!");
+    }
+
+    std::string fullSymbolName = funcNamespace + "::" + symbolName;
+    if(!this->data[funcName].contains(fullSymbolName)){
+        throw std::runtime_error("[Internal Error] Could not update " + symbolName + " to new value [" +
+                                     fullSymbolName + "] not found!");
+    }
+    this->data[funcName][fullSymbolName] = {this->data[funcName][fullSymbolName].type, value};
+}
+
 /**
- * Returns the LLVM Value stored in relation to the currently in scope value
- * @param symbolName
+ * Returns true if the function is defined within the namespace
+ * @param funcName
+ * @param funcNamespace
  * @return
  */
-llvm::Value* Utils::SymbolTable::getValue(const std::string& symbolName) {
-    if (inScope(symbolName)) {
-        // We get the max value from the hash table
-        auto locations = this->variableLocations[symbolName];
-        // Get the max value where the element is stored within the locations and return the depth
-        int curScope =
-            locations.at(std::distance(locations.begin(), std::max_element(locations.begin(), locations.end())));
-        return this->data.at(curScope)[symbolName];
-    } else {
-        // TODO: Graceful error handling -> Variable accessed outside of symbol table scope. Illegal access probs
-        return nullptr;
-    }
+bool Utils::SymbolTable::isFunctionDefined(const std::string& funcName, const std::string& funcNamespace) {
+    return this->funcTable.contains(funcNamespace+"::"+funcName);
 }
 
 /**
- *
- * @param symbolName
- * @param storeVal
- * @return If value overwritten or not
+ * Sets the value of the function to be pointing to the llvm::Function object
+ * @param funcName
+ * @param params
+ * @param func
  */
-void Utils::SymbolTable::setValue(const std::string& symbolName, llvm::Value* storeVal) {
-    // We need to update the locations
-    if (!this->variableLocations.contains(symbolName)) {
-        // Create a new vector
-        this->variableLocations.insert(std::pair<std::string, std::vector<int>>(symbolName, std::vector<int>()));
+void Utils::SymbolTable::setFunctionData(const std::string& funcName,
+                                         std::vector<std::shared_ptr<Typing::Type>> params,
+                                         llvm::Function* func,
+                                         const std::string &funcNamespace) {
+    // Safety checks
+    if(!isFunctionDefined(funcName, funcNamespace)){
+        throw std::runtime_error("Function [" + funcName + "] not defined!");
+    }
+    const std::string fullFuncName = funcNamespace + "::" + funcName;
+    if(!this->funcTable[fullFuncName].contains(params)){
+        // TODO: Either done in typing or made to actually report type issues
+        throw std::runtime_error("Function [" + fullFuncName + "] expected different parameters");
     }
 
-    // If empty or not the correct scope, we should add the scope index
-    if (this->variableLocations[symbolName].empty() ||
-        this->variableLocations[symbolName].back() != this->data.size()) {
-        this->variableLocations[symbolName].emplace_back(data.size() - 1);
+    this->funcTable[fullFuncName][params] = {func};
+}
+
+/**
+ * Returns true if the function with the specified parameters is defined
+ * @param funcName
+ * @param params
+ * @return
+ */
+bool Utils::SymbolTable::isFunctionDefinedParam(const std::string& funcName,
+                                                const std::vector<std::shared_ptr<Typing::Type>> &params,
+                                                const std::string &funcNamespace) {
+    const std::string fullFuncName = funcNamespace + "::" + funcName;
+    if(!isFunctionDefined(fullFuncName)){
+        throw std::runtime_error("Function [" + funcName + "] not defined!");
     }
-    // Store the value in the map for this scope
-    data.back()[symbolName] = storeVal;
+
+    return this->funcTable[fullFuncName].contains(params);
 }
 
-bool Utils::SymbolTable::inScope(const std::string& symbolName) {
-    // Just check if the location is stored for us
-    return this->variableLocations.contains(symbolName);
+/**
+ * Retrieves the function corresponding to name and type
+ * @param funcName
+ * @param params
+ * @return
+ */
+Utils::FunctionTableEntry Utils::SymbolTable::getFunction(const std::string& funcName,
+                                                          std::vector<std::shared_ptr<Typing::Type>> params,
+                                                          const std::string &funcNamespace) {
+    const std::string fullFuncName = funcNamespace + "::" + funcName;
+    if(!isFunctionDefinedParam(funcName, params, funcNamespace)){
+        throw std::runtime_error("[Internal Error] Cannot retrieve function, not defined");
+    }
+    return this->funcTable[fullFuncName][params];
 }
 
-void Utils::SymbolTable::newScope() {
-    // We create a new element and place it at the back of the scope
-    this->data.emplace_back();
+/**
+ * Adds a function within the symbol table and creates a function stack
+ * @param funcName
+ * @param params
+ * @param funcNamespace
+ */
+void Utils::SymbolTable::addNewFunction(const std::string& funcName,
+                                        std::vector<std::shared_ptr<Typing::Type>> params,
+                                        const std::string &funcNamespace) {
+    const std::string fullFuncName = funcNamespace + "::" + funcName;
+    this->functionStack.emplace_back(fullFuncName);
+    // If we have no override
+    if(!this->isFunctionDefined(funcName, funcNamespace)){
+        this->funcTable[fullFuncName] = {};
+    }
+
+    this->funcTable[fullFuncName][params] = {};
 }
-void Utils::SymbolTable::exitScope() {}
+
