@@ -11,10 +11,6 @@
 
 #include "CodeGenUtils.hpp"
 
-void AST::MatrixNode::semanticPass() {
-
-}
-
 llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
     // Get the LLVM type out for the basic type
     Typing::MatrixType matTypeAST = std::get<Typing::MatrixType>(*this->type);
@@ -64,7 +60,11 @@ llvm::APInt AST::MatrixNode::genAPIntInstance(const int numElements) {
  * the dimension is dynamically sized
  * @return
  */
-std::vector<int> AST::MatrixNode::getDimensions() {
+std::vector<uint> AST::MatrixNode::getDimensions() {
     // TODO: Fix with Thomas's dimension change
-    return std::vector<int>({static_cast<int>(data.size()), static_cast<int>(data[0].size())});
+    return std::vector<uint>({static_cast<uint>(data.size()), static_cast<uint>(data[0].size())});
+}
+
+void AST::MatrixNode::semanticPass() {
+
 }
