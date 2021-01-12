@@ -20,19 +20,32 @@ struct FunctionTableEntry {
     llvm::Function* func;
 };
 
-class FunctionParamCompare {
-   public:
-    bool operator() (const std::shared_ptr<Typing::Type>& l, const std::shared_ptr<Typing::Type>& r) {
+struct FunctionParamCompare {
+    bool operator()(const std::vector<std::shared_ptr<Typing::Type>>& l,
+                    const std::vector<std::shared_ptr<Typing::Type>>& r) const {
         // This is the worst possible way to do this but I really really really am out of options here fuck it
-        Typing::MatrixType lType = std::get_if<Typing::MatrixType>(l.get());
-        if(std::get_if<Typing::MatrixType>(l.get()) != nullptr){
-            if(std::get_if<Typing::MatrixType>(r.get()) == nullptr) return false;
-            return
-        } else if(std::get_if<Typing::FunctionType>(l.get()) != nullptr){
+        if (l.size() != r.size()) return l < r;  // If not even the same size, use the memory addresses
 
-        } else if(std::get_if<Typing::GenericType>(l.get()) != nullptr){
-
+        bool retVal = true;  // Optimistic assumption
+        for (int i = 0; i < l.size(); i++) {
+            if (std::get_if<Typing::MatrixType>(l.at(i).get()) != nullptr) {
+                // Matrix type checking
+                retVal &= std::get_if<Typing::MatrixType>(r.at(i).get()) != nullptr &&
+                          std::get_if<Typing::MatrixType>(l.at(i).get())->primType <
+                              std::get_if<Typing::MatrixType>(r.at(i).get())->primType;
+            } else if (std::get_if<Typing::FunctionType>(l.at(i).get()) != nullptr) {
+                // Function type checks (for functions supplied as arguments)
+                retVal &= std::get_if<Typing::FunctionType>(r.at(i).get()) != nullptr &&
+                          std::get_if<Typing::FunctionType>(l.at(i).get())->returnType <
+                              std::get_if<Typing::FunctionType>(r.at(i).get())->returnType;
+            } else if (std::get_if<Typing::GenericType>(l.at(i).get()) != nullptr) {
+                // Generic type checking
+                retVal &= std::get_if<Typing::GenericType>(r.at(i).get()) == nullptr;
+            } else {
+                retVal &= false;
+            }
         }
+        return !retVal;
     }
 };
 
@@ -47,8 +60,8 @@ class SymbolTable {
 
     // Function part separate to variables
     std::map<std::string,
-             std::map<std::vector<std::shared_ptr<Typing::Type>>,
-                      FunctionTableEntry>> funcTable;
+             std::map<std::vector<std::shared_ptr<Typing::Type>>, FunctionTableEntry, FunctionParamCompare>>
+        funcTable;
 
    public:
     // Symbol data

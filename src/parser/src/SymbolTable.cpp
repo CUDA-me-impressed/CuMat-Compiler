@@ -103,7 +103,7 @@ bool Utils::SymbolTable::isFunctionDefinedParam(const std::string& funcName,
                                                 const std::vector<std::shared_ptr<Typing::Type>> &params,
                                                 const std::string &funcNamespace) {
     const std::string fullFuncName = funcNamespace + "::" + funcName;
-    if(!isFunctionDefined(fullFuncName)){
+    if (!isFunctionDefined(funcName)) {
         throw std::runtime_error("Function [" + funcName + "] not defined!");
     }
 
