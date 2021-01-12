@@ -21,29 +21,34 @@ struct FunctionTableEntry {
 };
 
 struct FunctionParamCompare {
+    bool equalType(const std::shared_ptr<Typing::Type>& l, const std::shared_ptr<Typing::Type>& r) const {
+        if (std::get_if<Typing::MatrixType>(l.get()) != nullptr) {
+            // Matrix type checking
+            return std::get_if<Typing::MatrixType>(r.get()) != nullptr &&
+                   std::get_if<Typing::MatrixType>(l.get())->primType <
+                       std::get_if<Typing::MatrixType>(r.get())->primType;
+        } else if (std::get_if<Typing::FunctionType>(l.get()) != nullptr) {
+            // Function type checks (for functions supplied as arguments)
+            return std::get_if<Typing::FunctionType>(r.get()) != nullptr &&
+                   equalType(std::get_if<Typing::FunctionType>(l.get())->returnType,
+                             std::get_if<Typing::FunctionType>(r.get())->returnType);
+        } else if (std::get_if<Typing::GenericType>(l.get()) != nullptr) {
+            // Generic type checking
+            return std::get_if<Typing::GenericType>(r.get()) == nullptr;
+        } else {
+            return false;
+        }
+    }
     bool operator()(const std::vector<std::shared_ptr<Typing::Type>>& l,
                     const std::vector<std::shared_ptr<Typing::Type>>& r) const {
         // This is the worst possible way to do this but I really really really am out of options here fuck it
-        if (l.size() != r.size()) return l < r;  // If not even the same size, use the memory addresses
+        if (l.size() != r.size()) {
+            return l < r;  // If not even the same size, use the memory addresses
+        }
 
         bool retVal = true;  // Optimistic assumption
         for (int i = 0; i < l.size(); i++) {
-            if (std::get_if<Typing::MatrixType>(l.at(i).get()) != nullptr) {
-                // Matrix type checking
-                retVal &= std::get_if<Typing::MatrixType>(r.at(i).get()) != nullptr &&
-                          std::get_if<Typing::MatrixType>(l.at(i).get())->primType <
-                              std::get_if<Typing::MatrixType>(r.at(i).get())->primType;
-            } else if (std::get_if<Typing::FunctionType>(l.at(i).get()) != nullptr) {
-                // Function type checks (for functions supplied as arguments)
-                retVal &= std::get_if<Typing::FunctionType>(r.at(i).get()) != nullptr &&
-                          std::get_if<Typing::FunctionType>(l.at(i).get())->returnType <
-                              std::get_if<Typing::FunctionType>(r.at(i).get())->returnType;
-            } else if (std::get_if<Typing::GenericType>(l.at(i).get()) != nullptr) {
-                // Generic type checking
-                retVal &= std::get_if<Typing::GenericType>(r.at(i).get()) == nullptr;
-            } else {
-                retVal &= false;
-            }
+            retVal &= equalType(l.at(i), r.at(i));
         }
         return !retVal;
     }
