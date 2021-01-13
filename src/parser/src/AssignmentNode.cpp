@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-llvm::Value* AST::AssignmentNode::codegen(Utils::IRContext* context) {
+llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
     // Generate LLVM value for the rval expression
     llvm::Value* rVal = this->rVal->codeGen(context);
 

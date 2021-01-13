@@ -1,5 +1,7 @@
 #include "SymbolTable.hpp"
 
+#include <utility>
+
 std::shared_ptr<Utils::SymbolTableEntry> Utils::SymbolTable::getValue(const std::string& symbolName,
                                                                       const std::string& funcName,
                                                                       const std::string& funcNamespace) {
@@ -24,7 +26,7 @@ void Utils::SymbolTable::setValue(std::shared_ptr<Typing::Type> type, llvm::Valu
     }
 
     // Symbol table does not check if previously added, will override
-    this->data[funcName][fullSymbolName] = {type, storeVal};
+    this->data[funcName][fullSymbolName] = {std::move(type), storeVal};
 }
 
 void Utils::SymbolTable::escapeFunction() {
@@ -75,8 +77,9 @@ bool Utils::SymbolTable::isFunctionDefined(const std::string& funcName, const st
  * @param params
  * @param func
  */
-void Utils::SymbolTable::setFunctionData(const std::string& funcName, std::vector<std::shared_ptr<Typing::Type>> params,
-                                         llvm::Function* func, const std::string& funcNamespace) {
+void Utils::SymbolTable::setFunctionData(const std::string& funcName,
+                                         const std::vector<std::shared_ptr<Typing::Type>>& params, llvm::Function* func,
+                                         const std::string& funcNamespace) {
     // Safety checks
     if (!isFunctionDefined(funcName, funcNamespace)) {
         throw std::runtime_error("Function [" + funcName + "] not defined!");
@@ -114,7 +117,7 @@ bool Utils::SymbolTable::isFunctionDefinedParam(const std::string& funcName,
  * @return
  */
 Utils::FunctionTableEntry Utils::SymbolTable::getFunction(const std::string& funcName,
-                                                          std::vector<std::shared_ptr<Typing::Type>> params,
+                                                          const std::vector<std::shared_ptr<Typing::Type>>& params,
                                                           const std::string& funcNamespace) {
     const std::string fullFuncName = funcNamespace + "::" + funcName;
     if (!isFunctionDefinedParam(funcName, params, funcNamespace)) {
@@ -129,7 +132,8 @@ Utils::FunctionTableEntry Utils::SymbolTable::getFunction(const std::string& fun
  * @param params
  * @param funcNamespace
  */
-void Utils::SymbolTable::addNewFunction(const std::string& funcName, std::vector<std::shared_ptr<Typing::Type>> params,
+void Utils::SymbolTable::addNewFunction(const std::string& funcName,
+                                        const std::vector<std::shared_ptr<Typing::Type>>& params,
                                         const std::string& funcNamespace) {
     const std::string fullFuncName = funcNamespace + "::" + funcName;
     this->functionStack.emplace_back(fullFuncName);

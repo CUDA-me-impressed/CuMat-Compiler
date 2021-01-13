@@ -80,11 +80,12 @@ class SymbolTable {
                        const std::string& funcNamespace = "");
 
     // Function data
-    void addNewFunction(const std::string& funcName, std::vector<std::shared_ptr<Typing::Type>> params,
+    void addNewFunction(const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
                         const std::string& funcNamespace = "");
-    void setFunctionData(const std::string& funcName, std::vector<std::shared_ptr<Typing::Type>> params,
+    void setFunctionData(const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
                          llvm::Function* func, const std::string& funcNamespace = "");
-    FunctionTableEntry getFunction(const std::string& funcName, std::vector<std::shared_ptr<Typing::Type>> params,
+    FunctionTableEntry getFunction(const std::string& funcName,
+                                   const std::vector<std::shared_ptr<Typing::Type>>& params,
                                    const std::string& funcNamespace = "");
     bool isFunctionDefined(const std::string& funcName, const std::string& funcNamespace = "");
     bool isFunctionDefinedParam(const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,

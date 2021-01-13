@@ -33,8 +33,8 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                     break;
                 }
                 default:
-                    // TODO: Remove when ALL functions are implemented
-                    break;
+                    throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) +
+                                             "]");
             }
         }
     }
@@ -104,6 +104,9 @@ llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* cont
         }
         case LOR: {
             return context->Builder->CreateOr(lhs, rhs, name);
+        }
+        default: {
+            throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) + "]");
         }
     }
 }
