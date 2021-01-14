@@ -5,6 +5,7 @@
 namespace AST {
 
 enum UNA_OPERATORS { NEG, LNOT, BNOT };
+static const char* UNA_OP_ENUM_STRING[] = {"neg", "lnot", "bnot"};
 
 class UnaryExprNode : public ExprNode {
    public:
@@ -12,8 +13,5 @@ class UnaryExprNode : public ExprNode {
     std::shared_ptr<ExprNode> operand;
 
     llvm::Value* codeGen(Utils::IRContext* context) override;
-    void recursiveUnaryGeneration(const UNA_OPERATORS& op, llvm::Module* module, llvm::IRBuilder<>* Builder,
-                                  llvm::Type* ty, llvm::AllocaInst* matAlloc, llvm::Value* opVal,
-                                  std::vector<int> dimension, int index = 1, int prevDim = 1);
 };
 }  // namespace AST

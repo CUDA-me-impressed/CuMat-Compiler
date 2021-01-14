@@ -4,7 +4,7 @@
 #include <iostream>
 
 // TODO: USE NEW getLLVMType change to get the proper type
-llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context, const Typing::Type& type) {
+llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::Type& type) {
     // We need a prefix that has some basic information
     Typing::MatrixType matType;
     try {
@@ -20,19 +20,39 @@ llvm::AllocaInst* Utils::createMatrix(Utils::IRContext* context, const Typing::T
     llvm::Type* ty = matType.getLLVMPrimitiveType(context);
     auto* matHeaderType = matType.getLLVMType(context);
 
+    // Create a type for the actual data of the matrix + length info
     llvm::ArrayType* matDataType = llvm::ArrayType::get(ty, matLength);
     llvm::ConstantInt* matSizeLLVM =
         llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matLength, false));
 
+    // Rank / dimensionality meta-data
     auto rank = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.rank));
     auto numBytes = llvm::ConstantInt::get(context->module->getContext(),
                                            llvm::APInt(64, (matType.getLength() * matType.offset()) / 8));
 
+    // Constant zero offset used for base ptr
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
-    auto matAlloc = context->Builder->CreateAlloca(matDataType, matSizeLLVM, "matArr");
+
+    // Allocation of the matrix data
+    auto* intPtrType = llvm::Type::getInt32Ty(context->module->getContext());
+    llvm::Constant* matAllocaSize = llvm::ConstantExpr::getSizeOf(matDataType);
+    // This will by default be i64, need to cast to i32 (I think its safe)
+    matAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(matAllocaSize, intPtrType);
+    auto* matAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), intPtrType, matDataType,
+                                                  matAllocaSize, nullptr, nullptr, "");
+    context->Builder->Insert(matAlloc, "matArrData");
+
+    // Pointer for the array itself accessible for loading
     auto matAllocPtr = context->Builder->CreateGEP(matAlloc, zeroOffset, "matArrPtr");
 
-    auto matHeaderAlloc = context->Builder->CreateAlloca(matHeaderType, nullptr, "matStruct");
+    // We need an integer pointer type for the address
+    intPtrType = llvm::Type::getInt32Ty(context->module->getContext());
+    llvm::Constant* matHeaderAllocaSize = llvm::ConstantExpr::getSizeOf(matHeaderType);
+    matHeaderAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(matHeaderAllocaSize, intPtrType);
+    auto* matHeaderAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), intPtrType, matHeaderType,
+                                                        matHeaderAllocaSize, nullptr, nullptr, "");
+    // LLVM requires us to actually insert the instruction when using CallInst
+    context->Builder->Insert(matHeaderAlloc, "matStruct");
 
     insertValueAtPointerOffset(context, matHeaderAlloc, 0, matAllocPtr);
     insertValueAtPointerOffset(context, matHeaderAlloc, 1, rank);
@@ -164,4 +184,11 @@ llvm::Value* Utils::getValueFromMatrixPtr(Utils::IRContext* context, llvm::Value
 void Utils::setValueFromMatrixPtr(Utils::IRContext* context, llvm::Value* mPtr, llvm::Value* offset, llvm::Value* val) {
     auto* dataPtr = getValueFromPointerOffset(context, mPtr, 0, "dataPtr");
     insertValueAtPointerOffsetValue(context, dataPtr, offset, val);
+}
+
+llvm::AllocaInst* Utils::CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName,
+                                                llvm::Type* Type) {
+    llvm::IRBuilder<> TmpB(&Builder.GetInsertBlock()->getParent()->getEntryBlock(),
+                           Builder.GetInsertBlock()->getParent()->getEntryBlock().begin());
+    return TmpB.CreateAlloca(Type, nullptr, VarName);
 }
