@@ -72,13 +72,14 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
 // We need to generate meta-data for NVPTX
 // This is 100% stolen from https://stackoverflow.com/questions/40082378/how-to-generate-metadata-for-llvm-ir
 // as it is someone asking how to do this exact problem :)
-void Utils::setNVPTXFunctionType(Utils::IRContext * context, const std::string &funcName, FunctionCUDAType cudeType, llvm::Function* func){
+void Utils::setNVPTXFunctionType(Utils::IRContext* context, const std::string& funcName, FunctionCUDAType cudeType,
+                                 llvm::Function* func) {
     // Vector to store the tuple operations
     llvm::SmallVector<llvm::Metadata*, 3> ops;
     // We reference the type first from the global llvm symbol lookup rather than internal
     // as then we can guarantee we haven't messed up thus far!
-    llvm::GlobalValue * funcGlob = context->module->getNamedValue(funcName);
-    if(!funcGlob){
+    llvm::GlobalValue* funcGlob = context->module->getNamedValue(funcName);
+    if (!funcGlob) {
         throw std::runtime_error("[Internal Error] Could not find function to generate metadata for!");
     }
 
@@ -97,12 +98,12 @@ void Utils::setNVPTXFunctionType(Utils::IRContext * context, const std::string &
     }
 
     // We need an i64Ty to tell nvptx what API to use (I think)
-    llvm::Type *i64ty = llvm::Type::getInt64Ty(context->module->getContext());
-    llvm::Constant *one = llvm::ConstantInt::get(i64ty, 1);
+    llvm::Type* i64ty = llvm::Type::getInt64Ty(context->module->getContext());
+    llvm::Constant* one = llvm::ConstantInt::get(i64ty, 1);
     ops.push_back(llvm::ValueAsMetadata::getConstant(one));
 
     // Generate the tuple with operands and attach it to the function as metadata
-    auto *node = llvm::MDTuple::get(context->module->getContext(), ops);
+    auto* node = llvm::MDTuple::get(context->module->getContext(), ops);
     func->setMetadata("nvptx", node);
 }
 
