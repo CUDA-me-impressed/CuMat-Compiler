@@ -25,5 +25,33 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
 
     // Pop the function as we leave the definition of the code
     context->symbolTable->escapeFunction();
+
+    // We need to generate meta-data for NVPTX
+    // This is 100% stolen from https://stackoverflow.com/questions/40082378/how-to-generate-metadata-for-llvm-ir
+    // as it is someone asking how to do this exact problem :)
+
+    // Vector to store the tuple operations
+    llvm::SmallVector<llvm::Metadata*, 3> ops;
+    // We reference the type first from the global llvm symbol lookup rather than internal
+    // as then we can guarantee we haven't messed up thus far!
+    llvm::GlobalValue * funcGlob = context->module->getNamedValue(this->funcName);
+    if(!funcGlob){
+        throw std::runtime_error("[Internal Error] Could not find function to generate metadata for!");
+    }
+
+    // Push the function reference
+    ops.push_back(llvm::ValueAsMetadata::getConstant(funcGlob));
+    // Push the type of the function (device or kernel)
+    ops.push_back(llvm::MDString::get(context->module->getContext(), "kernel"));
+
+    // We need an i64Ty to tell nvptx what API to use (I think)
+    llvm::Type *i64ty = llvm::Type::getInt64Ty(context->module->getContext());
+    llvm::Constant *one = llvm::ConstantInt::get(i64ty, 1);
+    ops.push_back(llvm::ValueAsMetadata::getConstant(one));
+
+    // Generate the tuple with operands and attach it to the function as metadata
+    auto *node = llvm::MDTuple::get(context->module->getContext(), ops);
+    func->setMetadata("nvptx", node);
+
     return funcRet;
 }
