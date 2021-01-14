@@ -26,7 +26,12 @@ struct LLVMMatrixRecord {
     llvm::Value* numBytes;  // Signed
 };
 
+enum FunctionCUDAType {
+    Host, Device
+};
+
 llvm::Type* convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE typePrim);
+void setNVPTXFunctionType(Utils::IRContext * context, const std::string &funcName, FunctionCUDAType cudeType, llvm::Function* func);
 
 llvm::Value* getValueFromLLVM(IRContext* context, int val, Typing::PRIMITIVE typePrim, bool isSigned);
 llvm::Value* getValueFromLLVM(IRContext* context, float val, Typing::PRIMITIVE typePrim, bool isSigned);
