@@ -66,6 +66,8 @@ class SymbolTable {
              std::map<std::vector<std::shared_ptr<Typing::Type>>, FunctionTableEntry, FunctionParamCompare>>
         funcTable;
 
+    llvm::NamedMDNode* nvvmMetadataNode;
+
    public:
     // Symbol data
     std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName, const std::string& funcName,
@@ -90,6 +92,8 @@ class SymbolTable {
     bool isFunctionDefined(const std::string& funcName, const std::string& funcNamespace = "");
     bool isFunctionDefinedParam(const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
                                 const std::string& funcNamespace = "");
+    void createNVVMMetadata(Utils::IRContext* context);
+    llvm::NamedMDNode* getNVVMMetadata();
     // Function stack
     void escapeFunction();
     std::string getCurrentFunction();

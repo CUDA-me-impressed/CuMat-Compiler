@@ -104,7 +104,7 @@ void Utils::setNVPTXFunctionType(Utils::IRContext* context, const std::string& f
 
     // Generate the tuple with operands and attach it to the function as metadata
     auto* node = llvm::MDTuple::get(context->module->getContext(), ops);
-    func->setMetadata("nvptx", node);
+    context->symbolTable->getNVVMMetadata()->addOperand(node);
 }
 
 llvm::Value* Utils::getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type) {
@@ -217,6 +217,46 @@ llvm::Value* Utils::getValueFromMatrixPtr(Utils::IRContext* context, llvm::Value
                                           std::string name) {
     auto* dataPtr = getValueFromPointerOffset(context, mPtr, 0, "dataPtr");
     return getValueFromPointerOffsetValue(context, dataPtr, offset, "matValue");
+}
+/**
+ * We hardcode for N = 1,2,3 and then provide general llvm code for N > 3
+ * @param context
+ * @param ptr
+ * @param mat
+ * @param indicies
+ * @return
+ */
+llvm::Value* Utils::getValueFromIndex(Utils::IRContext* context, llvm::Value* ptr,
+                                      std::shared_ptr<Typing::MatrixType> mat,
+                                      const std::vector<llvm::Value*>& indicies) {
+    switch (mat->rank) {
+        case 2: {
+            // offset = n2 + N2*n1
+            auto* mult = context->Builder->CreateMul(
+                indicies.at(0),
+                getValueFromLLVM(context, static_cast<int>(mat->dimensions.at(1)), Typing::PRIMITIVE::INT, false));
+            auto* offset = context->Builder->CreateAdd(indicies.at(1), mult);
+            return getValueFromMatrixPtr(context, ptr, offset, "");
+        }
+        case 3: {
+            // This is the last value that we hardcode the offset
+            // offset = n3 + N3 * (n2 + N2 * n1)
+            // offset = n3 + N3 * (n2 + a)
+            // offset = n3 + N3 * (b+a)
+            auto* a = context->Builder->CreateMul(
+                indicies.at(0),
+                getValueFromLLVM(context, static_cast<int>(mat->dimensions.at(1)), Typing::PRIMITIVE::INT, false));
+            auto* b = context->Builder->CreateAdd(indicies.at(1), a);
+            auto* c = context->Builder->CreateMul(
+                getValueFromLLVM(context, static_cast<int>(mat->dimensions.at(2)), Typing::PRIMITIVE::INT, false), b);
+            auto* offset = context->Builder->CreateAdd(indicies.at(2), c);
+            return getValueFromMatrixPtr(context, ptr, offset, "");
+        }
+        default: {
+            // TODO: implement
+            throw std::runtime_error("Accessing matrix elements above rank 3 matrices is not currently supported!");
+        }
+    }
 }
 
 void Utils::setValueFromMatrixPtr(Utils::IRContext* context, llvm::Value* mPtr, llvm::Value* offset, llvm::Value* val) {

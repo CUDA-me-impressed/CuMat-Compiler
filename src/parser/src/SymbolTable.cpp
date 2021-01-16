@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include "CodeGenUtils.hpp"
+
 std::shared_ptr<Utils::SymbolTableEntry> Utils::SymbolTable::getValue(const std::string& symbolName,
                                                                       const std::string& funcName,
                                                                       const std::string& funcNamespace) {
@@ -144,3 +146,16 @@ void Utils::SymbolTable::addNewFunction(const std::string& funcName,
 
     this->funcTable[fullFuncName][params] = {};
 }
+
+/**
+ * Creates a nvvm metadata object that we access when we wish to store new functions as kernel (device code)
+ * @param context
+ */
+void Utils::SymbolTable::createNVVMMetadata(Utils::IRContext* context) {
+    nvvmMetadataNode = context->module->getOrInsertNamedMetadata("nvvm.annotations");
+    llvm::MDNode* MDNOdeNVVM =
+        llvm::MDNode::get(context->module->getContext(), llvm::MDString::get(context->module->getContext(), "kernel"));
+    nvvmMetadataNode->addOperand(MDNOdeNVVM);
+}
+
+llvm::NamedMDNode* Utils::SymbolTable::getNVVMMetadata() { return nvvmMetadataNode; }
