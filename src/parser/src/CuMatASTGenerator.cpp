@@ -11,13 +11,14 @@
 #include "CuMatVisitor.hpp"
 #include "antlr4-runtime.h"
 
-void SimpleErrorListener::syntaxError(antlr4::Recognizer* recognizer, antlr4::Token* offendingSymbol, size_t line,
-                                      size_t charPositionInLine, const std::string& msg, std::exception_ptr e) {
+void SimpleErrorListener::syntaxError(antlr4::Recognizer *recognizer, antlr4::Token *offendingSymbol, size_t line,
+                                      size_t charPositionInLine, const std::string &msg, std::exception_ptr e) {
     std::ostringstream s;
     s << "At " << line << ":" << charPositionInLine << ", error " << msg;
     throw std::invalid_argument(s.str());
 }
-std::shared_ptr<AST::Node> runParser(const std::string& fileName) {
+
+std::shared_ptr<AST::Node> runParser(const std::string &fileName) {
     std::ifstream stream;
     stream.open(fileName);
 
@@ -34,10 +35,10 @@ std::shared_ptr<AST::Node> runParser(const std::string& fileName) {
     visitor.parserVocab = &vocab;
 
     try {
-        CuMatParser::ProgramContext* context = parser.program();
+        CuMatParser::ProgramContext *context = parser.program();
         auto tree = visitor.visitProgram(context);
         return std::move(tree.as<std::shared_ptr<AST::ProgramNode>>());
-    } catch (std::invalid_argument& e) {
+    } catch (std::invalid_argument &e) {
         std::cout << e.what() << std::endl;
         return nullptr;
     }

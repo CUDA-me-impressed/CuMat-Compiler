@@ -15,21 +15,23 @@
 #include "CodeGenUtils.hpp"
 
 namespace AST {
-class Node {
-   public:
-    std::string literalText;
+    class Node {
+    public:
+        std::string literalText;
 
-    std::vector<std::shared_ptr<Node>> children;
+        std::vector<std::shared_ptr<Node>> children;
 
-    explicit Node(std::string textRep);
-    Node() = default;
+        explicit Node(std::string textRep);
 
-    void addChild(std::shared_ptr<Node> n);
+        Node() = default;
 
-    [[nodiscard]] std::string toString() const;
+        void addChild(std::shared_ptr<Node> n);
 
-    // Default implementations just call the function on their children
-    virtual void semanticPass();
-    virtual llvm::Value* codeGen(Utils::IRContext* context);
-};
+        [[nodiscard]] std::string toString() const;
+
+        // Default implementations just call the function on their children
+        virtual void semanticPass();
+
+        virtual llvm::Value *codeGen(Utils::IRContext *context);
+    };
 }  // namespace AST

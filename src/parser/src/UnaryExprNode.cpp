@@ -10,39 +10,39 @@
  * @param context
  * @return pointer to the resultant matrix initial position of the result
  */
-llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
+llvm::Value *AST::UnaryExprNode::codeGen(Utils::IRContext *context) {
     // We go through and apply the relevant unary operator to each element of
     // the matrix
-    llvm::Value* operand = this->operand->codeGen(context);
+    llvm::Value *operand = this->operand->codeGen(context);
 
     auto operandMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->operand);
-    llvm::Value* matAlloc = {};
-    if (auto* operandType = std::get_if<Typing::MatrixType>(&*operandMatNode->type)) {
+    llvm::Value *matAlloc = {};
+    if (auto *operandType = std::get_if<Typing::MatrixType>(&*operandMatNode->type)) {
         matAlloc = Utils::createMatrix(context, *operandType);
 
         // We generate the operations sequentially
         // TODO: Add Kernel call for nvptx
         auto Builder = context->Builder;
-        llvm::Function* parent = Builder->GetInsertBlock()->getParent();
+        llvm::Function *parent = Builder->GetInsertBlock()->getParent();
         std::string opName = AST::UNA_OP_ENUM_STRING[this->op];
 
-        llvm::BasicBlock* addBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".loop", parent);
-        llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".done");
+        llvm::BasicBlock *addBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".loop", parent);
+        llvm::BasicBlock *endBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".done");
 
         auto indexAlloca = Utils::CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
-        auto* matSize = Utils::getLength(context, operand, *operandType);
-        auto* nsize = Utils::getLength(context, matAlloc, *operandType);
+        auto *matSize = Utils::getLength(context, operand, *operandType);
+        auto *nsize = Utils::getLength(context, matAlloc, *operandType);
         // parent->getBasicBlockList().push_back(addBB);
         Builder->CreateBr(addBB);
 
         Builder->SetInsertPoint(addBB);
         {
-            auto* index = Builder->CreateLoad(indexAlloca);
+            auto *index = Builder->CreateLoad(indexAlloca);
 
-            auto* lindex = Builder->CreateURem(index, matSize);
-            auto* v = Utils::getValueFromMatrixPtr(context, operand, lindex, "lhs");
+            auto *lindex = Builder->CreateURem(index, matSize);
+            auto *v = Utils::getValueFromMatrixPtr(context, operand, lindex, "lhs");
 
-            llvm::Value* opResult;
+            llvm::Value *opResult;
             switch (op) {
                 case NEG: {
                     opResult = context->Builder->CreateNeg(v, UNA_OP_ENUM_STRING[op]);
@@ -60,12 +60,12 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
             Utils::setValueFromMatrixPtr(context, matAlloc, index, opResult);
 
             // Update counter
-            auto* next = Builder->CreateAdd(
-                index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "add");
+            auto *next = Builder->CreateAdd(
+                    index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "add");
             Builder->CreateStore(next, indexAlloca);
 
             // Test if completed list
-            auto* done = Builder->CreateICmpUGE(next, nsize);
+            auto *done = Builder->CreateICmpUGE(next, nsize);
             Builder->CreateCondBr(done, endBB, addBB);
         }
 

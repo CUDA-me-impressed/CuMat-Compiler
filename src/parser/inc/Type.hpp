@@ -13,44 +13,51 @@
 #include <vector>
 
 namespace Utils {
-struct IRContext;
+    struct IRContext;
 }
 
 namespace Typing {
 
-enum class PRIMITIVE { STRING, INT, FLOAT, BOOL, NONE };
+    enum class PRIMITIVE {
+        STRING, INT, FLOAT, BOOL, NONE
+    };
 
-class MatrixType;
-class GenericType;
-class FunctionType;
+    class MatrixType;
 
-using Type = std::variant<FunctionType, GenericType, MatrixType>;
+    class GenericType;
 
-class MatrixType {
-   public:
-    uint rank{0};  // 1 = Vector, 2 = Matrix, 3 = 3D matrix...
-    std::vector<uint> dimensions{};
+    class FunctionType;
 
-    PRIMITIVE primType{PRIMITIVE::NONE};
+    using Type = std::variant<FunctionType, GenericType, MatrixType>;
 
-    [[nodiscard]] int getLength() const;
-    [[nodiscard]] int offset() const;
-    [[nodiscard]] const std::vector<uint>& getDimensions() const;
+    class MatrixType {
+    public:
+        uint rank{0};  // 1 = Vector, 2 = Matrix, 3 = 3D matrix...
+        std::vector<uint> dimensions{};
 
-    // TODO make this not a noop
-    [[nodiscard]] bool simpleDimensionCompatible(const MatrixType& val) const { return true; };
+        PRIMITIVE primType{PRIMITIVE::NONE};
 
-    llvm::Type* getLLVMType(Utils::IRContext* context);
-    llvm::Type* getLLVMPrimitiveType(Utils::IRContext* context) const;
-};
+        [[nodiscard]] int getLength() const;
 
-class GenericType {
-    std::string name;
-};
+        [[nodiscard]] int offset() const;
 
-class FunctionType {
-   public:
-    std::shared_ptr<Type> returnType;
-    std::vector<std::shared_ptr<Type>> parameters;
-};
+        [[nodiscard]] const std::vector<uint> &getDimensions() const;
+
+        // TODO make this not a noop
+        [[nodiscard]] bool simpleDimensionCompatible(const MatrixType &val) const { return true; };
+
+        llvm::Type *getLLVMType(Utils::IRContext *context);
+
+        llvm::Type *getLLVMPrimitiveType(Utils::IRContext *context) const;
+    };
+
+    class GenericType {
+        std::string name;
+    };
+
+    class FunctionType {
+    public:
+        std::shared_ptr<Type> returnType;
+        std::vector<std::shared_ptr<Type>> parameters;
+    };
 }  // namespace Typing

@@ -13,11 +13,11 @@
 
 namespace AST::Test {
 
-class NodeMock : public AST::Node {
-   public:
-    MAKE_MOCK0(semanticPass, void(), override);
-    MAKE_MOCK1(codeGen, llvm::Value*(Utils::IRContext*), override);
-};
+    class NodeMock : public AST::Node {
+    public:
+        MAKE_MOCK0 (semanticPass, void(), override);
+        MAKE_MOCK1 (codeGen, llvm::Value *(Utils::IRContext*), override);
+    };
 
 }  // namespace AST::Test
 

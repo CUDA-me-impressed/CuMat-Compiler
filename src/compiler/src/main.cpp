@@ -20,13 +20,13 @@
 
 void printArgumentError(std::string message, std::string arg) {
     const std::string helpText =
-        "CuMat Compiler Syntax: CuMat inputFile [ -Wall | -Winfo | -Wnone ] [ "
-        "-Oall | -Onone | -Oexp ] [ -o outputfile ]";
+            "CuMat Compiler Syntax: CuMat inputFile [ -Wall | -Winfo | -Wnone ] [ "
+            "-Oall | -Onone | -Oexp ] [ -o outputfile ]";
     std::cout << helpText << std::endl;
     std::cout << message << arg << std::endl;
 }
 
-int main(int argc, char* argv[], char* envp[]) {
+int main(int argc, char *argv[], char *envp[]) {
     std::vector<std::string> args;
     std::string inputFileName;
     std::string outputFile;
@@ -117,21 +117,22 @@ int main(int argc, char* argv[], char* envp[]) {
     auto files = loader.load();
     std::vector<std::string> firstCU = files.at(0);
     std::vector<std::tuple<std::string, std::shared_ptr<AST::Node>>> parseTrees;
-    for (const auto& file : firstCU) {
+    for (const auto &file : firstCU) {
         auto tree = runParser(file);
         std::cout << "Parsed: " << file << std::endl;
         parseTrees.emplace_back(std::make_tuple<const std::string, std::shared_ptr<AST::Node>>(
-            (const std::basic_string<char, std::char_traits<char>, std::allocator<char>>&&)file, std::move(tree)));
+                (const std::basic_string<char, std::char_traits<char>, std::allocator<char>> &&) file,
+                std::move(tree)));
     }
 
     // Pretty printing for test
-    for (const auto& tree : parseTrees) {
+    for (const auto &tree : parseTrees) {
         std::cout << "Program Tree: " << std::get<0>(tree) << std::endl;
         std::cout << std::get<1>(tree)->literalText << std::endl;
     }
 
     llvm::LLVMContext TheContext;
-    for (const auto& tree : parseTrees) {
+    for (const auto &tree : parseTrees) {
         llvm::Module TheModule("CuMat-" + std::get<0>(tree), TheContext);
         llvm::IRBuilder<> Builder(TheContext);
         Utils::SymbolTable symbolTable;

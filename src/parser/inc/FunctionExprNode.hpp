@@ -8,12 +8,12 @@
 #include "ExprASTNode.hpp"
 
 namespace AST {
-class FunctionExprNode : public ExprNode {
-   public:
-    std::string funcName;
-    std::shared_ptr<ExprNode> nonAppliedFunction;
-    std::vector<std::shared_ptr<ExprNode>> args;
+    class FunctionExprNode : public ExprNode {
+    public:
+        std::string funcName;
+        std::shared_ptr<ExprNode> nonAppliedFunction;
+        std::vector<std::shared_ptr<ExprNode>> args;
 
-    llvm::Value* codeGen(Utils::IRContext* context) override;
-};
+        llvm::Value *codeGen(Utils::IRContext *context) override;
+    };
 }  // namespace AST

@@ -13,43 +13,55 @@
 #include "Type.hpp"
 
 namespace Utils {
-struct IRContext {
-    llvm::Module* module;
-    llvm::IRBuilder<>* Builder;
-    llvm::Function* function;
-    SymbolTable* symbolTable;
-};
+    struct IRContext {
+        llvm::Module *module;
+        llvm::IRBuilder<> *Builder;
+        llvm::Function *function;
+        SymbolTable *symbolTable;
+    };
 
-struct LLVMMatrixRecord {
-    llvm::Value* dataPtr;
-    llvm::Value* rank;      // Signed
-    llvm::Value* numBytes;  // Signed
-};
+    struct LLVMMatrixRecord {
+        llvm::Value *dataPtr;
+        llvm::Value *rank;      // Signed
+        llvm::Value *numBytes;  // Signed
+    };
 
-enum FunctionCUDAType { Host, Device };
+    enum FunctionCUDAType {
+        Host, Device
+    };
 
-llvm::Type* convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE typePrim);
-void setNVPTXFunctionType(Utils::IRContext* context, const std::string& funcName, FunctionCUDAType cudeType,
-                          llvm::Function* func);
+    llvm::Type *convertCuMatTypeToLLVM(IRContext *context, Typing::PRIMITIVE typePrim);
 
-llvm::Value* getValueFromLLVM(IRContext* context, int val, Typing::PRIMITIVE typePrim, bool isSigned);
-llvm::Value* getValueFromLLVM(IRContext* context, float val, Typing::PRIMITIVE typePrim, bool isSigned);
+    void setNVPTXFunctionType(Utils::IRContext *context, const std::string &funcName, FunctionCUDAType cudeType,
+                              llvm::Function *func);
 
-llvm::AllocaInst* CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName, llvm::Type* Type);
+    llvm::Value *getValueFromLLVM(IRContext *context, int val, Typing::PRIMITIVE typePrim, bool isSigned);
 
-llvm::Instruction* createMatrix(IRContext* context, const Typing::Type& type);
-LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
+    llvm::Value *getValueFromLLVM(IRContext *context, float val, Typing::PRIMITIVE typePrim, bool isSigned);
 
-void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val);
-void insertValueAtPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, llvm::Value* val);
+    llvm::AllocaInst *CreateEntryBlockAlloca(llvm::IRBuilder<> &Builder, const std::string &VarName, llvm::Type *Type);
 
-llvm::Value* getValueFromPointerOffset(IRContext* context, llvm::Value* ptr, int offset, const std::string& name);
-llvm::Value* getValueFromPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue,
-                                            const std::string& name);
-llvm::Value* getValueFromIndex(IRContext* context, llvm::Value* ptr, std::shared_ptr<Typing::MatrixType> mat,
-                               const std::vector<llvm::Value*>& indicies);
-llvm::Value* getValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* offset, const std::string& name);
-void setValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* offset, llvm::Value* val);
+    llvm::Instruction *createMatrix(IRContext *context, const Typing::Type &type);
 
-llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type);
+    LLVMMatrixRecord getMatrixFromPointer(IRContext *context, llvm::Value *basePtr);
+
+    void insertValueAtPointerOffset(IRContext *context, llvm::Value *ptr, int offset, llvm::Value *val);
+
+    void
+    insertValueAtPointerOffsetValue(IRContext *context, llvm::Value *ptr, llvm::Value *offsetValue, llvm::Value *val);
+
+    llvm::Value *getValueFromPointerOffset(IRContext *context, llvm::Value *ptr, int offset, const std::string &name);
+
+    llvm::Value *getValueFromPointerOffsetValue(IRContext *context, llvm::Value *ptr, llvm::Value *offsetValue,
+                                                const std::string &name);
+
+    llvm::Value *getValueFromIndex(IRContext *context, llvm::Value *ptr, std::shared_ptr<Typing::MatrixType> mat,
+                                   const std::vector<llvm::Value *> &indicies);
+
+    llvm::Value *
+    getValueFromMatrixPtr(IRContext *context, llvm::Value *mPtr, llvm::Value *offset, const std::string &name);
+
+    void setValueFromMatrixPtr(IRContext *context, llvm::Value *mPtr, llvm::Value *offset, llvm::Value *val);
+
+    llvm::Value *getLength(IRContext *context, llvm::Value *basePtr, const Typing::MatrixType &type);
 }  // namespace Utils
