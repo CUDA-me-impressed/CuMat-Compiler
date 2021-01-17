@@ -33,8 +33,8 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                     break;
                 }
                 default:
-                    // TODO: Remove when ALL functions are implemented
-                    break;
+                    throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) +
+                                             "]");
             }
         }
     }
@@ -105,5 +105,69 @@ llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* cont
         case LOR: {
             return context->Builder->CreateOr(lhs, rhs, name);
         }
+        default: {
+            throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) + "]");
+        }
     }
+}
+llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std::shared_ptr<Typing::MatrixType> lhsMat,
+                                                 std::shared_ptr<Typing::MatrixType> rhsMat, llvm::Value* lhsVal,
+                                                 llvm::Value* rhsVal) {
+    /* PRE:
+     * LHS is a matrix A_(i,p), RHS is a matrix B_(p,j)
+     * We output a matrix C_(i,j)
+     * */
+
+    // We will generate a matrix multiplication function that CuMat programs will call directly
+    // This should only be defined once per program
+    if (lhsMat->rank != rhsMat->rank)
+        throw std::runtime_error("Cannot compute matrix multiplication on matricies with different ranks!");
+    // TODO: Sort out rank 1 multiplication (vector)
+    if (lhsMat->rank == 2 || lhsMat->rank == 2)
+        throw std::runtime_error("Matrix rank too high to compute matrix multiplication! Must be sliced first.");
+    if (lhsMat->primType != rhsMat->primType) throw std::runtime_error("Matrix primitive types do not match");
+
+    // Create the resultant matrix on device memory
+    std::shared_ptr<Typing::MatrixType> resultType = std::make_shared<Typing::MatrixType>();
+    resultType->primType = lhsMat->primType;
+    resultType->rank = lhsMat->rank;
+    resultType->dimensions = {rhsMat->getDimensions()[0], lhsMat->getDimensions()[1]};
+    auto* mat = Utils::createMatrix(context, *resultType);
+
+    // We create the multiplication function first, change some stuff and then revert into the current function
+    // Returns a value we can insert into the matrix C at position i,j
+    llvm::Type* i64Ty = llvm::Type::getInt64Ty(context->module->getContext());
+    llvm::FunctionType* ft = llvm::FunctionType::get(
+        resultType->getLLVMPrimitiveType(context),
+        // Params: (lhsMat, rhsMat, lhsX, lhsY, rhsX, rhsY, i,j,p)
+        {lhsVal->getType(), rhsVal->getType(), i64Ty, i64Ty, i64Ty, i64Ty, i64Ty, i64Ty, i64Ty}, false);
+    llvm::Function* func = llvm::Function::Create(
+        ft, llvm::Function::ExternalLinkage, "matMult_" + context->symbolTable->getCurrentFunction(), context->module);
+
+    llvm::BasicBlock* multFunctionBB =
+        llvm::BasicBlock::Create(context->module->getContext(), "matrixMult.entry", func);
+    context->Builder->CreateBr(multFunctionBB);
+    context->Builder->SetInsertPoint(multFunctionBB);
+
+    // TODO: Floating point
+    // Allocate return result for this entry
+    llvm::Value* result = llvm::ConstantInt::get(resultType->getLLVMType(context), llvm::APInt(64, 0, true));
+    llvm::BasicBlock* multFunctionLoopBB =
+        llvm::BasicBlock::Create(context->module->getContext(), "matrixMult.loop", func);
+    context->Builder->CreateBr(multFunctionLoopBB);
+    context->Builder->SetInsertPoint(multFunctionLoopBB);
+    {
+        // We create a loop that goes through all of the elements
+    }
+
+    // We wish to loop over each element in the matrix and spawn a CUDA thread for each one
+    llvm::BasicBlock* bb = llvm::BasicBlock::Create(
+        context->module->getContext(), context->symbolTable->getCurrentFunction() + "_cudaSpawn", context->function);
+    context->Builder->SetInsertPoint(bb);
+
+    // Declare this new function to be a
+
+    // We create a basic block and inherit this
+
+    return nullptr;
 }

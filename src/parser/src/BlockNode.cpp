@@ -2,14 +2,18 @@
 
 llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
     // For this function, we need a new BasicBlock structure
-    llvm::BasicBlock* bb = llvm::BasicBlock::Create(context->module->getContext(), "func" + this->callingFunctionName,
-                                                    context->function, context->Builder->GetInsertBlock());
+    llvm::BasicBlock* bb = llvm::BasicBlock::Create(context->module->getContext(), this->callingFunctionName + "_entry",
+                                                    context->function);
     context->Builder->SetInsertPoint(bb);
 
-    // TODO: Deal with the assignments
+    // Loop over each assignment in order
+    for (const auto ass : this->assignments) {
+        ass->codeGen(context);
+    }
 
     // Generate Return statement code
     llvm::Value* returnExprVal = this->returnExpr->codeGen(context);
     llvm::Value* retVal = context->Builder->CreateRet(returnExprVal);
+
     return retVal;
 }

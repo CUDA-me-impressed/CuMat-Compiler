@@ -134,8 +134,11 @@ int main(int argc, char* argv[], char* envp[]) {
     for (const auto& tree : parseTrees) {
         llvm::Module TheModule("CuMat-" + std::get<0>(tree), TheContext);
         llvm::IRBuilder<> Builder(TheContext);
+        Utils::SymbolTable symbolTable;
+
         // Context containing the module and IR Builder
-        Utils::IRContext treeContext = {&TheModule, &Builder};
+        Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable};
+        treeContext.symbolTable->createNVVMMetadata(&treeContext);  // TODO: Replace when program node codegen done
         std::get<1>(tree)->codeGen(&treeContext);
 
         std::error_code EC;

@@ -16,7 +16,7 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
     llvm::Value* operand = this->operand->codeGen(context);
 
     auto operandMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->operand);
-    llvm::Value* matAlloc;
+    llvm::Value* matAlloc = {};
     if (auto* operandType = std::get_if<Typing::MatrixType>(&*operandMatNode->type)) {
         matAlloc = Utils::createMatrix(context, *operandType);
 
@@ -51,6 +51,10 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
                 case LNOT: {
                     opResult = context->Builder->CreateNot(v, UNA_OP_ENUM_STRING[op]);
                     break;
+                }
+                default: {
+                    throw std::runtime_error("Unimplemented unary expression [" + std::string(UNA_OP_ENUM_STRING[op]) +
+                                             "]");
                 }
             }
             Utils::setValueFromMatrixPtr(context, matAlloc, index, opResult);

@@ -1,9 +1,6 @@
 #include "FuncDefNode.hpp"
 
 llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
-    // We need to handle scope within the function
-    Utils::VarSymbolTable.emplace_back();
-
     // Let us generate a new function -> We will first generate the function argument types
     std::vector<llvm::Type*> argTypes;
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
@@ -20,9 +17,14 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     llvm::Function* func = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, this->funcName, context->module);
 
     // Store within the symbol table
-    Utils::funcTable[this->funcName][typesRaw] = func;
+    context->symbolTable->addNewFunction(funcName, typesRaw);  // This should be done within the semantic pass
+    context->symbolTable->setFunctionData(funcName, typesRaw, func);
     context->function = func;
 
     auto* funcRet = this->block->codeGen(context);
+
+    // Pop the function as we leave the definition of the code
+    context->symbolTable->escapeFunction();
+    Utils::setNVPTXFunctionType(context, this->funcName, Utils::FunctionCUDAType::Host, func);
     return funcRet;
 }

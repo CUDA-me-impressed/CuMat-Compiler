@@ -8,16 +8,24 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
     // We will attempt to retrieve the function object from symbol table via reference to name + arg type
 
     // We need to generate types and codegen for arguments
-    if (!Utils::funcTable.contains(this->funcName)) return nullptr;  // TODO: Handle graceful error message
-    std::map<std::vector<std::shared_ptr<Typing::Type>>, llvm::Function*> funcArgParams =
-        Utils::funcTable[this->funcName];
+    const std::string funcName = this->nonAppliedFunction->literalText;
+    if (!context->symbolTable->isFunctionDefined(funcName)) {
+        // If we failed to identify this issue until here, we fucked up internally
+        // Semantic checking during the parse tree Antlr generation NEEDS to pick this up!
+        throw std::runtime_error("[Internal error] Function [" + funcName +
+                                 "] was not defined before called in expr node");
+    }
 
     std::vector<std::shared_ptr<Typing::Type>> argTypesRaw;
     for (const auto& typeNamePair : this->args) {
         argTypesRaw.push_back(typeNamePair->type);
     }
-    if (!funcArgParams.contains(argTypesRaw)) return nullptr;  // TODO: Handle graceful error message
-    auto* func = funcArgParams[argTypesRaw];
+
+    //    if(!context->symbolTable->isFunctionDefinedParam(funcName, argTypesRaw)){
+    //        throw std::runtime_error("[Internal error] Function [" + funcName +
+    //                                 "] defined however parameters do not match");
+    //    }
+    auto* func = context->symbolTable->getFunction(funcName, argTypesRaw).func;
 
     if (func->arg_size() != this->args.size()) return nullptr;  // TODO: Handle graceful error message
 
