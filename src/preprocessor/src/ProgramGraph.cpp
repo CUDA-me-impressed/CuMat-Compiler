@@ -83,7 +83,7 @@ void Preprocessor::ProgramGraph::expandAllUnexpanded() {
             if (fileTable.count(included)) continue;
             auto newFileLines = Preprocessor::SourceFileLoader::load(included);
             std::shared_ptr<ProgramFileNode> newFileNode =
-                    std::make_shared<ProgramFileNode>(included, *newFileLines.get());
+                std::make_shared<ProgramFileNode>(included, *newFileLines.get());
             fileTable[included] = newFileNode;
             // We need to handle this new node by adding it to the program graph
             this->addInclude(node, newFileNode);
@@ -93,7 +93,7 @@ void Preprocessor::ProgramGraph::expandAllUnexpanded() {
 }
 
 void Preprocessor::ProgramGraph::generateCompileUnits(
-        std::vector<std::vector<std::shared_ptr<ProgramFileNode>>> &compileUnits) {
+    std::vector<std::vector<std::shared_ptr<ProgramFileNode>>>& compileUnits) {
     auto sortedProgram = topologicalSort();
     std::reverse(sortedProgram.begin(), sortedProgram.end());
     int i = 0;

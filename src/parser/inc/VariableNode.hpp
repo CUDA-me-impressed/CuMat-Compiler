@@ -6,12 +6,12 @@
 #include "SliceNode.hpp"
 
 namespace AST {
-    class VariableNode : public ExprNode {
-    public:
-        std::vector<std::string> namespacePath;
-        std::string name;
-        std::shared_ptr<SliceNode> variableSlicing;
+class VariableNode : public ExprNode {
+   public:
+    std::vector<std::string> namespacePath;
+    std::string name;
+    std::shared_ptr<SliceNode> variableSlicing;
 
-        llvm::Value *codeGen(Utils::IRContext *context) override;
-    };
+    llvm::Value* codeGen(Utils::IRContext* context) override;
+};
 }  // namespace AST
