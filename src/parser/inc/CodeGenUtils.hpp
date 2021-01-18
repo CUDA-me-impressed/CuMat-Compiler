@@ -43,12 +43,12 @@ LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
 void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val);
 void insertValueAtPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, llvm::Value* val);
 
-llvm::Value* getValueFromPointerOffset(IRContext* context, llvm::Value* ptr, int offset, std::string name);
+llvm::Value* getValueFromPointerOffset(IRContext* context, llvm::Value* ptr, int offset, const std::string& name);
 llvm::Value* getValueFromPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue,
-                                            std::string name);
+                                            const std::string& name);
 llvm::Value* getValueFromIndex(IRContext* context, llvm::Value* ptr, std::shared_ptr<Typing::MatrixType> mat,
                                const std::vector<llvm::Value*>& indicies);
-llvm::Value* getValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* offset, std::string name);
+llvm::Value* getValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* offset, const std::string& name);
 void setValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* offset, llvm::Value* val);
 
 llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type);
