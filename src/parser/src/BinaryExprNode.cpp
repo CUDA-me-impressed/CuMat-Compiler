@@ -154,8 +154,10 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     llvm::Value* result = llvm::ConstantInt::get(resultType->getLLVMType(context), llvm::APInt(64, 0, true));
 
     auto* nValSize = Utils::getValueFromLLVM(context, static_cast<int>(lhsMat->dimensions.at(0)), Typing::PRIMITIVE::INT, false);
-    auto* mValSize = Utils::getValueFromLLVM(context, static_cast<int>(rhsMat->dimensions.at(1)), Typing::PRIMITIVE::INT, false);
-    auto* pValSize = Utils::getValueFromLLVM(context, static_cast<int>(rhsMat->dimensions.at(0)), Typing::PRIMITIVE::INT, false);
+    auto* mValSize =
+        Utils::getValueFromLLVM(context, static_cast<int>(rhsMat->dimensions.at(1)), Typing::PRIMITIVE::INT, false);
+    auto* pValSize =
+        Utils::getValueFromLLVM(context, static_cast<int>(rhsMat->dimensions.at(0)), Typing::PRIMITIVE::INT, false);
 
     // TODO: Propagate this to the upper thread loop
     auto* iValIndex = Utils::getValueFromLLVM(context, 0, Typing::PRIMITIVE::INT, false);
@@ -164,6 +166,13 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     // Initialise k to be 1
     auto* kValIndex = Utils::getValueFromLLVM(context, 1, Typing::PRIMITIVE::INT, false);
 
+    /*
+     * This is the inner most loop for the matrix multiplication algorithm
+     * This will be executed in lockstep amongst the N*M processes spawned by CUDA
+     * This should be called from the host and executed on the CUDA GPU as a function rather than
+     * as a basic block. This provides us with a basic (not most efficient) CUDA Matrix Multiplication
+     * algorithm.
+     */
     llvm::BasicBlock* multFunctionLoopBB =
         llvm::BasicBlock::Create(context->module->getContext(), "matrixMult.loop", func);
     llvm::BasicBlock* multFunctionEndBB =
@@ -171,10 +180,21 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     context->Builder->CreateBr(multFunctionLoopBB);
     context->Builder->SetInsertPoint(multFunctionLoopBB);
     {
-        // We create a loop that goes through all of the elements
-        kValIndex = context->Builder->CreateAdd()
+        // Loop invariant condition / conditional break if violated
         auto* cndr = context->Builder->CreateICmpNE(kValIndex, pValSize, "loopinv");
         context->Builder->CreateCondBr(cndr, multFunctionLoopBB, multFunctionEndBB);
+        // Matrix multiplication for i,j at position k is A_(i,k) * B_(k,j)
+        llvm::Value* a = Utils::getValueFromIndex(context, lhsVal, lhsMat, {iValIndex, kValIndex});
+        llvm::Value* b = Utils::getValueFromIndex(context, lhsVal, lhsMat, {kValIndex, jValIndex});
+        llvm::Value* tmpResult = context->Builder->CreateMul(a, b);
+        // We sum from k = 1 to p, so add the result to itself
+        result = context->Builder->CreateAdd(result, tmpResult);
+
+        // Update the kIndex from the loop
+        kValIndex =
+            context->Builder->CreateAdd(kValIndex, Utils::getValueFromLLVM(context, 1, Typing::PRIMITIVE::INT, false));
+        // Loop back up and check the loop invariant condition
+        context->Builder->CreateBr(multFunctionLoopBB);
     }
     context->Builder->SetInsertPoint(multFunctionEndBB);
 
