@@ -200,21 +200,21 @@ void Utils::insertValueAtPointerOffsetValue(Utils::IRContext* context, llvm::Val
  * @param name - Name to be stored as in IR
  */
 llvm::Value* Utils::getValueFromPointerOffset(Utils::IRContext* context, llvm::Value* ptr, int offset,
-                                              std::string name) {
+                                              const std::string& name) {
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
     auto xOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), offset);
     auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset});
     return context->Builder->CreateLoad(offsetPtr, name);
 }
 llvm::Value* Utils::getValueFromPointerOffsetValue(Utils::IRContext* context, llvm::Value* ptr,
-                                                   llvm::Value* offsetValue, std::string name) {
+                                                   llvm::Value* offsetValue, const std::string& name) {
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
     auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, offsetValue});
     return context->Builder->CreateLoad(offsetPtr, name);
 }
 
 llvm::Value* Utils::getValueFromMatrixPtr(Utils::IRContext* context, llvm::Value* mPtr, llvm::Value* offset,
-                                          std::string name) {
+                                          const std::string& name) {
     auto* dataPtr = getValueFromPointerOffset(context, mPtr, 0, "dataPtr");
     return getValueFromPointerOffsetValue(context, dataPtr, offset, "matValue");
 }
