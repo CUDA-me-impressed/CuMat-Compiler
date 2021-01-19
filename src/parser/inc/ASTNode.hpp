@@ -22,6 +22,7 @@ class Node {
     std::vector<std::shared_ptr<Node>> children;
 
     explicit Node(std::string textRep);
+
     Node() = default;
 
     void addChild(std::shared_ptr<Node> n);
@@ -30,6 +31,7 @@ class Node {
 
     // Default implementations just call the function on their children
     virtual void semanticPass();
+
     virtual llvm::Value* codeGen(Utils::IRContext* context);
 };
 }  // namespace AST

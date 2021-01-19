@@ -21,7 +21,9 @@ namespace Typing {
 enum class PRIMITIVE { STRING, INT, FLOAT, BOOL, NONE };
 
 class MatrixType;
+
 class GenericType;
+
 class FunctionType;
 
 using Type = std::variant<FunctionType, GenericType, MatrixType>;
@@ -34,13 +36,16 @@ class MatrixType {
     PRIMITIVE primType{PRIMITIVE::NONE};
 
     [[nodiscard]] int getLength() const;
+
     [[nodiscard]] int offset() const;
+
     [[nodiscard]] const std::vector<uint>& getDimensions() const;
 
     // TODO make this not a noop
     [[nodiscard]] bool simpleDimensionCompatible(const MatrixType& val) const { return true; };
 
     llvm::Type* getLLVMType(Utils::IRContext* context);
+
     llvm::Type* getLLVMPrimitiveType(Utils::IRContext* context) const;
 };
 

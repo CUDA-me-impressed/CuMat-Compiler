@@ -110,6 +110,7 @@ llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* cont
         }
     }
 }
+
 llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std::shared_ptr<Typing::MatrixType> lhsMat,
                                                  std::shared_ptr<Typing::MatrixType> rhsMat, llvm::Value* lhsVal,
                                                  llvm::Value* rhsVal) {

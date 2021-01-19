@@ -44,6 +44,7 @@ antlrcpp::Any CuMatVisitor::visitImports(CuMatParser::ImportsContext* ctx) {
     }
     return std::move(n);
 }
+
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitCmimport(CuMatParser::CmimportContext* ctx) {
     throw std::runtime_error("Unsupported Feature: Imports");
@@ -74,6 +75,7 @@ antlrcpp::Any CuMatVisitor::visitDefinition(CuMatParser::DefinitionContext* ctx)
 
     throw std::runtime_error("No definition found");
 }
+
 // TODO Check if anything extra is needed
 antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
     auto n = std::make_shared<AST::FuncDefNode>();
@@ -230,7 +232,7 @@ antlrcpp::Any CuMatVisitor::visitExp_logic(CuMatParser::Exp_logicContext* ctx) {
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
-                           // properly
+                // properly
             }
             auto op = (*opIt)->op;
             opIt++;
@@ -263,7 +265,7 @@ antlrcpp::Any CuMatVisitor::visitExp_comp(CuMatParser::Exp_compContext* ctx) {
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
-                           // properly
+                // properly
             }
             auto op = (*opIt)->op;
             opIt++;
@@ -527,7 +529,7 @@ antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext* ctx) {
             }
         }
         fN->args = std::move(arguments);  // This...might be an issue and need
-                                          // to use the copy semantics. We'll see
+        // to use the copy semantics. We'll see
     }
 
     return std::move(pConv<AST::ExprNode>(fN));
@@ -645,10 +647,12 @@ antlrcpp::Any CuMatVisitor::visitVariable(CuMatParser::VariableContext* ctx) {
 
     return std::move(pConv<AST::ExprNode>(n));
 }
+
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitCmtypedef(CuMatParser::CmtypedefContext* ctx) {
     throw std::runtime_error("Unsupported feature: Type Definitions");
 }
+
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitDecomp(CuMatParser::DecompContext* ctx) {
     throw std::runtime_error("Unsupported feature: Decomposition");
