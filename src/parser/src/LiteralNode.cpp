@@ -55,20 +55,20 @@ llvm::Value* AST::LiteralNode<T>::codeGen(Utils::IRContext* context) {
 
 template <>
 void AST::LiteralNode<int>::semanticPass() {
-    std::shared_ptr<Typing::Type> type = makeGenericType("int");
-    this->setType(type);
+    // std::shared_ptr<Typing::Type> type = makeGenericType("int");
+    // this->setType(type);
 }
 
 template <>
 void AST::LiteralNode<float>::semanticPass() {
-    std::shared_ptr<Typing::Type> type = makeGenericType("float");
-    this->setType(type);
+    // std::shared_ptr<Typing::Type> type = makeGenericType("float");
+    // this->setType(type);
 }
 
 template <>
 void AST::LiteralNode<std::string>::semanticPass() {
-    std::shared_ptr<Typing::Type> type = makeGenericType("string");
-    this->setType(type);
+    // std::shared_ptr<Typing::Type> type = makeGenericType("string");
+    // this->setType(type);
 }
 
 template <>

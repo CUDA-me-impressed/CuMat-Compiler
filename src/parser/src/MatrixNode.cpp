@@ -66,5 +66,41 @@ std::vector<uint> AST::MatrixNode::getDimensions() {
 }
 
 void AST::MatrixNode::semanticPass() {
+    for (auto const& child : this->children) child->semanticPass();
+    bool sameType = true;
+    bool zeroRank = true;
+    Typing::PRIMITIVE primType = Typing::PRIMITIVE::NONE;
+    Typing::MatrixType exprType;
+    // Runs through all elements to check types and ranks
+    for (auto& row : data) {
+        for (auto& el : row) {
+            try {
+                exprType = std::get<Typing::MatrixType>(*el->type);
+            } catch (std::bad_cast b) {
+                std::cout << "Caught: " << b.what();
+            }
+            Typing::PRIMITIVE prim = exprType.getPrimitiveType();
+            if (primType == Typing::PRIMITIVE::NONE && prim != Typing::PRIMITIVE::NONE) {
+                primType = prim;
+            } else {
+                sameType = sameType && (primType == prim);
+            }
+            zeroRank = zeroRank && (exprType.rank == 0);
+            if (!(sameType)) {
+                std::cout << "All elements of matrix must be of same type";
+                std::exit(2);
+            } else if (!(zeroRank)) {
+                std::cout << "All elements of matrix must be scalars";
+                std::exit(2);
+            }
+        }
+    }
 
+    auto ty = Typing::MatrixType();
+    std::vector<uint> dimensions = this->getDimensions();
+    ty.dimensions = dimensions;
+    ty.rank = dimensions.size();
+    ty.primType = primType;
+    std::shared_ptr<Typing::Type> type = std::make_shared<Typing::Type>(ty);
+    this->type = type;
 }

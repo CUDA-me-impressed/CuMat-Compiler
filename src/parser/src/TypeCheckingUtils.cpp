@@ -13,11 +13,11 @@ std::shared_ptr<Typing::Type> makeGenericType(std::string typeString) {
     return type;
 }
 
-std::shared_ptr<Typing::Type> makeMatrixType(std::vector<uint> dimensions) {
+std::shared_ptr<Typing::Type> makeMatrixType(const std::vector<uint> dimensions) {
     auto ty = Typing::MatrixType();
     ty.dimensions = dimensions;
     ty.rank = dimensions.size();
-//    ty.primType = ;
+    //    ty.primType = ;
     std::shared_ptr<Typing::Type> type = std::make_shared<Typing::Type>(ty);
     return type;
 }
