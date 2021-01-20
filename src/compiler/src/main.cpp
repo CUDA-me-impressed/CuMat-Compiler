@@ -138,6 +138,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
         // Context containing the module and IR Builder
         Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable};
+        treeContext.symbolTable->createNVVMMetadata(&treeContext);  // TODO: Replace when program node codegen done
         std::get<1>(tree)->codeGen(&treeContext);
 
         std::error_code EC;

@@ -24,5 +24,8 @@ class BinaryExprNode : public ExprNode {
     void elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
                             const Typing::MatrixType& lhsType, const Typing::MatrixType& rhsType,
                             llvm::Instruction* matAlloc, const Typing::MatrixType& resType);
+
+    llvm::Value* matrixMultiply(Utils::IRContext* context, std::shared_ptr<Typing::MatrixType> lhsMat,
+                                std::shared_ptr<Typing::MatrixType> rhsMat, llvm::Value* lhsVal, llvm::Value* rhsVal);
 };
 }  // namespace AST

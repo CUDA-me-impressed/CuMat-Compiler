@@ -13,6 +13,7 @@
 #include "FunctionExprNode.hpp"
 #include "LiteralNode.hpp"
 #include "MatrixNode.hpp"
+#include "ProgramNode.hpp"
 #include "TernaryExprNode.hpp"
 #include "UnaryExprNode.hpp"
 #include "VariableNode.hpp"
@@ -23,7 +24,8 @@ std::shared_ptr<T> pConv(std::shared_ptr<AST::Node> n) {
 }
 
 antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
+    auto n = std::make_shared<AST::ProgramNode>();
+    n->literalText = ctx->getText();
     auto i = visit(ctx->imports());
     auto d = visit(ctx->definitions());
 
@@ -136,6 +138,7 @@ antlrcpp::Any CuMatVisitor::visitTypespec(CuMatParser::TypespecContext* ctx) {
                 if (dim->INT()) {
                     dims.emplace_back(std::stoi(dim->INT()->getText()));
                 } else {
+                    // Is this going to be a subtle bug?
                     dims.emplace_back(0);
                 }
             }
@@ -631,20 +634,16 @@ antlrcpp::Any CuMatVisitor::visitVariable(CuMatParser::VariableContext* ctx) {
     n->name = ctx->varname()->identifier()->getText();
 
     if (ctx->cmnamespace() != nullptr) {
-        // TODO deal with namespacing
-        visit(ctx->cmnamespace());
+        for (auto id : ctx->cmnamespace()->identifier()) {
+            n->namespacePath.emplace_back(id->ID()->getText());
+        }
     }
 
     if (ctx->slice() != nullptr) {
-        // TODO deal with slicing
-        visit(ctx->slice());
+        n->variableSlicing = std::move(visit(ctx->slice()));
     }
 
     return std::move(pConv<AST::ExprNode>(n));
-}
-// TODO Implement
-antlrcpp::Any CuMatVisitor::visitCmnamespace(CuMatParser::CmnamespaceContext* ctx) {
-    throw std::runtime_error("Unsupported feature: Namespacing");
 }
 // TODO Implement
 antlrcpp::Any CuMatVisitor::visitCmtypedef(CuMatParser::CmtypedefContext* ctx) {
@@ -654,7 +653,20 @@ antlrcpp::Any CuMatVisitor::visitCmtypedef(CuMatParser::CmtypedefContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitDecomp(CuMatParser::DecompContext* ctx) {
     throw std::runtime_error("Unsupported feature: Decomposition");
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitSlice(CuMatParser::SliceContext* ctx) {
-    throw std::runtime_error("Unsupported feature: Slicing");
+    auto n = std::make_shared<AST::SliceNode>();
+    n->literalText = ctx->getText();
+    for (auto se : ctx->sliceelement()) {
+        if (se->STAR() != nullptr) {
+            n->slices.emplace_back(std::variant<bool, std::vector<int>>(true));
+        } else {
+            std::vector<int> slicingNums;
+            for (auto i : se->INT()) {
+                slicingNums.emplace_back(std::stoi(i->getText()));
+            }
+            n->slices.emplace_back(std::variant<bool, std::vector<int>>(slicingNums));
+        }
+    }
+    return std::move(n);
 }

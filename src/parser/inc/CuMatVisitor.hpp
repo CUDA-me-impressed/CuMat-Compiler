@@ -48,7 +48,6 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
     antlrcpp::Any visitScalarliteral(CuMatParser::ScalarliteralContext* ctx) override;
 
     antlrcpp::Any visitVariable(CuMatParser::VariableContext* ctx) override;
-    antlrcpp::Any visitCmnamespace(CuMatParser::CmnamespaceContext* ctx) override;
 
     antlrcpp::Any visitCmtypedef(CuMatParser::CmtypedefContext* ctx) override;
 

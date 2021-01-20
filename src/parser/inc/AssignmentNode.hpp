@@ -11,6 +11,6 @@ class AssignmentNode : public Node {
 
     std::string name;
 
-    llvm::Value* codegen(Utils::IRContext* context);
+    llvm::Value* codeGen(Utils::IRContext* context) override;
 };
 }  // namespace AST

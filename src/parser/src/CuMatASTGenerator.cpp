@@ -1,5 +1,6 @@
 #include "CuMatASTGenerator.hpp"
 
+#include <ProgramNode.hpp>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -35,7 +36,7 @@ std::shared_ptr<AST::Node> runParser(const std::string& fileName) {
     try {
         CuMatParser::ProgramContext* context = parser.program();
         auto tree = visitor.visitProgram(context);
-        return std::move(tree.as<std::shared_ptr<AST::Node>>());
+        return std::move(tree.as<std::shared_ptr<AST::ProgramNode>>());
     } catch (std::invalid_argument& e) {
         std::cout << e.what() << std::endl;
         return nullptr;
