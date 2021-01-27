@@ -1,5 +1,7 @@
 #include "FuncDefNode.hpp"
 
+#include "TreePrint.hpp"
+
 llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     // Let us generate a new function -> We will first generate the function argument types
     std::vector<llvm::Type*> argTypes;
@@ -27,4 +29,16 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     context->symbolTable->escapeFunction();
     Utils::setNVPTXFunctionType(context, this->funcName, Utils::FunctionCUDAType::Host, func);
     return funcRet;
+}
+
+std::string AST::FuncDefNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    using namespace Tree;
+    std::string str{prefix + std::string{"Function Definition: "} + funcName + " ("};
+    for (auto const& node : this->parameters) {
+        if (&node != &this->parameters.back()) {
+            str +=
+        } else
+            str +=
+    }
+    return str;
 }

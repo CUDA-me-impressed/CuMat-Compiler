@@ -12,5 +12,6 @@ class AssignmentNode : public Node {
     std::string name;
 
     llvm::Value* codeGen(Utils::IRContext* context) override;
+    [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override;
 };
 }  // namespace AST

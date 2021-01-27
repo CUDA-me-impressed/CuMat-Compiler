@@ -14,5 +14,7 @@ class ExprNode : public Node {
 
     virtual ~ExprNode() = default;
     void dimensionPass(Analysis::NameTable* nt) override;
+
+    [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override;
 };
 }  // namespace AST

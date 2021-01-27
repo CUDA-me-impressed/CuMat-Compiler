@@ -35,5 +35,7 @@ class Node {
     virtual void semanticPass();
     virtual llvm::Value* codeGen(Utils::IRContext* context);
     virtual void dimensionPass(Analysis::NameTable* nt);
+
+    [[nodiscard]] virtual std::string toTree(const std::string& prefix, const std::string& childPrefix) const;
 };
 }  // namespace AST

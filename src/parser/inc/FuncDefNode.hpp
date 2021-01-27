@@ -17,5 +17,7 @@ class FuncDefNode : public Node {
     std::shared_ptr<BlockNode> block;
 
     llvm::Value* codeGen(Utils::IRContext* context) override;
+
+    [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override;
 };
 }  // namespace AST

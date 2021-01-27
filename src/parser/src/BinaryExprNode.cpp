@@ -3,6 +3,10 @@
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
 
+#include "TreePrint.hpp"
+
+namespace AST {
+
 llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     // Assumption is that our types are two evaluated matricies of compatible
     // dimensions. We first generate code for each of the l and r matricies
@@ -26,9 +30,9 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
             auto newMatAlloc = Utils::createMatrix(context, *resultType);
 
             switch (op) {
-                case PLUS:
-                case MINUS:
-                case LOR: {
+                case BIN_OPERATORS::PLUS:
+                case BIN_OPERATORS::MINUS:
+                case BIN_OPERATORS::LOR: {
                     elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, newMatAlloc, *resultType);
                     break;
                 }
@@ -96,13 +100,13 @@ llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* cont
                                                           llvm::Value* lhs, llvm::Value* rhs, const std::string& name) {
     // TODO: Currently only works with integer values, will need to be extended to FP
     switch (op) {
-        case PLUS: {
+        case BIN_OPERATORS::PLUS: {
             return context->Builder->CreateAdd(lhs, rhs, name);
         }
-        case MINUS: {
+        case BIN_OPERATORS::MINUS: {
             return context->Builder->CreateSub(lhs, rhs, name);
         }
-        case LOR: {
+        case BIN_OPERATORS::LOR: {
             return context->Builder->CreateOr(lhs, rhs, name);
         }
         default: {
@@ -153,7 +157,8 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     // Allocate return result for this entry
     llvm::Value* result = llvm::ConstantInt::get(resultType->getLLVMType(context), llvm::APInt(64, 0, true));
 
-    auto* nValSize = Utils::getValueFromLLVM(context, static_cast<int>(lhsMat->dimensions.at(0)), Typing::PRIMITIVE::INT, false);
+    auto* nValSize =
+        Utils::getValueFromLLVM(context, static_cast<int>(lhsMat->dimensions.at(0)), Typing::PRIMITIVE::INT, false);
     auto* mValSize =
         Utils::getValueFromLLVM(context, static_cast<int>(rhsMat->dimensions.at(1)), Typing::PRIMITIVE::INT, false);
     auto* pValSize =
@@ -198,7 +203,6 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     }
     context->Builder->SetInsertPoint(multFunctionEndBB);
 
-
     // We wish to loop over each element in the matrix and spawn a CUDA thread for each one
     llvm::BasicBlock* bb = llvm::BasicBlock::Create(
         context->module->getContext(), context->symbolTable->getCurrentFunction() + "_cudaSpawn", context->function);
@@ -210,3 +214,14 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
 
     return nullptr;
 }
+
+const char* op_name(BIN_OPERATORS i) { return BIN_OP_ENUM_STRING[(int)i]; }
+
+std::string AST::BinaryExprNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    using namespace Tree;
+    std::string str{prefix + std::string{"Binary Expression: "} + op_name(this->op) + "\n"};
+    str += lhs->toTree(childPrefix + T, childPrefix + I);
+    str += rhs->toTree(childPrefix + L, childPrefix + B);
+    return str;
+}
+}  // namespace AST

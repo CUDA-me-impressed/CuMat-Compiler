@@ -7,7 +7,7 @@
 #include "ExprASTNode.hpp"
 
 namespace AST {
-enum BIN_OPERATORS { PLUS, MINUS, MUL, DIV, LOR, LAND, LT, GT, LTE, GTE, EQ, NEQ, BAND, BOR, POW, MATM, CHAIN };
+enum class BIN_OPERATORS { PLUS, MINUS, MUL, DIV, LOR, LAND, LT, GT, LTE, GTE, EQ, NEQ, BAND, BOR, POW, MATM, CHAIN };
 static const char* BIN_OP_ENUM_STRING[] = {"plus", "minus", "mul", "div", "lor",
                                            "land", "lt",    "gt",  "lte", "gte, eq, neq, band, bor, pow, matm, chain"};
 class BinaryExprNode : public ExprNode {
@@ -27,5 +27,7 @@ class BinaryExprNode : public ExprNode {
 
     llvm::Value* matrixMultiply(Utils::IRContext* context, std::shared_ptr<Typing::MatrixType> lhsMat,
                                 std::shared_ptr<Typing::MatrixType> rhsMat, llvm::Value* lhsVal, llvm::Value* rhsVal);
+
+    [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override;
 };
 }  // namespace AST
