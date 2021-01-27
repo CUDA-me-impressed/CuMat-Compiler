@@ -74,3 +74,7 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
     }
     return matAlloc;
 }
+
+void AST::UnaryExprNode::semanticPass() {
+    this->operand->semanticPass();
+}

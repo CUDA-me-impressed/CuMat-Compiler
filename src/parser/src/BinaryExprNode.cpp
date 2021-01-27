@@ -235,3 +235,8 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
 
     return nullptr;
 }
+
+void AST::BinaryExprNode::semanticPass() {
+    this->lhs->semanticPass();
+    this->rhs->semanticPass();
+}
