@@ -77,6 +77,9 @@ void CuMatAddMatrixI(long * matA, long * matB, long * matRes, long i, long j){
     // Call the kernel
     CuMatAddMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, i, j);
 
+    // Synchronise before copying
+    cudaDeviceSynchronize();
+
     // Copy the results out of device memory
     cudaMemcpy(matRes, d_Res, size, cudaMemcpyDeviceToHost);
 
