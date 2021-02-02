@@ -3,6 +3,7 @@
 //
 
 #include "TypeCheckingUtils.hpp"
+#include "ExprASTNode.hpp"
 
 #include <iostream>
 
@@ -64,4 +65,14 @@ void assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
         std::cerr << "Mismatched types: " << primToString(lhs) << ", " << primToString(rhs) << std::endl;
         std::exit(typeMismatchCode);
     }
+}
+
+Typing::MatrixType extractMatrixType(std::shared_ptr<AST::ExprNode> node) {
+    Typing::MatrixType exprType;
+    try {
+        exprType = std::get<Typing::MatrixType>(*node->type);
+    } catch (std::bad_cast b) {
+        std::cout << "Caught: " << b.what();
+    }
+    return exprType;
 }

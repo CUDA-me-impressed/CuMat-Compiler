@@ -8,6 +8,7 @@
 #endif  // CUMAT_COMPILER_TYPECHECKINGUTILS_HPP
 
 #include "Type.hpp"
+#include "ExprASTNode.hpp"
 
 int wrongTypeCode = 2;
 int typeMismatchCode = 3;
@@ -22,3 +23,5 @@ void assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs);
 std::string primToString(Typing::PRIMITIVE ty);
 
 void wrongTypeError(std::string message, Typing::PRIMITIVE ty);
+
+Typing::MatrixType extractMatrixType(std::shared_ptr<AST::ExprNode> node);
