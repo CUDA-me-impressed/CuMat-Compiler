@@ -1,8 +1,9 @@
 #pragma once
 
-#include "ASTNode.hpp"
-#include <vector>
 #include <string>
+#include <vector>
+
+#include "ASTNode.hpp"
 
 namespace AST {
 class TypeDefAttributeNode : public Node {

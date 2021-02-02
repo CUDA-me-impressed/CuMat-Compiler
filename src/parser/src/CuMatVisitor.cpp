@@ -9,16 +9,16 @@
 #include "AssignmentNode.hpp"
 #include "BinaryExprNode.hpp"
 #include "CuMatLexer.h"
+#include "CustomTypeDefNode.hpp"
 #include "FuncDefNode.hpp"
 #include "FunctionExprNode.hpp"
+#include "ImportsNode.hpp"
 #include "LiteralNode.hpp"
 #include "MatrixNode.hpp"
 #include "ProgramNode.hpp"
 #include "TernaryExprNode.hpp"
 #include "UnaryExprNode.hpp"
 #include "VariableNode.hpp"
-#include "ImportsNode.hpp"
-#include "CustomTypeDefNode.hpp"
 
 template <class T>
 std::shared_ptr<T> pConv(std::shared_ptr<AST::Node> n) {
@@ -40,8 +40,7 @@ antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
 antlrcpp::Any CuMatVisitor::visitImports(CuMatParser::ImportsContext* ctx) {
     auto n = std::make_shared<AST::ImportsNode>();
     n->literalText = ctx->getText();
-    for(auto& import : ctx->cmimport())
-    {
+    for (auto& import : ctx->cmimport()) {
         auto path = import->path()->getText();
         n->importPaths.emplace_back(path);
     }
@@ -150,23 +149,19 @@ antlrcpp::Any CuMatVisitor::visitTypespec(CuMatParser::TypespecContext* ctx) {
 
         return std::make_shared<Typing::Type>(m);
     } else {
-        if(ctx->cmtypename()->typeidentifier()->TYPE_ID() != nullptr)
-        {
-            //Generic Type
+        if (ctx->cmtypename()->typeidentifier()->TYPE_ID() != nullptr) {
+            // Generic Type
             Typing::GenericType g;
             g.name = ctx->cmtypename()->typeidentifier()->TYPE_ID()->getText();
             return std::make_shared<Typing::Type>(g);
-        } else if (ctx->cmtypename()->typeidentifier()->ID() != nullptr)
-        {
-            //Custom Type
+        } else if (ctx->cmtypename()->typeidentifier()->ID() != nullptr) {
+            // Custom Type
             Typing::CustomType ct;
             ct.name = ctx->cmtypename()->typeidentifier()->ID()->getText();
             return std::make_shared<Typing::Type>(ct);
-        } else
-        {
+        } else {
             throw std::runtime_error("Something in typespec has gone horribly wrong");
         }
-
     }
 }
 
@@ -665,7 +660,7 @@ antlrcpp::Any CuMatVisitor::visitCmtypedef(CuMatParser::CmtypedefContext* ctx) {
     n->literalText = ctx->getText();
 
     n->name = ctx->newtype()->identifier()->getText();
-    for(auto& attr : ctx->attrblock()->attrs) {
+    for (auto& attr : ctx->attrblock()->attrs) {
         n->attributes.emplace_back(std::move(visit(attr)));
     }
 
@@ -687,10 +682,11 @@ antlrcpp::Any CuMatVisitor::visitDecomp(CuMatParser::DecompContext* ctx) {
     n->literalText = ctx->getText();
     n->lVal = ctx->varname()->getText();
 
-    if(ctx->asstarget()->varname() != nullptr) {
-        n->rVal = std::variant<std::string,std::shared_ptr<AST::DecompNode>>(ctx->asstarget()->varname()->getText());
+    if (ctx->asstarget()->varname() != nullptr) {
+        n->rVal = std::variant<std::string, std::shared_ptr<AST::DecompNode>>(ctx->asstarget()->varname()->getText());
     } else if (ctx->asstarget()->decomp() != nullptr) {
-        n->rVal = std::variant<std::string,std::shared_ptr<AST::DecompNode>>(std::move(visitDecomp(ctx->asstarget()->decomp())));
+        n->rVal = std::variant<std::string, std::shared_ptr<AST::DecompNode>>(
+            std::move(visitDecomp(ctx->asstarget()->decomp())));
     } else {
         throw std::runtime_error("Something has gone wrong in Decomposition");
     }
