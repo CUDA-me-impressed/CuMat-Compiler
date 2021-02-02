@@ -1,6 +1,9 @@
 #include "UnaryExprNode.hpp"
 
+#include <iostream>
+
 #include "CodeGenUtils.hpp"
+#include "TypeCheckingUtils.hpp"
 
 /**
  * Code generation for unary elements.
@@ -77,4 +80,19 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
 
 void AST::UnaryExprNode::semanticPass() {
     this->operand->semanticPass();
+    Typing::MatrixType operandType;
+    try {
+        operandType = std::get<Typing::MatrixType>(*this->operand->type);
+    } catch (std::bad_cast b) {
+        std::cout << "Caught: " << b.what();
+    }
+    Typing::PRIMITIVE primType = operandType.getPrimitiveType();
+    switch (this->op) {
+        case AST::UNA_OPERATORS::NEG:
+            assertNumericType(primType);
+        case AST::UNA_OPERATORS::BNOT:
+            assertBooleanType(primType);
+        case AST::UNA_OPERATORS::LNOT:
+            assertLogicalType(primType);
+    }
 }
