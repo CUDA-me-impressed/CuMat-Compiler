@@ -24,9 +24,11 @@ class MatrixType;
 
 class GenericType;
 
+class CustomType;
+
 class FunctionType;
 
-using Type = std::variant<FunctionType, GenericType, MatrixType>;
+using Type = std::variant<FunctionType, GenericType, CustomType, MatrixType>;
 
 class MatrixType {
    public:
@@ -50,6 +52,12 @@ class MatrixType {
 };
 
 class GenericType {
+   public:
+    std::string name;
+};
+
+class CustomType {
+   public:
     std::string name;
 };
 

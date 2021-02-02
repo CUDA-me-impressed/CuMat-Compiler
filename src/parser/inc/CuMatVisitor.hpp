@@ -15,8 +15,6 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
 
     antlrcpp::Any visitImports(CuMatParser::ImportsContext* ctx) override;
 
-    antlrcpp::Any visitCmimport(CuMatParser::CmimportContext* ctx) override;
-
     antlrcpp::Any visitDefinitions(CuMatParser::DefinitionsContext* ctx) override;
 
     antlrcpp::Any visitDefinition(CuMatParser::DefinitionContext* ctx) override;
@@ -70,6 +68,8 @@ class CuMatVisitor : public CuMatParserBaseVisitor {
     antlrcpp::Any visitVariable(CuMatParser::VariableContext* ctx) override;
 
     antlrcpp::Any visitCmtypedef(CuMatParser::CmtypedefContext* ctx) override;
+
+    antlrcpp::Any visitAttr(CuMatParser::AttrContext* ctx) override;
 
    private:
     [[nodiscard]] bool compareTokenTypes(size_t a, size_t b) const;
