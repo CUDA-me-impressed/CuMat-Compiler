@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "CodeGenUtils.hpp"
+#include "TypeCheckingUtils.hpp"
 
 llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
     // Get the LLVM type out for the basic type
@@ -66,7 +67,7 @@ std::vector<uint> AST::MatrixNode::getDimensions() {
 }
 
 void AST::MatrixNode::semanticPass() {
-    std::cout << "Performing Matrix Semantic Pass" << std::endl;
+    //    std::cout << "Performing Matrix Semantic Pass" << std::endl;
     for (auto const& child : this->children) child->semanticPass();
     bool sameType = true;
     bool zeroRank = true;
@@ -97,11 +98,7 @@ void AST::MatrixNode::semanticPass() {
         }
     }
 
-    auto ty = Typing::MatrixType();
     std::vector<uint> dimensions = this->getDimensions();
-    ty.dimensions = dimensions;
-    ty.rank = dimensions.size();
-    ty.primType = primType;
-    std::shared_ptr<Typing::Type> type = std::make_shared<Typing::Type>(ty);
-    this->type = type;
+
+    this->type = makeMatrixType(dimensions, primType);
 }
