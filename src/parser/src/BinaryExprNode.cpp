@@ -1,4 +1,5 @@
 #include "BinaryExprNode.hpp"
+#include "TypeCheckingUtils.hpp"
 
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
@@ -26,34 +27,10 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
 
             auto newMatAlloc = Utils::createMatrix(context, *resultType);
 
-            // TODO: Move to separate file and call from semantic pass function of AST nodes
-            llvm::Type* intType = llvm::Type::getInt64Ty(context->module->getContext());
-            llvm::Type* floatType = llvm::Type::getFloatTy(context->module->getContext());
-            llvm::Type* lhsLLVMType = lhsType->getLLVMPrimitiveType(context);
-            llvm::Type* rhsLLVMType = rhsType->getLLVMPrimitiveType(context);
-
-            bool sameType = lhsLLVMType == rhsLLVMType;
-            bool intOrFloat = (lhsLLVMType == intType or lhsLLVMType == floatType) and
-                              (rhsLLVMType == intType or rhsLLVMType == floatType);
-
             switch (op) {
                 case PLUS:
                 case MINUS:
                 case LOR: {
-                    if (not(sameType and intOrFloat)) {
-                        if (not sameType) {
-                            Typing::mismatchTypeException("Types do not match");
-                            std::exit(2);
-                        } else {
-                            if (not(lhsLLVMType == intType or lhsLLVMType == floatType)) {
-                                Typing::wrongTypeException("Incorrect or unsupported type used", intType, lhsLLVMType);
-                                std::exit(2);
-                            } else {
-                                Typing::wrongTypeException("Incorrect or unsupported type used", intType, rhsLLVMType);
-                                std::exit(2);
-                            }
-                        }
-                    }
                     elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, newMatAlloc, *resultType);
                     break;
                 }
@@ -239,4 +216,7 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
 void AST::BinaryExprNode::semanticPass() {
     this->lhs->semanticPass();
     this->rhs->semanticPass();
+    Typing::MatrixType lhsTy = extractMatrixType(this->lhs);
+    Typing::MatrixType rhsTy = extractMatrixType(this->rhs);
+    assertMatchingTypes(lhsTy.getPrimitiveType(), rhsTy.getPrimitiveType());
 }

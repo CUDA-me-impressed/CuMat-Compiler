@@ -67,6 +67,29 @@ void assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
     }
 }
 
+void assertCompatibleTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
+    bool compatible;
+    switch (lhs) {
+        case Typing::PRIMITIVE::STRING:
+            compatible = rhs == Typing::PRIMITIVE::STRING;
+            break;
+        case Typing::PRIMITIVE::INT:
+        case Typing::PRIMITIVE::FLOAT:
+            compatible = (rhs == Typing::PRIMITIVE::INT or rhs == Typing::PRIMITIVE::FLOAT);
+            break;
+        case Typing::PRIMITIVE::BOOL:
+            compatible = (rhs == Typing::PRIMITIVE::INT or rhs == Typing::PRIMITIVE::BOOL);
+            break;
+        case Typing::PRIMITIVE::NONE:
+            compatible = false;
+            break;
+    }
+    if (not compatible) {
+        std::cerr << "Incompatible types: " << primToString(lhs) << ", " << primToString(rhs) << std::endl;
+        std::exit(typeMismatchCode);
+    }
+}
+
 Typing::MatrixType extractMatrixType(std::shared_ptr<AST::ExprNode> node) {
     Typing::MatrixType exprType;
     try {
