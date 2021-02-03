@@ -3,10 +3,10 @@
 //
 
 #include "TypeCheckingUtils.hpp"
-#include "ExprASTNode.hpp"
 
 #include <iostream>
 
+#include "ExprASTNode.hpp"
 #include "Type.hpp"
 
 std::shared_ptr<Typing::Type> makeMatrixType(const std::vector<uint> dimensions, Typing::PRIMITIVE primType) {

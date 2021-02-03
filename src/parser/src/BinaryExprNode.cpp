@@ -1,9 +1,10 @@
 #include "BinaryExprNode.hpp"
-#include "TypeCheckingUtils.hpp"
 
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
 #include <TypeException.hpp>
+
+#include "TypeCheckingUtils.hpp"
 
 llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     // Assumption is that our types are two evaluated matricies of compatible
@@ -155,7 +156,8 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     // Allocate return result for this entry
     llvm::Value* result = llvm::ConstantInt::get(resultType->getLLVMType(context), llvm::APInt(64, 0, true));
 
-    auto* nValSize = Utils::getValueFromLLVM(context, static_cast<int>(lhsMat->dimensions.at(0)), Typing::PRIMITIVE::INT, false);
+    auto* nValSize =
+        Utils::getValueFromLLVM(context, static_cast<int>(lhsMat->dimensions.at(0)), Typing::PRIMITIVE::INT, false);
     auto* mValSize =
         Utils::getValueFromLLVM(context, static_cast<int>(rhsMat->dimensions.at(1)), Typing::PRIMITIVE::INT, false);
     auto* pValSize =
@@ -199,7 +201,6 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
         context->Builder->CreateBr(multFunctionLoopBB);
     }
     context->Builder->SetInsertPoint(multFunctionEndBB);
-
 
     // We wish to loop over each element in the matrix and spawn a CUDA thread for each one
     llvm::BasicBlock* bb = llvm::BasicBlock::Create(
