@@ -10,9 +10,25 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#define block_size 16
+#define BLOCK_SIZE 32 // nvidia GPUs typically have 1024 threads per block, 32*32
 
+__global__ void CuMatMatMultKernel(const long *matA, const long *matB, long* matRes, int width, int i, int j)
+{
+    int r = blockIdx.y * blockDim.y + threadIdx.y;
+    int c = blockIdx.x * blockDim.x + threadIdx.x;
+    // check boundry conditions
+    if( r < i && c < j){
+        // do the multiplication for one row and col
+        long value = 0;
+        for(int k = 0; k < width; k++){
+            value += matA[r * width + k] * matB[k * j + c];
+        }
+        // store the result
+        matRes[r * j + c] = value;
+    }
+}
 
+/*
 template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(long *C, long *A, long *B, int wA, int wB) {
     // Block index
     int bx = blockIdx.x;
@@ -84,70 +100,46 @@ template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(long *C, long *A, long *
     C[c + wB * ty + tx] = Csub;
 }
 
-
+*/
 
 void CuMatMultMatrixI(long * matA, long * matB, long * matRes, long i, long p, long j){
     auto matASize = sizeof(long) * i * p;
     auto matBSize = sizeof(long) * p * j;
     auto matResSize = i * j * sizeof(long);
 
-    long* h_A; long * h_B; long *h_Res;
-
-    // Allocate cuda managed host memory
-    cudaMallocManaged(&h_A, matASize);
-    cudaMallocManaged(&h_B, matBSize);
-    cudaMallocManaged(&h_Res, matResSize);
-
-    // Copy over the data from the function pointers
-    cudaMemcpy(h_A, matA, matASize, cudaMemcpyHostToDevice);
-    cudaMemcpy(h_B, matB, matBSize, cudaMemcpyHostToDevice);
-
     cudaStream_t stream;
 
     // Allocate device memory
     long *d_A, *d_B, *d_Res;
 
-    if (h_Res == NULL) {
+    if (matRes == NULL) {
         exit(EXIT_FAILURE);
     }
 
-    cudaMalloc(reinterpret_cast<void **>(&d_A), matASize);
-    cudaMalloc(reinterpret_cast<void **>(&d_B), matBSize);
-    cudaMalloc(reinterpret_cast<void **>(&d_Res), matResSize);
+    cudaMallocManaged(&d_A, matASize);
+    cudaMallocManaged(&d_B, matBSize);
+    cudaMallocManaged(&d_Res, matResSize);
 
     cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking);
 
     // copy host memory to device
-    cudaMemcpyAsync(d_A, h_A, matASize, cudaMemcpyHostToDevice, stream);
-    cudaMemcpyAsync(d_B, h_B, matBSize, cudaMemcpyHostToDevice, stream);
+    cudaMemcpy(d_A, matA, matASize, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, matB, matBSize, cudaMemcpyHostToDevice);
 
     // Setup execution parameters
-    dim3 threads(block_size, block_size);
-    dim3 grid(p / threads.x, p / threads.y);
+    dim3 dim_grid(ceilf(i/(float)BLOCK_SIZE), ceilf(j/(float)BLOCK_SIZE), 1);
+    dim3 dim_block(BLOCK_SIZE, BLOCK_SIZE, 1);
 
 
-
-    cudaStreamSynchronize(stream);
-
-    if (block_size == 16) {
-        MatrixMulCUDA<16>
-            <<<grid, threads, 0, stream>>>(d_Res, d_A, d_B, i, p);
-    } else {
-        MatrixMulCUDA<32>
-            <<<grid, threads, 0, stream>>>(d_Res, d_A, d_B, i, p);
-    }
-
+    CuMatMatMultKernel<<<dim_grid, dim_block>>>(d_A, d_B, d_Res, p,  i, j);
 
     // Copy result from device to host
-    cudaMemcpyAsync(h_Res, d_Res, matResSize, cudaMemcpyDeviceToHost, stream);
+    cudaMemcpyAsync(matRes, d_Res, matResSize, cudaMemcpyDeviceToHost, stream);
     // Copy the results out of device memory
     cudaMemcpy(matRes, d_Res, matResSize, cudaMemcpyDeviceToHost);
     cudaStreamSynchronize(stream);
 
     // Clean up memory
-    cudaFreeHost(h_A);
-    cudaFreeHost(h_B);
-    cudaFreeHost(h_Res);
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_Res);
