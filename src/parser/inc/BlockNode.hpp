@@ -12,7 +12,7 @@ class BlockNode : public Node {
     std::string callingFunctionName;
     std::vector<std::shared_ptr<AssignmentNode>> assignments;
     std::shared_ptr<ExprNode> returnExpr;
-
+    void semanticPass() override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
 };
 }  // namespace AST

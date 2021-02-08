@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+#include "TypeCheckingUtils.hpp"
+
 /**
  * Returns an LLVM Constant type which we use to populate data entires
  * Literals consist of the lowest form of data structure we can have within
@@ -50,6 +52,27 @@ llvm::Value* AST::LiteralNode<T>::codeGen(Utils::IRContext* context) {
     }
     return nullptr;
 }*/
+
+template <>
+void AST::LiteralNode<int>::semanticPass() {
+    for (auto const& child : this->children) child->semanticPass();
+    // std::shared_ptr<Typing::Type> type = makeGenericType("int");
+    // this->setType(type);
+}
+
+template <>
+void AST::LiteralNode<float>::semanticPass() {
+    for (auto const& child : this->children) child->semanticPass();
+    // std::shared_ptr<Typing::Type> type = makeGenericType("float");
+    // this->setType(type);
+}
+
+template <>
+void AST::LiteralNode<std::string>::semanticPass() {
+    for (auto const& child : this->children) child->semanticPass();
+    // std::shared_ptr<Typing::Type> type = makeGenericType("string");
+    // this->setType(type);
+}
 
 template <>
 llvm::Value* AST::LiteralNode<int>::codeGen(Utils::IRContext* context) {

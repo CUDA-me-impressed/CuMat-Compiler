@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "CodeGenUtils.hpp"
+#include "Type.hpp"
 
 namespace AST {
 class Node {

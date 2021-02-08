@@ -14,6 +14,7 @@
  * primitive type within CuMat
  * @return
  */
+
 int Typing::MatrixType::offset() const {
     switch (primType) {
         case PRIMITIVE::STRING:
@@ -113,3 +114,5 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) {
 
     return matHeaderType;
 }
+
+Typing::PRIMITIVE Typing::MatrixType::getPrimitiveType() const { return this->primType; }

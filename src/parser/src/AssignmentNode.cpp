@@ -20,3 +20,8 @@ llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
     }
     return rVal;
 }
+
+void AST::AssignmentNode::semanticPass() {
+    this->lVal->semanticPass();
+    this->rVal->semanticPass();
+}

@@ -20,3 +20,7 @@
 //    builder.SetInsertPoint(bb, ip);
 //    return a;
 //}
+
+std::shared_ptr<Typing::Type> Node::getType() const { return this->type; }
+
+void Node::setType(std::shared_ptr<Typing::Type> ty) { this->type = ty; }
