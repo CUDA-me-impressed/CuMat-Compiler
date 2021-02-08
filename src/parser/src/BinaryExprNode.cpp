@@ -218,7 +218,7 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
 void AST::BinaryExprNode::semanticPass() {
     this->lhs->semanticPass();
     this->rhs->semanticPass();
-    Typing::MatrixType lhsTy = extractMatrixType(this->lhs);
-    Typing::MatrixType rhsTy = extractMatrixType(this->rhs);
-    assertMatchingTypes(lhsTy.getPrimitiveType(), rhsTy.getPrimitiveType());
+    Typing::MatrixType lhsTy = TypeCheckUtils::extractMatrixType(this->lhs);
+    Typing::MatrixType rhsTy = TypeCheckUtils::extractMatrixType(this->rhs);
+    TypeCheckUtils::assertMatchingTypes(lhsTy.getPrimitiveType(), rhsTy.getPrimitiveType());
 }

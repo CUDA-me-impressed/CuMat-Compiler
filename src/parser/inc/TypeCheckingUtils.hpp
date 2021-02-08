@@ -1,27 +1,28 @@
-//
-// Created by lloyd on 30/12/2020.
-//
+#pragma once
 
-#ifndef CUMAT_COMPILER_TYPECHECKINGUTILS_HPP
-#define CUMAT_COMPILER_TYPECHECKINGUTILS_HPP
-
-#endif  // CUMAT_COMPILER_TYPECHECKINGUTILS_HPP
 
 #include "Type.hpp"
 #include "ExprASTNode.hpp"
 
-int wrongTypeCode = 2;
-int typeMismatchCode = 3;
+namespace TypeCheckUtils {
 
-std::shared_ptr<Typing::Type> makeMatrixType(const std::vector<uint> dimensions, Typing::PRIMITIVE primType);
+    enum ErrorCodes {
+        WRONG_TYPE = 2, MISMATCH_CODE = 3
+    };
 
-void assertLogicalType(Typing::PRIMITIVE ty);
-void assertNumericType(Typing::PRIMITIVE ty);
-void assertBooleanType(Typing::PRIMITIVE ty);
-void assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs);
+    std::shared_ptr<Typing::Type> makeMatrixType(const std::vector<uint> dimensions, Typing::PRIMITIVE primType);
 
-std::string primToString(Typing::PRIMITIVE ty);
+    void assertLogicalType(Typing::PRIMITIVE ty);
+    void assertNumericType(Typing::PRIMITIVE ty);
+    void assertBooleanType(Typing::PRIMITIVE ty);
+    void assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs);
+    void assertCompatibleTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs);
 
-void wrongTypeError(std::string message, Typing::PRIMITIVE ty);
+    std::string primToString(Typing::PRIMITIVE ty);
 
-Typing::MatrixType extractMatrixType(std::shared_ptr<AST::ExprNode> node);
+    void wrongTypeError(std::string message, Typing::PRIMITIVE ty);
+
+    std::string primToString(Typing::PRIMITIVE ty);
+
+    Typing::MatrixType extractMatrixType(std::shared_ptr<AST::ExprNode> node);
+}

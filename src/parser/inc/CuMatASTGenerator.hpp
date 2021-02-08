@@ -1,6 +1,3 @@
-//
-// Created by matt on 08/11/2020.
-//
 #pragma once
 
 #include <antlr4-runtime.h>

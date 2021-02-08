@@ -80,14 +80,14 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
 
 void AST::UnaryExprNode::semanticPass() {
     this->operand->semanticPass();
-    Typing::MatrixType operandType = extractMatrixType(this->operand);
+    Typing::MatrixType operandType = TypeCheckUtils::extractMatrixType(this->operand);
     Typing::PRIMITIVE primType = operandType.getPrimitiveType();
     switch (this->op) {
         case AST::UNA_OPERATORS::NEG:
-            assertNumericType(primType);
+            TypeCheckUtils::assertNumericType(primType);
         case AST::UNA_OPERATORS::BNOT:
-            assertBooleanType(primType);
+            TypeCheckUtils::assertBooleanType(primType);
         case AST::UNA_OPERATORS::LNOT:
-            assertLogicalType(primType);
+            TypeCheckUtils::assertLogicalType(primType);
     }
 }

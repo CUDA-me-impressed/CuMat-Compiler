@@ -1,7 +1,3 @@
-//
-// Created by lloyd on 30/12/2020.
-//
-
 #include "TypeCheckingUtils.hpp"
 
 #include <iostream>
@@ -9,7 +5,7 @@
 #include "ExprASTNode.hpp"
 #include "Type.hpp"
 
-std::shared_ptr<Typing::Type> makeMatrixType(const std::vector<uint> dimensions, Typing::PRIMITIVE primType) {
+std::shared_ptr<Typing::Type> TypeCheckUtils::makeMatrixType(const std::vector<uint> dimensions, Typing::PRIMITIVE primType) {
     auto ty = Typing::MatrixType();
     ty.dimensions = dimensions;
     ty.rank = dimensions.size();
@@ -18,28 +14,28 @@ std::shared_ptr<Typing::Type> makeMatrixType(const std::vector<uint> dimensions,
     return type;
 }
 
-void assertLogicalType(Typing::PRIMITIVE ty) {
+void TypeCheckUtils::assertLogicalType(Typing::PRIMITIVE ty) {
     if (not(ty == Typing::PRIMITIVE::BOOL or ty == Typing::PRIMITIVE::INT)) {
         std::string message = "Expected: bool, int";
-        wrongTypeError(message, ty);
+        TypeCheckUtils::wrongTypeError(message, ty);
     }
 }
 
-void assertNumericType(Typing::PRIMITIVE ty) {
+void TypeCheckUtils::assertNumericType(Typing::PRIMITIVE ty) {
     if (not(ty == Typing::PRIMITIVE::INT or ty == Typing::PRIMITIVE::FLOAT)) {
         std::string message = "Expected: int, float";
-        wrongTypeError(message, ty);
+        TypeCheckUtils::wrongTypeError(message, ty);
     }
 }
 
-void assertBooleanType(Typing::PRIMITIVE ty) {
+void TypeCheckUtils::assertBooleanType(Typing::PRIMITIVE ty) {
     if (not(ty == Typing::PRIMITIVE::BOOL)) {
         std::string message = "Expected: bool";
-        wrongTypeError(message, ty);
+        TypeCheckUtils::wrongTypeError(message, ty);
     }
 }
 
-std::string primToString(Typing::PRIMITIVE ty) {
+std::string TypeCheckUtils::primToString(Typing::PRIMITIVE ty) {
     switch (ty) {
         case Typing::PRIMITIVE::STRING:
             return "string";
@@ -54,20 +50,20 @@ std::string primToString(Typing::PRIMITIVE ty) {
     }
 }
 
-void wrongTypeError(std::string message, Typing::PRIMITIVE ty) {
+void TypeCheckUtils::wrongTypeError(std::string message, Typing::PRIMITIVE ty) {
     std::cerr << "Wrong type encountered/n" << message << "/n"
               << "Found: " << primToString(ty) << std::endl;
-    std::exit(wrongTypeCode);
+    std::exit(TypeCheckUtils::ErrorCodes::WRONG_TYPE);
 }
 
-void assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
+void TypeCheckUtils::assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
     if (not(lhs == rhs)) {
         std::cerr << "Mismatched types: " << primToString(lhs) << ", " << primToString(rhs) << std::endl;
-        std::exit(typeMismatchCode);
+        std::exit(TypeCheckUtils::ErrorCodes::MISMATCH_CODE);
     }
 }
 
-void assertCompatibleTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
+void TypeCheckUtils::assertCompatibleTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
     bool compatible;
     switch (lhs) {
         case Typing::PRIMITIVE::STRING:
@@ -86,11 +82,11 @@ void assertCompatibleTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
     }
     if (not compatible) {
         std::cerr << "Incompatible types: " << primToString(lhs) << ", " << primToString(rhs) << std::endl;
-        std::exit(typeMismatchCode);
+        std::exit(TypeCheckUtils::ErrorCodes::MISMATCH_CODE);
     }
 }
 
-Typing::MatrixType extractMatrixType(std::shared_ptr<AST::ExprNode> node) {
+Typing::MatrixType TypeCheckUtils::extractMatrixType(std::shared_ptr<AST::ExprNode> node) {
     Typing::MatrixType exprType;
     try {
         exprType = std::get<Typing::MatrixType>(*node->type);

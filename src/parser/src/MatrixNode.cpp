@@ -100,5 +100,5 @@ void AST::MatrixNode::semanticPass() {
 
     std::vector<uint> dimensions = this->getDimensions();
 
-    this->type = makeMatrixType(dimensions, primType);
+    this->type = TypeCheckUtils::makeMatrixType(dimensions, primType);
 }

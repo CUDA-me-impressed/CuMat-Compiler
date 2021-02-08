@@ -1,7 +1,3 @@
-//
-// Created by tobyl on 14/11/2020.
-//
-
 #pragma once
 
 #include <llvm/IR/Module.h>
