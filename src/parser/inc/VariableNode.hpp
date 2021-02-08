@@ -11,6 +11,7 @@ class VariableNode : public ExprNode {
     std::vector<std::string> namespacePath;
     std::string name;
     std::shared_ptr<SliceNode> variableSlicing;
+
     llvm::Value* codeGen(Utils::IRContext* context) override;
 };
 }  // namespace AST

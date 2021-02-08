@@ -132,7 +132,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
     llvm::LLVMContext TheContext;
     for (const auto& tree : parseTrees) {
-        llvm::Module TheModule("CuMat-" + std::get<0>(tree), TheContext);
+        llvm::Module TheModule(std::get<0>(tree), TheContext);
         llvm::IRBuilder<> Builder(TheContext);
         Utils::SymbolTable symbolTable;
 

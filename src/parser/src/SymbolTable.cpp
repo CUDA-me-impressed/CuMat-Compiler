@@ -18,6 +18,7 @@ std::shared_ptr<Utils::SymbolTableEntry> Utils::SymbolTable::getValue(const std:
         throw std::runtime_error("Cannot find function [" + funcName + "] for symbol [" + fullSymbolName + "]");
     }
 }
+
 void Utils::SymbolTable::setValue(std::shared_ptr<Typing::Type> type, llvm::Value* storeVal,
                                   const std::string& symbolName, const std::string& funcName,
                                   const std::string& funcNamespace) {
@@ -36,6 +37,7 @@ void Utils::SymbolTable::escapeFunction() {
         throw std::runtime_error("Failed to escape the function within code-block generation. No function!");
     this->functionStack.erase(this->functionStack.end());
 }
+
 std::string Utils::SymbolTable::getCurrentFunction() { return this->functionStack.at(this->functionStack.size() - 1); }
 
 bool Utils::SymbolTable::inSymbolTable(const std::string& symbolName, const std::string& funcName,

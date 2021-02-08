@@ -206,6 +206,7 @@ llvm::Value* Utils::getValueFromPointerOffset(Utils::IRContext* context, llvm::V
     auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset});
     return context->Builder->CreateLoad(offsetPtr, name);
 }
+
 llvm::Value* Utils::getValueFromPointerOffsetValue(Utils::IRContext* context, llvm::Value* ptr,
                                                    llvm::Value* offsetValue, const std::string& name) {
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
@@ -218,6 +219,7 @@ llvm::Value* Utils::getValueFromMatrixPtr(Utils::IRContext* context, llvm::Value
     auto* dataPtr = getValueFromPointerOffset(context, mPtr, 0, "dataPtr");
     return getValueFromPointerOffsetValue(context, dataPtr, offset, "matValue");
 }
+
 /**
  * We hardcode for N = 1,2,3 and then provide general llvm code for N > 3
  * @param context

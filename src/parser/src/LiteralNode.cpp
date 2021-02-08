@@ -78,5 +78,7 @@ llvm::Value* AST::LiteralNode<std::string>::codeGen(Utils::IRContext* context) {
 }
 
 template class AST::LiteralNode<float>;
+
 template class AST::LiteralNode<int>;
+
 template class AST::LiteralNode<std::string>;

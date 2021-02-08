@@ -110,6 +110,7 @@ llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* cont
         }
     }
 }
+
 llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std::shared_ptr<Typing::MatrixType> lhsMat,
                                                  std::shared_ptr<Typing::MatrixType> rhsMat, llvm::Value* lhsVal,
                                                  llvm::Value* rhsVal) {
@@ -153,7 +154,8 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     // Allocate return result for this entry
     llvm::Value* result = llvm::ConstantInt::get(resultType->getLLVMType(context), llvm::APInt(64, 0, true));
 
-    auto* nValSize = Utils::getValueFromLLVM(context, static_cast<int>(lhsMat->dimensions.at(0)), Typing::PRIMITIVE::INT, false);
+    auto* nValSize =
+        Utils::getValueFromLLVM(context, static_cast<int>(lhsMat->dimensions.at(0)), Typing::PRIMITIVE::INT, false);
     auto* mValSize =
         Utils::getValueFromLLVM(context, static_cast<int>(rhsMat->dimensions.at(1)), Typing::PRIMITIVE::INT, false);
     auto* pValSize =
@@ -197,7 +199,6 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
         context->Builder->CreateBr(multFunctionLoopBB);
     }
     context->Builder->SetInsertPoint(multFunctionEndBB);
-
 
     // We wish to loop over each element in the matrix and spawn a CUDA thread for each one
     llvm::BasicBlock* bb = llvm::BasicBlock::Create(
