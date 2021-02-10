@@ -45,7 +45,16 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
 //    }
 //    return matAlloc;
     // Assume every expr is an evaluated matrix
-    Typing::MatrixType matTypeAST = std::get<Typing::MatrixType>(*this->type);
+    auto matAlloc = Utils::createMatrix(context, *this->type);
+    auto matRecord = Utils::getMatrixFromPointer(context, matAlloc);
+    // Compress literal nodes to matrix representation
+    for(int i = 0; i < this->data.size(); i++){
+        auto literal = this->data.at(i);
+        llvm::Value* literalLLVMVal = literal->codeGen(context);
+        auto literalRecord = Utils::getMatrixFromPointer(context, literalLLVMVal);
+        Utils::insertValueAtPointerOffset(context, matRecord.dataPtr, )
+
+    }
 }
 
 llvm::APInt AST::MatrixNode::genAPIntInstance(const int numElements) {
