@@ -4,9 +4,9 @@ options {
     tokenVocab = CuMatLexer;
 }
 
-program                     : EOL* imports definitions EOF ;
+program                     : EOL* imports? definitions EOF ;
 
-imports                     : cmimport* ;
+imports                     : cmimport+ ;
 cmimport                    : IMPORT_OPEN path IMPORT_CLOSE ;
 path                        : (directorylist DIRSEP)? file ;
 directorylist               : (directories+=directory DIRSEP)* ;
