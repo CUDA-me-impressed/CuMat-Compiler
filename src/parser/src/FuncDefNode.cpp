@@ -28,3 +28,7 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     Utils::setNVPTXFunctionType(context, this->funcName, Utils::FunctionCUDAType::Host, func);
     return funcRet;
 }
+
+void AST::FuncDefNode::semanticPass() {
+    this->block->semanticPass();
+}

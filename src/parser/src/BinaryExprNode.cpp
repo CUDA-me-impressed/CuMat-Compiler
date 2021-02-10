@@ -2,6 +2,9 @@
 
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
+#include <TypeException.hpp>
+
+#include "TypeCheckingUtils.hpp"
 
 llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     // Assumption is that our types are two evaluated matricies of compatible
@@ -210,4 +213,12 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     // We create a basic block and inherit this
 
     return nullptr;
+}
+
+void AST::BinaryExprNode::semanticPass() {
+    this->lhs->semanticPass();
+    this->rhs->semanticPass();
+    Typing::MatrixType lhsTy = TypeCheckUtils::extractMatrixType(this->lhs);
+    Typing::MatrixType rhsTy = TypeCheckUtils::extractMatrixType(this->rhs);
+    TypeCheckUtils::assertMatchingTypes(lhsTy.getPrimitiveType(), rhsTy.getPrimitiveType());
 }

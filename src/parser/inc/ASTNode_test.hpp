@@ -1,9 +1,4 @@
-//
-// Created by matt on 24/11/2020.
-//
-
-#ifndef CUMAT_COMPILER_ASTNODE_TEST_HPP
-#define CUMAT_COMPILER_ASTNODE_TEST_HPP
+#pragma once
 
 #include <catch2/catch.hpp>
 #include <catch2/trompeloeil.hpp>
@@ -20,5 +15,3 @@ class NodeMock : public AST::Node {
 };
 
 }  // namespace AST::Test
-
-#endif  // CUMAT_COMPILER_ASTNODE_TEST_HPP

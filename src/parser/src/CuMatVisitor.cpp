@@ -28,10 +28,13 @@ std::shared_ptr<T> pConv(std::shared_ptr<AST::Node> n) {
 antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
     auto n = std::make_shared<AST::ProgramNode>();
     n->literalText = ctx->getText();
-    auto i = visit(ctx->imports());
-    auto d = visit(ctx->definitions());
 
-    n->addChild(std::move(i));
+    if (ctx->imports() != nullptr) {
+        auto i = visit(ctx->imports());
+        n->addChild(std::move(i));
+    }
+
+    auto d = visit(ctx->definitions());
     n->addChild(std::move(d));
 
     return std::move(n);

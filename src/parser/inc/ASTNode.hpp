@@ -1,6 +1,3 @@
-//
-// Created by tobyl on 12/11/2020.
-//
 #pragma once
 
 #include <llvm/ADT/StringRef.h>
@@ -13,6 +10,7 @@
 #include <vector>
 
 #include "CodeGenUtils.hpp"
+#include "Type.hpp"
 
 namespace AST {
 class Node {

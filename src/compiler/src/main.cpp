@@ -130,11 +130,14 @@ int main(int argc, char* argv[], char* envp[]) {
         std::cout << std::get<1>(tree)->literalText << std::endl;
     }
 
+
+
     llvm::LLVMContext TheContext;
     for (const auto& tree : parseTrees) {
         llvm::Module TheModule(std::get<0>(tree), TheContext);
         llvm::IRBuilder<> Builder(TheContext);
         Utils::SymbolTable symbolTable;
+        std::get<1>(tree)->semanticPass();
 
         // Context containing the module and IR Builder
         Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable};

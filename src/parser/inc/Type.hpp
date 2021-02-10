@@ -1,7 +1,3 @@
-//
-// Created by tobyl on 14/11/2020.
-//
-
 #pragma once
 
 #include <llvm/IR/Module.h>
@@ -49,6 +45,7 @@ class MatrixType {
     llvm::Type* getLLVMType(Utils::IRContext* context);
 
     llvm::Type* getLLVMPrimitiveType(Utils::IRContext* context) const;
+    PRIMITIVE getPrimitiveType() const;
 };
 
 class GenericType {

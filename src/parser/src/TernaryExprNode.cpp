@@ -1,6 +1,7 @@
 #include "TernaryExprNode.hpp"
 
 #include "CodeGenUtils.hpp"
+#include "TypeException.hpp"
 
 llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
     // Generate the return value for the evaluate condition
@@ -12,7 +13,11 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
     // Fetch value from matrix memory
     llvm::Value* dataVal = Utils::getValueFromPointerOffset(context, matRecord.dataPtr, 0, "dataVal");
 
-    if (!dataVal->getType()->isIntegerTy(1)) return nullptr;  // TODO: Handle errors gracefully
+    if (!dataVal->getType()->isIntegerTy(1)) {
+        llvm::Type* boolType = static_cast<llvm::Type*>(llvm::Type::getInt1Ty(context->module->getContext()));
+        Typing::wrongTypeException("Type error in Ternary Expression", boolType, dataVal->getType());
+        std::exit(2);
+    }  // TODO: Handle errors gracefully
     conditionEval = context->Builder->CreateICmpNE(
         dataVal, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(1, 0, true)), "ifcond");
 
@@ -40,4 +45,10 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
     context->Builder->SetInsertPoint(mergeBB);
 
     return truthyVal;
+}
+
+void AST::TernaryExprNode::semanticPass() {
+    this->condition->semanticPass();
+    this->truthy->semanticPass();
+    this->falsey->semanticPass();
 }
