@@ -85,9 +85,12 @@ void AST::UnaryExprNode::semanticPass() {
     switch (this->op) {
         case AST::UNA_OPERATORS::NEG:
             TypeCheckUtils::assertNumericType(primType);
+            break;
         case AST::UNA_OPERATORS::BNOT:
             TypeCheckUtils::assertBooleanType(primType);
+            break;
         case AST::UNA_OPERATORS::LNOT:
             TypeCheckUtils::assertLogicalType(primType);
     }
+    this->type = std::make_shared<Typing::Type>(operandType);
 }
