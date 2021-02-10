@@ -31,7 +31,7 @@ antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
     auto i = visit(ctx->imports());
     auto d = visit(ctx->definitions());
 
-    n->addChild(std::move(i));
+//    n->addChild(std::move(i));
     n->addChild(std::move(d));
 
     return std::move(n);
