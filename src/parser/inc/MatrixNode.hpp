@@ -13,7 +13,7 @@
 namespace AST {
 class MatrixNode : public ExprNode {
    public:
-    std::vector<std::vector<std::shared_ptr<ExprNode>>> data;
+    std::vector<std::shared_ptr<ExprNode>> data;
 
     std::vector<uint> getDimensions();
     llvm::APInt genAPIntInstance(int numElements);

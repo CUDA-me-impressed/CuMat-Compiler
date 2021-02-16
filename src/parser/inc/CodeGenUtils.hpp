@@ -51,6 +51,9 @@ llvm::Value* getValueFromPointerOffset(IRContext* context, llvm::Value* ptr, int
 
 llvm::Value* getValueFromPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue,
                                             const std::string& name);
+
+llvm::Value* getPointerAddressFromOffset(IRContext* context, llvm::Value* ptr, llvm::Value* offset);
+
 llvm::Value* getValueFromIndex(IRContext* context, llvm::Value* ptr, std::shared_ptr<Typing::MatrixType> mat,
                                const std::vector<llvm::Value*>& indicies);
 llvm::Value* getValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* offset, const std::string& name);

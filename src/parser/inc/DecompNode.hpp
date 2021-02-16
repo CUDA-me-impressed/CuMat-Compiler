@@ -11,6 +11,7 @@ class DecompNode : public Node {
     std::string lVal;
     std::variant<std::string, std::shared_ptr<DecompNode>> rVal;
 
-    void semanticPass() override;
+	void semanticPass() override;
+    llvm::Value* codeGen(Utils::IRContext* context) override;
 };
 }  // namespace AST

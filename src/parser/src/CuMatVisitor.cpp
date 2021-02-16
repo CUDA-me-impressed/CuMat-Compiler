@@ -564,15 +564,12 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
     mN->literalText = ctx->getText();
     Typing::MatrixType t;
     std::vector<uint> dimensions;
-    std::vector<std::vector<std::shared_ptr<AST::ExprNode>>> values;
+    std::vector<std::shared_ptr<AST::ExprNode>> values;
     int inDimension = 0;
     dimensions.push_back(ctx->rowliteral()->cols.size());  // First size
-    std::vector<std::shared_ptr<AST::ExprNode>> valueContainer;
     for (auto exp : ctx->rowliteral()->cols) {
-        valueContainer.emplace_back(std::move(visit(exp)));
+        values.emplace_back(std::move(visit(exp)));
     }
-    values.emplace_back(std::move(valueContainer));
-    valueContainer.clear();
     if (!ctx->dimensionLiteral().empty()) {
         for (auto dim : ctx->dimensionLiteral()) {
             auto dimension = dim->BSLASH().size();
@@ -591,10 +588,8 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
             }
 
             for (auto exp : dim->rowliteral()->cols) {
-                valueContainer.emplace_back(std::move(visit(exp)));
+                values.emplace_back(std::move(visit(exp)));
             }
-            values.emplace_back(std::move(valueContainer));
-            valueContainer.clear();
         }
     }
 
