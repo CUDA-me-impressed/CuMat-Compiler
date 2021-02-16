@@ -1,9 +1,5 @@
 #include "DecompNode.hpp"
 
-void AST::DecompNode::semanticPass() {
-
-}
-
 llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {
 //    if (auto variableName = std::get_if<std::string>(&rVal)) {
 //        // Get out the dimensionality -> We assume we have a matrix in the rval
@@ -44,4 +40,10 @@ llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {
 //
 //        return nullptr;
 //    }
+}
+
+
+void AST::DecompNode::semanticPass() {
+
+}
 }
