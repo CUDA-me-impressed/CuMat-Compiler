@@ -13,5 +13,7 @@ class VariableNode : public ExprNode {
     std::shared_ptr<SliceNode> variableSlicing;
     void semanticPass() override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
+
+    llvm::Value* handleSlicing(Utils::IRContext* context, llvm::Value* val);
 };
 }  // namespace AST

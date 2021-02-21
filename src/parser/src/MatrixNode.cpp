@@ -47,6 +47,7 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
     // Assume every expr is an evaluated matrix
     auto matAlloc = Utils::createMatrix(context, *this->type);
     auto matRecord = Utils::getMatrixFromPointer(context, matAlloc);
+
     // Compress literal nodes to matrix representation
     for (int i = 0; i < this->data.size(); i++) {
         auto literal = this->data.at(i);
@@ -55,7 +56,13 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
         // Get the value at the pointer
         llvm::Value* literalLLVVal = Utils::getValueFromPointerOffset(context, literalRecord.dataPtr, 0, "literalVal");
         Utils::insertValueAtPointerOffset(context, matRecord.dataPtr, 0, literalLLVVal);
+
+        // Clean up the allocation for the literal, else memory leak big time!
+        auto* freeMat = llvm::CallInst::CreateFree(literalLLVMMat, context->Builder->GetInsertBlock());
+        context->Builder->Insert(freeMat, "matFree");
     }
+
+
     return matAlloc;
 }
 
