@@ -28,7 +28,7 @@ llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::AssignmentNode::semanticPass() {
-    this->lVal->semanticPass();
+    //this->lVal->semanticPass();
     this->rVal->semanticPass();
 }
 llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::shared_ptr<DecompNode> decomp,

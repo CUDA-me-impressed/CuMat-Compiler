@@ -272,3 +272,23 @@ llvm::AllocaInst* Utils::CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, cons
                            Builder.GetInsertBlock()->getParent()->getEntryBlock().begin());
     return TmpB.CreateAlloca(Type, nullptr, VarName);
 }
+
+/**
+ * Outputs the offset for a given index and matrix of arbitrary dimension
+ * https://en.wikipedia.org/wiki/Row-_and_column-major_order
+ * @param dimensions
+ * @param index
+ * @return
+ */
+int getRealIndexOffset(std::vector<int> dimensions, std::vector<int> index){
+    int offset = 0;
+    for(int k = 1; k <= dimensions.size(); k++){
+        int partialSum = 1;
+        for(int l = k+1; l < dimensions.size(); l++){
+            partialSum *= dimensions.at(l);
+        }
+        partialSum *= index.at(k);
+        offset += partialSum;
+    }
+    return offset;
+}

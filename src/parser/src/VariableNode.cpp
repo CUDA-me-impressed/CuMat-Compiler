@@ -1,4 +1,5 @@
 #include "VariableNode.hpp"
+#include <valarray>
 
 llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
     llvm::Value* storeVal =
@@ -22,7 +23,7 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
     std::vector<std::pair<int, int>> prevIndicies;
     std::vector<std::variant<bool, std::vector<int>>> slicesVec = variableSlicing->slices;
 
-    std::shared_ptr<Typing::MatrixType> matType = std::dynamic_pointer_cast<Typing::MatrixType>(this->type);
+    Typing::MatrixType* matType = std::get_if<Typing::MatrixType>(&*this->type);
     if (!matType) {
         throw std::runtime_error("[Internal Error] Attempt to slice non-matrix type propagated to codegen");
     }
@@ -42,12 +43,24 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
         }
     }
 
-    // Take the maximal set of the matrix
-    prevIndicies.emplace_back(0, matType->getLength() - 1);
-
-    // We wish to generate a restricted set of indicies from the last dimension first
-    auto rit = slices.rbegin();
-    for (; rit != slices.rend(); ++rit) {
+    // Lloyd's algorithm to calculate indicies from slices
+    std::vector<int> firstSlices;
+    std::transform(slices.begin(), slices.end(), std::back_inserter(firstSlices),
+                   [] (std::pair<int,int> slice) -> int { return slice.first; });
+    std::vector<std::vector<int>> groupIndicies;
+    groupIndicies.emplace_back(firstSlices);
+    int groupLength = slices[0].second - slices[0].first + 1;
+    for(int i = 1; i < slices.size(); i++){
+        int number = slices[i].second - slices[i].first +1;
+        std::vector<std::vector<int>> lastGroupIndicies;
+        std::copy(groupIndicies.begin(), groupIndicies.end(), std::back_inserter(lastGroupIndicies));
+        groupIndicies = {};
+        for(int x = 0; x < number; x++){
+            for(auto gi : groupIndicies){
+                int j = 0;
+                std::transform(gi.begin(), gi.end(), gi.begin(), [&](int c) -> int {j++; return (j==i) ? c + x : c;});
+            }
+        }
     }
     return nullptr;
 }
