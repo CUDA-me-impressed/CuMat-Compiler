@@ -47,8 +47,8 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
     return truthyVal;
 }
 
-void AST::TernaryExprNode::semanticPass() {
-    this->condition->semanticPass();
-    this->truthy->semanticPass();
-    this->falsey->semanticPass();
+void AST::TernaryExprNode::semanticPass(Utils::IRContext* context) {
+    this->condition->semanticPass(context);
+    this->truthy->semanticPass(context);
+    this->falsey->semanticPass(context);
 }

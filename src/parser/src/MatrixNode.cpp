@@ -62,7 +62,6 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
         context->Builder->Insert(freeMat, "matFree");
     }
 
-
     return matAlloc;
 }
 
@@ -86,9 +85,9 @@ std::vector<uint> AST::MatrixNode::getDimensions() {
     return matType ? matType->dimensions : std::vector<uint>();
 }
 
-void AST::MatrixNode::semanticPass() {
+void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
     //    std::cout << "Performing Matrix Semantic Pass" << std::endl;
-    for (auto const& child : this->children) child->semanticPass();
+    for (auto const& child : this->children) child->semanticPass(context);
     bool sameType = true;
     bool zeroRank = true;
     Typing::PRIMITIVE primType = Typing::PRIMITIVE::NONE;

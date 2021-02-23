@@ -21,6 +21,6 @@ class MatrixNode : public ExprNode {
     llvm::APFloat genAPFloatInstance(int numElements);
 
     llvm::Value* codeGen(Utils::IRContext* context) override;
-    void semanticPass() override;
+    void semanticPass(Utils::IRContext* context) override;
 };
 }  // namespace AST

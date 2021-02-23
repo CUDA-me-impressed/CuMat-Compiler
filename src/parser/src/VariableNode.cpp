@@ -16,9 +16,9 @@ llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
     return storeVal;
 }
 
-void AST::VariableNode::semanticPass() {
+void AST::VariableNode::semanticPass(Utils::IRContext* context) {
     if (this->variableSlicing) {
-        this->variableSlicing->semanticPass();
+        this->variableSlicing->semanticPass(context);
     } else {
         throw std::runtime_error("[Internal Error] Variable slicing not generated correctly!");
     }
@@ -135,7 +135,6 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
         Builder->CreateStore(next, iterator);
 
         // Copy the data from the real to the new - Do this after the increment so we don't need to recompute
-
 
         // Test if completed list
         auto* done = Builder->CreateICmpUGE(next, offsetSizeLLVM);

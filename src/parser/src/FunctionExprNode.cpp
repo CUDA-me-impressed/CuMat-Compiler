@@ -39,7 +39,7 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
     return callRet;
 }
 
-void AST::FunctionExprNode::semanticPass() {
-    this->nonAppliedFunction->semanticPass();
-    for (auto const& arg : this->args) arg->semanticPass();
+void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
+    this->nonAppliedFunction->semanticPass(context);
+    for (auto const& arg : this->args) arg->semanticPass(context);
 }

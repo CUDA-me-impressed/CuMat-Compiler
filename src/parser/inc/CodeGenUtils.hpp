@@ -62,5 +62,5 @@ void setValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* o
 
 llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type);
 
-int getRealIndexOffset(const std::vector<uint> &dimensions, const std::vector<int> &index);
+int getRealIndexOffset(const std::vector<uint>& dimensions, const std::vector<int>& index);
 }  // namespace Utils

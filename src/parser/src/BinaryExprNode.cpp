@@ -215,9 +215,9 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     return nullptr;
 }
 // op = PLUS, MINUS, MUL, DIV, LOR, LAND, LT, GT, LTE, GTE, EQ, NEQ, BAND, BOR, POW, MATM, CHAIN
-void AST::BinaryExprNode::semanticPass() {
-    this->lhs->semanticPass();
-    this->rhs->semanticPass();
+void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
+    this->lhs->semanticPass(context);
+    this->rhs->semanticPass(context);
     Typing::MatrixType lhsTy = TypeCheckUtils::extractMatrixType(this->lhs);
     Typing::MatrixType rhsTy = TypeCheckUtils::extractMatrixType(this->rhs);
     TypeCheckUtils::assertCompatibleTypes(lhsTy.getPrimitiveType(), rhsTy.getPrimitiveType());
