@@ -28,7 +28,7 @@ llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::AssignmentNode::semanticPass() {
-    //this->lVal->semanticPass();
+    this->lVal->semanticPass();
     this->rVal->semanticPass();
 }
 llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::shared_ptr<DecompNode> decomp,
@@ -37,7 +37,7 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
     auto matType = std::get_if<Typing::MatrixType>(&*this->rVal->type);
     if(!matType) {
         std::cout << "[Internal Warning] Cannot find type information for rVal with variable " << name << std::endl;
-        // Attempt correction
+        // Attempt correction TODO lol
     }
 
     // Create the l and r value types for the decomposition
