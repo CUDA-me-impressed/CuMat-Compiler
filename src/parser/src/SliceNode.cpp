@@ -8,3 +8,4 @@ llvm::Value* AST::SliceNode::codeGen(Utils::IRContext* context) {
 //    }
     return Node::codeGen(context);
 }
+void AST::SliceNode::semanticPass(Utils::IRContext* context) { Node::semanticPass(context); }

@@ -19,7 +19,7 @@ class BinaryExprNode : public ExprNode {
 
     llvm::Value* applyOperatorToOperands(Utils::IRContext* context, const AST::BIN_OPERATORS& op, llvm::Value* lhs,
                                          llvm::Value* rhs, const std::string& name = "");
-    void semanticPass() override;
+    void semanticPass(Utils::IRContext* context) override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
     // Operation specific codegen
     void elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,

@@ -11,8 +11,8 @@ void Node::addChild(std::shared_ptr<Node> n) { this->children.push_back(std::mov
 
 std::string Node::toString() const { return this->literalText; }
 
-void Node::semanticPass() {
-    for (auto const& child : this->children) child->semanticPass();
+void Node::semanticPass(Utils::IRContext* context) {
+    for (auto const& child : this->children) child->semanticPass(context);
 }
 
 llvm::Value* Node::codeGen(Utils::IRContext* context) {

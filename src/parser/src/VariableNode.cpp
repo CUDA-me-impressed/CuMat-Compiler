@@ -11,9 +11,9 @@ llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
     return storeVal;
 }
 
-void AST::VariableNode::semanticPass() {
+void AST::VariableNode::semanticPass(Utils::IRContext* context) {
     if (this->variableSlicing) {
-        this->variableSlicing->semanticPass();
+        this->variableSlicing->semanticPass(context);
     } else {
         throw std::runtime_error("[Internal Error] Variable slicing not generated correctly!");
     }

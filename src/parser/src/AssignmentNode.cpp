@@ -27,9 +27,18 @@ llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
     }
 }
 
-void AST::AssignmentNode::semanticPass() {
-    //this->lVal->semanticPass();
-    this->rVal->semanticPass();
+void AST::AssignmentNode::semanticPass(Utils::IRContext* context) {
+    this->rVal->semanticPass(context);
+
+    if(this->lVal != nullptr) {
+        this->lVal->semanticPass(context);
+    } else {
+        if(context->symbolTable->inSymbolTable(this->name,context->symbolTable->getCurrentFunction()))
+        {
+            throw std::runtime_error("Attempting to redefine variable: " + this->name);
+        }
+        context->symbolTable->setValue(this->rVal->type, nullptr,this->name,context->symbolTable->getCurrentFunction());
+    }
 }
 llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::shared_ptr<DecompNode> decomp,
                                                llvm::Value* matHeader) {

@@ -78,8 +78,8 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
     return matAlloc;
 }
 
-void AST::UnaryExprNode::semanticPass() {
-    this->operand->semanticPass();
+void AST::UnaryExprNode::semanticPass(Utils::IRContext* context) {
+    this->operand->semanticPass(context);
     Typing::MatrixType operandType = TypeCheckUtils::extractMatrixType(this->operand);
     Typing::PRIMITIVE primType = operandType.getPrimitiveType();
     switch (this->op) {

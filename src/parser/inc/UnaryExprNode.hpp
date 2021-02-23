@@ -11,7 +11,7 @@ class UnaryExprNode : public ExprNode {
    public:
     UNA_OPERATORS op;
     std::shared_ptr<ExprNode> operand;
-    void semanticPass() override;
+    void semanticPass(Utils::IRContext* context) override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
 };
 }  // namespace AST
