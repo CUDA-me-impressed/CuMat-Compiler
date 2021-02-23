@@ -280,7 +280,7 @@ llvm::AllocaInst* Utils::CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, cons
  * @param index
  * @return
  */
-int getRealIndexOffset(std::vector<int> dimensions, std::vector<int> index){
+int getRealIndexOffset(std::vector<uint> dimensions, std::vector<int> index){
     int offset = 0;
     for(int k = 1; k <= dimensions.size(); k++){
         int partialSum = 1;

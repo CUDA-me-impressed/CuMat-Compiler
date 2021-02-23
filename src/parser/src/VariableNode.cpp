@@ -1,4 +1,5 @@
 #include "VariableNode.hpp"
+#include <utility>
 #include <valarray>
 
 llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
@@ -45,13 +46,18 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
 
     // Lloyd's algorithm to calculate indicies from slices
     std::vector<int> firstSlices;
+    std::vector<uint> slicedMatrixDimensions;
+
     std::transform(slices.begin(), slices.end(), std::back_inserter(firstSlices),
                    [] (std::pair<int,int> slice) -> int { return slice.first; });
     std::vector<std::vector<int>> groupIndicies;
     groupIndicies.emplace_back(firstSlices);
     int groupLength = slices[0].second - slices[0].first + 1;
-    for(int i = 1; i < slices.size(); i++){
-        int number = slices[i].second - slices[i].first +1;
+    for(int i = 0; i < slices.size(); i++){
+        // Update the size of the slice dimensions
+        slicedMatrixDimensions.emplace_back(abs(slices[i].second - slices[i].first));
+        if(i == 0) continue;
+        int number = abs(slices[i].second - slices[i].first) +1;
         std::vector<std::vector<int>> lastGroupIndicies;
         std::copy(groupIndicies.begin(), groupIndicies.end(), std::back_inserter(lastGroupIndicies));
         groupIndicies = {};
@@ -62,5 +68,18 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
             }
         }
     }
+
+    // We need to convert all of the values into definitive offsets
+    std::vector<int> offsets;
+    std::transform(groupIndicies.begin(), groupIndicies.end(), std::back_inserter(offsets),
+                   [&](std::vector<int> index) -> int { return Utils::getRealIndexOffset(matType->dimensions, std::move(index)); });
+
+
+    // Yeah, this will generate ugly as hell IR, but an optimisation pass will solve that (hopefully)
+
+
+
+
+
     return nullptr;
 }
