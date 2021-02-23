@@ -16,8 +16,13 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     llvm::FunctionType* ft = llvm::FunctionType::get(mtType, argTypes, false);
     llvm::Function* func = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, this->funcName, context->module);
 
+    context->symbolTable->setFunctionData(funcName, typesRaw, func);
+    context->function = func;
+
     auto* funcRet = this->block->codeGen(context);
 
+    // Pop the function as we leave the definition of the code
+    context->symbolTable->escapeFunction();
     Utils::setNVPTXFunctionType(context, this->funcName, Utils::FunctionCUDAType::Host, func);
     return funcRet;
 }
