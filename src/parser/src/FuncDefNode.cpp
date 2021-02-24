@@ -35,10 +35,12 @@ std::string AST::FuncDefNode::toTree(const std::string& prefix, const std::strin
     using namespace Tree;
     std::string str{prefix + std::string{"Function Definition: "} + funcName + " ("};
     for (auto const& node : this->parameters) {
+        str += printType(*std::get<1>(node)) + " " + std::get<0>(node);
         if (&node != &this->parameters.back()) {
-            str +=
-        } else
-            str +=
+            str += ", ";
+        }
     }
+    str += ")->" + printType(*returnType) + "\n";
+    str += block->toTree(childPrefix + L, childPrefix + B);
     return str;
 }

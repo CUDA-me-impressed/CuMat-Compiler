@@ -77,6 +77,20 @@ llvm::Value* AST::LiteralNode<std::string>::codeGen(Utils::IRContext* context) {
     return nullptr;
 }
 
+// Yes, I could have template meta-programmed this to be general, but that's nasty
+template <>
+std::string AST::LiteralNode<float>::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    return prefix + std::to_string(value) + '\n';
+}
+template <>
+std::string AST::LiteralNode<int>::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    return prefix + std::to_string(value) + '\n';
+}
+template <>
+std::string AST::LiteralNode<std::string>::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    return prefix + value + '\n';
+}
+
 template class AST::LiteralNode<float>;
 template class AST::LiteralNode<int>;
 template class AST::LiteralNode<std::string>;

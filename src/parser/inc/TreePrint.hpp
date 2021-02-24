@@ -54,7 +54,23 @@ std::string printType(const Typing::Type& type) {
                            }
                            return ret;
                        },
-                       [](const Typing::FunctionType& arg) -> std::string { return "Function Type"; },
+                       [](const Typing::FunctionType& arg) -> std::string {
+                           std::string ret{};
+                           for (const auto& i : arg.parameters) {
+                               if (&i == &arg.parameters.front()) {
+                                   ret += "(";
+                               }
+                               ret += printType(*i);
+                               if (&i == &arg.parameters.back()) {
+                                   ret += ")";
+                               } else {
+                                   ret += ", ";
+                               }
+                           }
+                           ret += "->";
+                           ret += printType(*arg.returnType);
+                           return ret;
+                       },
                        [](const Typing::GenericType& arg) -> std::string { return std::string{"<"} + arg.name + ">"; },
                    },
                    type);

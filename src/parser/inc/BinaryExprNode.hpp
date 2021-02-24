@@ -21,7 +21,7 @@ class BinaryExprNode : public ExprNode {
 
     llvm::Value* applyOperatorToOperands(Utils::IRContext* context, const AST::BIN_OPERATORS& op, llvm::Value* lhs,
                                          llvm::Value* rhs, const std::string& name = "");
-    void dimensionPass(Analysis::NameTable* nt) override;
+    void dimensionPass(Analysis::NameTable* nt) override{};
     llvm::Value* codeGen(Utils::IRContext* context) override;
 
     // Operation specific codegen

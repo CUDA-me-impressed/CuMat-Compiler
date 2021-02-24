@@ -3,6 +3,7 @@
 #include <map>
 
 #include "CodeGenUtils.hpp"
+#include "TreePrint.hpp"
 
 llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
     // We will attempt to retrieve the function object from symbol table via reference to name + arg type
@@ -37,4 +38,19 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
     // Call the function with values
     auto callRet = context->Builder->CreateCall(func, argVals, "calltmp");
     return callRet;
+}
+
+std::string AST::FunctionExprNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    using namespace Tree;
+    std::string str{prefix + std::string{"Function Application"}};
+    if (!funcName.empty()) {
+        str += ": " + funcName;
+    }
+    for (auto const& node : this->args) {
+        if (&node != &this->args.back()) {
+            str += node->toTree(childPrefix + T, childPrefix + I);
+        } else
+            str += node->toTree(childPrefix + L, childPrefix + B);
+    }
+    return str;
 }

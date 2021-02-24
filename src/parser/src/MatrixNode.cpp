@@ -64,3 +64,6 @@ std::vector<int> AST::MatrixNode::getDimensions() {
     // TODO: Fix with Thomas's dimension change
     return std::vector<int>({static_cast<int>(data.size()), static_cast<int>(data[0].size())});
 }
+std::string AST::MatrixNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    return ExprNode::toTree(prefix, childPrefix);
+}
