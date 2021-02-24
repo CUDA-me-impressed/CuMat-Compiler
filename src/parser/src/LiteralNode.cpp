@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+#include "TypeCheckingUtils.hpp"
+
 /**
  * Returns an LLVM Constant type which we use to populate data entires
  * Literals consist of the lowest form of data structure we can have within
@@ -52,6 +54,27 @@ llvm::Value* AST::LiteralNode<T>::codeGen(Utils::IRContext* context) {
 }*/
 
 template <>
+void AST::LiteralNode<int>::semanticPass(Utils::IRContext* context) {
+    for (auto const& child : this->children) child->semanticPass(context);
+    // std::shared_ptr<Typing::Type> type = makeGenericType("int");
+    // this->setType(type);
+}
+
+template <>
+void AST::LiteralNode<float>::semanticPass(Utils::IRContext* context) {
+    for (auto const& child : this->children) child->semanticPass(context);
+    // std::shared_ptr<Typing::Type> type = makeGenericType("float");
+    // this->setType(type);
+}
+
+template <>
+void AST::LiteralNode<std::string>::semanticPass(Utils::IRContext* context) {
+    for (auto const& child : this->children) child->semanticPass(context);
+    // std::shared_ptr<Typing::Type> type = makeGenericType("string");
+    // this->setType(type);
+}
+
+template <>
 llvm::Value* AST::LiteralNode<int>::codeGen(Utils::IRContext* context) {
     if (std::get<Typing::MatrixType>(*type).primType != Typing::PRIMITIVE::INT) return nullptr;
 
@@ -92,5 +115,7 @@ std::string AST::LiteralNode<std::string>::toTree(const std::string& prefix, con
 }
 
 template class AST::LiteralNode<float>;
+
 template class AST::LiteralNode<int>;
+
 template class AST::LiteralNode<std::string>;

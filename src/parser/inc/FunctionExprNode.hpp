@@ -17,6 +17,7 @@ class FunctionExprNode : public ExprNode {
     std::string funcName{};
     std::shared_ptr<ExprNode> nonAppliedFunction{};
     std::vector<std::shared_ptr<ExprNode>> args;
+    void semanticPass(Utils::IRContext* context) override;
 
     void dimensionPass(Analysis::NameTable* nt) override{};
     llvm::Value* codeGen(Utils::IRContext* context) override;

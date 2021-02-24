@@ -12,7 +12,7 @@ class BlockNode : public Node {
     std::string callingFunctionName;
     std::vector<std::shared_ptr<AssignmentNode>> assignments;
     std::shared_ptr<ExprNode> returnExpr;
-
+    void semanticPass(Utils::IRContext* context) override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
 
     [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override;

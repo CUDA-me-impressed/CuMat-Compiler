@@ -2,6 +2,9 @@
 
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
+#include <TypeException.hpp>
+
+#include "TypeCheckingUtils.hpp"
 
 #include "TreePrint.hpp"
 
@@ -114,6 +117,7 @@ llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* cont
         }
     }
 }
+
 llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std::shared_ptr<Typing::MatrixType> lhsMat,
                                                  std::shared_ptr<Typing::MatrixType> rhsMat, llvm::Value* lhsVal,
                                                  llvm::Value* rhsVal) {
@@ -213,6 +217,30 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     // We create a basic block and inherit this
 
     return nullptr;
+}
+// op = PLUS, MINUS, MUL, DIV, LOR, LAND, LT, GT, LTE, GTE, EQ, NEQ, BAND, BOR, POW, MATM, CHAIN
+void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
+    this->lhs->semanticPass(context);
+    this->rhs->semanticPass(context);
+    Typing::MatrixType lhsTy = TypeCheckUtils::extractMatrixType(this->lhs);
+    Typing::MatrixType rhsTy = TypeCheckUtils::extractMatrixType(this->rhs);
+    TypeCheckUtils::assertCompatibleTypes(lhsTy.getPrimitiveType(), rhsTy.getPrimitiveType());
+    switch (this->op) {
+        case AST::BIN_OPERATORS::BAND:
+        case AST::BIN_OPERATORS::BOR:
+            TypeCheckUtils::assertBooleanType(lhsTy.getPrimitiveType());
+            TypeCheckUtils::assertBooleanType(rhsTy.getPrimitiveType());
+            this->type = std::make_shared<Typing::Type>(lhsTy);
+            break;
+        case AST::BIN_OPERATORS::PLUS:
+        case AST::BIN_OPERATORS::MINUS:
+        case AST::BIN_OPERATORS::MUL:
+        case AST::BIN_OPERATORS::DIV:
+        case AST::BIN_OPERATORS::POW:
+            TypeCheckUtils::assertNumericType(lhsTy.getPrimitiveType());
+            TypeCheckUtils::assertNumericType(rhsTy.getPrimitiveType());
+            break;
+    }
 }
 
 const char* op_name(BIN_OPERATORS i) { return BIN_OP_ENUM_STRING[(int)i]; }

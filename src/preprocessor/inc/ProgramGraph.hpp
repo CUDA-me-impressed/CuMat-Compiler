@@ -14,7 +14,9 @@ class ProgramFileNode {
    public:
     ProgramFileNode(std::string name, std::vector<std::string>& fileContents)
         : name(name), fileContents(fileContents) {}
+
     void expand(std::unique_ptr<ProgramGraph> graph);
+
     bool canExpand();
 
     std::vector<std::string> fileContents;
@@ -32,8 +34,11 @@ class ProgramGraph {
 
     // Operations on the graph
     void expandAllUnexpanded();
+
     void addInclude(std::shared_ptr<ProgramFileNode> src, std::shared_ptr<ProgramFileNode> dest);
+
     std::vector<std::shared_ptr<ProgramFileNode>> topologicalSort();
+
     void generateCompileUnits(std::vector<std::vector<std::shared_ptr<ProgramFileNode>>>& compileUnits);
 
    private:

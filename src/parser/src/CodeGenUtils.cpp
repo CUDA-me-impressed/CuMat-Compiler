@@ -206,6 +206,7 @@ llvm::Value* Utils::getValueFromPointerOffset(Utils::IRContext* context, llvm::V
     auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset});
     return context->Builder->CreateLoad(offsetPtr, name);
 }
+
 llvm::Value* Utils::getValueFromPointerOffsetValue(Utils::IRContext* context, llvm::Value* ptr,
                                                    llvm::Value* offsetValue, const std::string& name) {
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
@@ -218,6 +219,7 @@ llvm::Value* Utils::getValueFromMatrixPtr(Utils::IRContext* context, llvm::Value
     auto* dataPtr = getValueFromPointerOffset(context, mPtr, 0, "dataPtr");
     return getValueFromPointerOffsetValue(context, dataPtr, offset, "matValue");
 }
+
 /**
  * We hardcode for N = 1,2,3 and then provide general llvm code for N > 3
  * @param context
@@ -269,4 +271,24 @@ llvm::AllocaInst* Utils::CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, cons
     llvm::IRBuilder<> TmpB(&Builder.GetInsertBlock()->getParent()->getEntryBlock(),
                            Builder.GetInsertBlock()->getParent()->getEntryBlock().begin());
     return TmpB.CreateAlloca(Type, nullptr, VarName);
+}
+
+/**
+ * Outputs the offset for a given index and matrix of arbitrary dimension
+ * https://en.wikipedia.org/wiki/Row-_and_column-major_order
+ * @param dimensions
+ * @param index
+ * @return
+ */
+int getRealIndexOffset(std::vector<int> dimensions, std::vector<int> index){
+    int offset = 0;
+    for(int k = 1; k <= dimensions.size(); k++){
+        int partialSum = 1;
+        for(int l = k+1; l < dimensions.size(); l++){
+            partialSum *= dimensions.at(l);
+        }
+        partialSum *= index.at(k);
+        offset += partialSum;
+    }
+    return offset;
 }

@@ -130,14 +130,17 @@ int main(int argc, char* argv[], char* envp[]) {
         std::cout << std::get<1>(tree)->literalText << std::endl;
     }
 
+
+
     llvm::LLVMContext TheContext;
     for (const auto& tree : parseTrees) {
-        llvm::Module TheModule("CuMat-" + std::get<0>(tree), TheContext);
+        llvm::Module TheModule(std::get<0>(tree), TheContext);
         llvm::IRBuilder<> Builder(TheContext);
         Utils::SymbolTable symbolTable;
 
-        // Context containing the module and IR Builder
+        // Context containing the module and IR Builder AND SYMBOL TABLE
         Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable};
+        std::get<1>(tree)->semanticPass(&treeContext);
         treeContext.symbolTable->createNVVMMetadata(&treeContext);  // TODO: Replace when program node codegen done
         std::get<1>(tree)->codeGen(&treeContext);
 

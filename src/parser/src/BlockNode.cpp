@@ -20,6 +20,10 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
     return retVal;
 }
 
+void AST::BlockNode::semanticPass(Utils::IRContext* context) {
+    this->returnExpr->semanticPass(context);
+    for (auto const& assignment : this->assignments) assignment->semanticPass(context);
+}
 std::string AST::BlockNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
     using namespace Tree;
     std::string str{prefix + std::string{"Block\n"}};

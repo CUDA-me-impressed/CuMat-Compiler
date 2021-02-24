@@ -17,6 +17,7 @@ void SimpleErrorListener::syntaxError(antlr4::Recognizer* recognizer, antlr4::To
     s << "At " << line << ":" << charPositionInLine << ", error " << msg;
     throw std::invalid_argument(s.str());
 }
+
 std::shared_ptr<AST::Node> runParser(const std::string& fileName) {
     std::ifstream stream;
     stream.open(fileName);

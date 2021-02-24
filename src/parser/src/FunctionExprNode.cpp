@@ -40,6 +40,11 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
     return callRet;
 }
 
+void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
+    this->nonAppliedFunction->semanticPass(context);
+    for (auto const& arg : this->args) arg->semanticPass(context);
+}
+
 std::string AST::FunctionExprNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
     using namespace Tree;
     std::string str{prefix + std::string{"Function Application"}};
