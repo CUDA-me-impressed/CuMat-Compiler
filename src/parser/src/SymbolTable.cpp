@@ -161,3 +161,8 @@ void Utils::SymbolTable::createNVVMMetadata(Utils::IRContext* context) {
 }
 
 llvm::NamedMDNode* Utils::SymbolTable::getNVVMMetadata() { return nvvmMetadataNode; }
+
+void Utils::SymbolTable::enterFunction(const std::string & function, const std::string& funcNamespace) {
+    const std::string fullFuncName = funcNamespace + "::" + function;
+    this->functionStack.emplace_back(fullFuncName);
+}

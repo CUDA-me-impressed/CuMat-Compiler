@@ -137,10 +137,10 @@ int main(int argc, char* argv[], char* envp[]) {
         llvm::Module TheModule(std::get<0>(tree), TheContext);
         llvm::IRBuilder<> Builder(TheContext);
         Utils::SymbolTable symbolTable;
-        std::get<1>(tree)->semanticPass();
 
-        // Context containing the module and IR Builder
+        // Context containing the module and IR Builder AND SYMBOL TABLE
         Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable};
+        std::get<1>(tree)->semanticPass(&treeContext);
         treeContext.symbolTable->createNVVMMetadata(&treeContext);  // TODO: Replace when program node codegen done
         std::get<1>(tree)->codeGen(&treeContext);
 

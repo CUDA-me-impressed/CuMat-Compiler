@@ -215,9 +215,9 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     return nullptr;
 }
 // op = MATM, CHAIN
-void AST::BinaryExprNode::semanticPass() {
-    this->lhs->semanticPass();
-    this->rhs->semanticPass();
+void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
+    this->lhs->semanticPass(context);
+    this->rhs->semanticPass(context);
 
     Typing::MatrixType lhsTy = TypeCheckUtils::extractMatrixType(this->lhs);
     Typing::MatrixType rhsTy = TypeCheckUtils::extractMatrixType(this->rhs);

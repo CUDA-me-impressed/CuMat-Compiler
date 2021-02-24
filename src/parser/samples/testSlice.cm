@@ -1,0 +1,4 @@
+func int main {
+    a = [54,65, 85]
+    return a[0:1]
+}

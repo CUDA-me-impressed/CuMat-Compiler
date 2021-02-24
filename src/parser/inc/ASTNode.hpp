@@ -28,7 +28,7 @@ class Node {
     [[nodiscard]] std::string toString() const;
 
     // Default implementations just call the function on their children
-    virtual void semanticPass();
+    virtual void semanticPass(Utils::IRContext* context);
 
     virtual llvm::Value* codeGen(Utils::IRContext* context);
 };
