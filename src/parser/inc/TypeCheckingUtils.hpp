@@ -11,6 +11,7 @@ namespace TypeCheckUtils {
     };
 
     std::shared_ptr<Typing::Type> makeMatrixType(const std::vector<uint> dimensions, Typing::PRIMITIVE primType);
+    std::shared_ptr<Typing::Type> makeCustomType(std::string name, const std::vector<std::shared_ptr<Typing::Type>> attrs);
 
     bool isBool(Typing::PRIMITIVE ty);
     bool isInt(Typing::PRIMITIVE ty);

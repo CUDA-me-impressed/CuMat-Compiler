@@ -1,3 +1,5 @@
+#include <variant>
+
 #include "DecompNode.hpp"
 
 llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {

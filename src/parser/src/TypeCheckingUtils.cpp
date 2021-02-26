@@ -14,6 +14,14 @@ std::shared_ptr<Typing::Type> TypeCheckUtils::makeMatrixType(const std::vector<u
     return type;
 }
 
+std::shared_ptr<Typing::Type> makeCustomType(std::string name, const std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> attrs) {
+    auto ty = Typing::CustomType();
+    ty.name = name;
+    ty.attributes = attrs;
+    std::shared_ptr<Typing::Type> type = std::make_shared<Typing::Type>(ty);
+    return type;
+}
+
 bool TypeCheckUtils::isBool(Typing::PRIMITIVE ty) {
     return ty == Typing::PRIMITIVE::BOOL;
 }
