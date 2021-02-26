@@ -56,6 +56,7 @@ class GenericType {
 class CustomType {
    public:
     std::string name;
+    std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> attributes;
 };
 
 class FunctionType {
