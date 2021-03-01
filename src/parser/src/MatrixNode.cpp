@@ -62,7 +62,6 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
         context->Builder->Insert(freeMat, "matFree");
     }
 
-
     return matAlloc;
 }
 

@@ -135,9 +135,9 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
             index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{32, 1, true}), "sliceItt");
         Builder->CreateStore(next, iterator);
         // Copy the data from the real to the new - Do this after the increment so we don't need to recompute
-        context->Builder->CreateMemCpy(destPtr, slicedMatrixRecord.dataPtr->getPointerAlignment(context->module->getDataLayout()),
-                                       srcPtr, storedRecord.dataPtr->getPointerAlignment(context->module->getDataLayout()),
-                                       blockSize);
+        context->Builder->CreateMemCpy(
+            destPtr, slicedMatrixRecord.dataPtr->getPointerAlignment(context->module->getDataLayout()), srcPtr,
+            storedRecord.dataPtr->getPointerAlignment(context->module->getDataLayout()), blockSize);
         // Test if completed list
         auto* done = Builder->CreateICmpUGE(next, offsetSizeLLVM);
         Builder->CreateCondBr(done, endBB, copyBB);
