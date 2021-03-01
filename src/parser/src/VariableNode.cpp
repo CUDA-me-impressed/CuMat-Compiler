@@ -1,4 +1,6 @@
 #include "VariableNode.hpp"
+
+#include <numeric>
 #include <valarray>
 
 llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
@@ -12,6 +14,7 @@ llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::VariableNode::semanticPass(Utils::IRContext* context) {
+    this->type = context->symbolTable->getValue(this->name, context->symbolTable->getCurrentFunction())->type;
     if (this->variableSlicing) {
         this->variableSlicing->semanticPass(context);
     } else {
@@ -37,7 +40,7 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
         } else {
             auto sliceElement = *std::get_if<std::vector<int>>(&slicesVec.at(i));
             if (sliceElement.size() == 2) {
-                slices.emplace_back(sliceElement.at(0), sliceElement.emplace_back(1));
+                slices.emplace_back(sliceElement[0], sliceElement[1]);
             } else {
                 slices.emplace_back(sliceElement.at(0), matType->dimensions.at(i));
             }
@@ -65,8 +68,8 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
             for (auto gi : groupIndicies) {
                 int j = 0;
                 std::transform(gi.begin(), gi.end(), gi.begin(), [&](int c) -> int {
-                  j++;
-                  return (j == i) ? c + x : c;
+                    j++;
+                    return (j == i) ? c + x : c;
                 });
             }
         }
@@ -100,7 +103,7 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
     auto* slicedMatrix = Utils::createMatrix(context, *slicedMatrixType);
     // Get out llvm record of the new matrix
     auto slicedMatrixRecord = Utils::getMatrixFromPointer(context, slicedMatrix);
-
+    auto storedRecord = Utils::getMatrixFromPointer(context, val);
     /*
      * Create a LLVM loop to handle the copying from source matrix to destination matrix
      */
@@ -112,7 +115,7 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
     auto* iterator = new llvm::AllocaInst(offsetElementTy, 0, "", context->Builder->GetInsertBlock());
 
     llvm::ConstantInt* offsetSizeLLVM =
-        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, offsetNumElements, false));
+        llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(32, offsetNumElements, true));
     // Gives us the size of the block we are wishing to copy each time
     auto* blockSize = llvm::ConstantInt::get(context->module->getContext(),
                                              llvm::APInt(32, abs(slices[0].second - slices[0].first + 1)));
@@ -124,13 +127,17 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
 
         // Get the index out of the vector
         auto* realCurrentIndex = context->Builder->CreateExtractElement(emptyVec, index);
+        auto* srcPtr = Utils::getPointerAddressFromOffset(context, storedRecord.dataPtr, realCurrentIndex);
+        auto* destIndex = Builder->CreateMul(index, blockSize);
+        auto* destPtr = Utils::getPointerAddressFromOffset(context, slicedMatrixRecord.dataPtr, destIndex);
         // Update counter
         auto* next = Builder->CreateAdd(
-            index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "sliceItt");
+            index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{32, 1, true}), "sliceItt");
         Builder->CreateStore(next, iterator);
-
         // Copy the data from the real to the new - Do this after the increment so we don't need to recompute
-
+        context->Builder->CreateMemCpy(destPtr, slicedMatrixRecord.dataPtr->getPointerAlignment(context->module->getDataLayout()),
+                                       srcPtr, storedRecord.dataPtr->getPointerAlignment(context->module->getDataLayout()),
+                                       blockSize);
         // Test if completed list
         auto* done = Builder->CreateICmpUGE(next, offsetSizeLLVM);
         Builder->CreateCondBr(done, endBB, copyBB);
