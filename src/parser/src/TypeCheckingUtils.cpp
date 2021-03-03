@@ -5,7 +5,8 @@
 #include "ExprASTNode.hpp"
 #include "Type.hpp"
 
-std::shared_ptr<Typing::Type> TypeCheckUtils::makeMatrixType(const std::vector<uint> dimensions, Typing::PRIMITIVE primType) {
+std::shared_ptr<Typing::Type> TypeCheckUtils::makeMatrixType(const std::vector<uint> dimensions,
+                                                             Typing::PRIMITIVE primType) {
     auto ty = Typing::MatrixType();
     ty.dimensions = dimensions;
     ty.rank = dimensions.size();
