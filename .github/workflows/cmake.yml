@@ -29,7 +29,7 @@ jobs:
         # We'll use this as our working directory for all subsequent commands
         run: |
           sudo apt update
-          sudo apt install clang-10 clang-tidy-10 clang-format-10 openjdk-8-jre pkg-config uuid-dev
+          sudo apt install clang-11 clang-tidy-11 clang-format-11 openjdk-8-jre pkg-config uuid-dev
           sudo apt install llvm-10 llvm-10-dev
           sudo apt install llvm llvm-dev
           sudo apt remove llvm-6.0 llvm-8 llvm-9 llvm-6.0-dev llvm-8-dev llvm-9-dev
@@ -44,7 +44,7 @@ jobs:
         # Note the current convention is to use the -S and -B options here to specify source
         # and build directories, but this is only available with CMake 3.13 and higher.
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_C_COMPILER=clang-10 -DCMAKE_CXX_COMPILER=clang++-10
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_C_COMPILER=clang-11 -DCMAKE_CXX_COMPILER=clang++-11
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
@@ -55,12 +55,12 @@ jobs:
       - name: Clang-Format
         working-directory: ${{runner.workspace}}
         shell: bash
-        run: clang-format-10 -style=file -Werror -dry-run ${{runner.workspace}}/CuMat-Compiler/src/**/src/*.cpp ${{runner.workspace}}/CuMat-Compiler/src/**/inc/*.hpp
+        run: clang-format-11 -style=file -Werror -dry-run ${{runner.workspace}}/CuMat-Compiler/src/**/src/*.cpp ${{runner.workspace}}/CuMat-Compiler/src/**/inc/*.hpp
 
       - name: Clang-Tidy
         working-directory: ${{runner.workspace}}
         shell: bash
-        run: clang-tidy-10 -p ${{runner.workspace}}/build/compile_commands.json -checks=readability-*,-readability-convert-member-functions-to-static,bugprone-*,clang-analyzer-*,modernize-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,misc-redundant-expression,misc-misplaced-const,misc-new-delete-overloads,misc-definitions-in-headers,misc-non-copyable-objects,misc-static-assert,misc-throw-by-value-catch-by-reference,misc-unconventional-assign-operator,misc-unused-using-decls -warnings-as-errors=* -header-filter="${{runner.workspace}}/CuMat-Compiler/src/.*" ${{runner.workspace}}/CuMat-Compiler/src/compiler/src/main.cpp
+        run: clang-tidy-11 -p ${{runner.workspace}}/build/compile_commands.json -checks=readability-*,-readability-convert-member-functions-to-static,bugprone-*,clang-analyzer-*,modernize-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,misc-redundant-expression,misc-misplaced-const,misc-new-delete-overloads,misc-definitions-in-headers,misc-non-copyable-objects,misc-static-assert,misc-throw-by-value-catch-by-reference,misc-unconventional-assign-operator,misc-unused-using-decls -warnings-as-errors=* -header-filter="${{runner.workspace}}/CuMat-Compiler/src/.*" ${{runner.workspace}}/CuMat-Compiler/src/compiler/src/main.cpp
 
       - name: Test
         working-directory: ${{runner.workspace}}/build
