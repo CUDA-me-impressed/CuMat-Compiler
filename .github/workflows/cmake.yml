@@ -52,10 +52,10 @@ jobs:
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: cmake --build . --config $BUILD_TYPE
 
-      - name: Clang-Format
-        working-directory: ${{runner.workspace}}
-        shell: bash
-        run: clang-format-10 -style=file -Werror -dry-run ${{runner.workspace}}/CuMat-Compiler/src/**/src/*.cpp ${{runner.workspace}}/CuMat-Compiler/src/**/inc/*.hpp
+      - #name: Clang-Format
+        #working-directory: ${{runner.workspace}}
+        #shell: bash
+        #run: clang-format-10 -style=file -Werror -dry-run ${{runner.workspace}}/CuMat-Compiler/src/**/src/*.cpp ${{runner.workspace}}/CuMat-Compiler/src/**/inc/*.hpp
 
       - name: Clang-Tidy
         working-directory: ${{runner.workspace}}
