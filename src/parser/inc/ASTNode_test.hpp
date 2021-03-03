@@ -10,7 +10,7 @@ namespace AST::Test {
 
 class NodeMock : public AST::Node {
    public:
-    MAKE_MOCK0(semanticPass, void(), override) voidsemanticPass(Utils::IRContext* context);
+    MAKE_MOCK1(semanticPass, void(Utils::IRContext*), override);
     MAKE_MOCK1(codeGen, llvm::Value*(Utils::IRContext*), override);
 };
 
