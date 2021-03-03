@@ -15,7 +15,7 @@ std::shared_ptr<Typing::Type> TypeCheckUtils::makeMatrixType(const std::vector<u
     return type;
 }
 
-std::shared_ptr<Typing::Type> makeCustomType(std::string name, const std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> attrs) {
+std::shared_ptr<Typing::Type> TypeCheckUtils::makeCustomType(std::string name, const std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> attrs) {
     auto ty = Typing::CustomType();
     ty.name = name;
     ty.attributes = attrs;
