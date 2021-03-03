@@ -292,3 +292,8 @@ int Utils::getRealIndexOffset(const std::vector<uint>& dimensions, const std::ve
     }
     return offset;
 }
+
+llvm::Value* Utils::getPointerAddressFromOffset(IRContext* context, llvm::Value* ptr, llvm::Value* offset) {
+    auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
+    return context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, offset});
+}
