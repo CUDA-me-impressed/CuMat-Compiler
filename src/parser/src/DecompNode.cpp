@@ -46,9 +46,8 @@ llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {
     //    }
 }
 
-
 void AST::DecompNode::semanticPass(Utils::IRContext* context) {
     if (this->rVal.index() == 1) {
-        std::shared_ptr<AST::DecompNode> child = std::get<std::shared_ptr<AST::DecompNode>>(&this->rVal);
+        std::shared_ptr<AST::DecompNode> child = std::get<std::shared_ptr<AST::DecompNode>>(this->rVal);
     }
 }
