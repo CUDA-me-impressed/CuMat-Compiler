@@ -2,6 +2,7 @@
 
 #include <numeric>
 #include <valarray>
+#include "CodeGenUtils.hpp"
 
 llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
     llvm::Value* storeVal =
