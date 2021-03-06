@@ -15,7 +15,8 @@ class AssignmentNode : public Node {
 
     void semanticPass(Utils::IRContext* context) override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
-    llvm::Value* decompAssign(Utils::IRContext* context, std::shared_ptr<DecompNode> decompNode, llvm::Value* matHeader);
+    llvm::Value* decompAssign(Utils::IRContext* context, std::shared_ptr<DecompNode> decompNode,
+                              llvm::Value* matHeader);
     [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override;
 };
 }  // namespace AST

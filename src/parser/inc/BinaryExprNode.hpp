@@ -11,10 +11,9 @@ class NameTable;
 }
 
 namespace AST {
-enum class BIN_OPERATORS { PLUS, MINUS, MUL, DIV, LOR, LAND, LT, GT, LTE, GTE, EQ, NEQ, BAND, BOR, POW, MATM, CHAIN };
-static const char* BIN_OP_ENUM_STRING[] = {"plus", "minus", "mul", "div",  "lor",
-                                           "land", "lt",    "gt",  "lte",  "gte", "eq", "neq",
-                                           "band", "bor",   "pow", "matm", "chain"};
+enum BIN_OPERATORS { PLUS, MINUS, MUL, DIV, LOR, LAND, LT, GT, LTE, GTE, EQ, NEQ, BAND, BOR, POW, MATM, CHAIN };
+static const char* BIN_OP_ENUM_STRING[] = {"plus", "minus", "mul", "div",  "lor", "land", "lt",   "gt",   "lte",
+                                           "gte",  "eq",    "neq", "band", "bor", "pow",  "matm", "chain"};
 
 class BinaryExprNode : public ExprNode {
    public:
