@@ -45,7 +45,7 @@ class MatrixType {
     llvm::Type* getLLVMType(Utils::IRContext* context);
 
     llvm::Type* getLLVMPrimitiveType(Utils::IRContext* context) const;
-    PRIMITIVE getPrimitiveType() const;
+    [[nodiscard]] PRIMITIVE getPrimitiveType() const;
 };
 
 class GenericType {
