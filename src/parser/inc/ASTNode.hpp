@@ -12,7 +12,7 @@
 #include "CodeGenUtils.hpp"
 #include "Type.hpp"
 namespace Analysis {
-class NameTable;
+class DimensionSymbolTable;
 }
 
 namespace AST {
@@ -34,7 +34,7 @@ class Node {
     virtual void semanticPass(Utils::IRContext* context);
 
     virtual llvm::Value* codeGen(Utils::IRContext* context);
-    virtual void dimensionPass(Analysis::NameTable* nt);
+    virtual void dimensionPass(Analysis::DimensionSymbolTable* nt);
 
     [[nodiscard]] virtual std::string toTree(const std::string& prefix, const std::string& childPrefix) const;
 };

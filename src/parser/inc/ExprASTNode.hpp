@@ -4,7 +4,7 @@
 #include "Type.hpp"
 
 namespace Analysis {
-class NameTable;
+class DimensionSymbolTable;
 }
 
 namespace AST {
@@ -15,8 +15,7 @@ class ExprNode : public Node {
     [[nodiscard]] std::shared_ptr<Typing::Type> getType() const;
     void setType(std::shared_ptr<Typing::Type> ty);
 
-    virtual ~ExprNode() = default;
-    void dimensionPass(Analysis::NameTable* nt) override;
+    void dimensionPass(Analysis::DimensionSymbolTable* nt) override;
 
     [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override;
 };

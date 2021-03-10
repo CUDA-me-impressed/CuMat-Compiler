@@ -12,13 +12,12 @@
 
 namespace Analysis {
 
-class NameTable {
+class DimensionSymbolTable {
    private:
-    std::map<std::string, std::unique_ptr<NameTable>> namespaces{};
+    std::map<std::string, std::unique_ptr<DimensionSymbolTable>> namespaces{};
     std::map<std::string, AST::Node*> values{};
 
    public:
-    [[nodiscard]] AST::Node* search_impl(
-        std::span<const std::string> name) const noexcept;
+    [[nodiscard]] AST::Node* search_impl(const std::string_view name) const noexcept;
 };
 }  // namespace Analysis

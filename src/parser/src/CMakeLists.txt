@@ -9,7 +9,7 @@ include(ExternalAntlr4Cpp)
 find_package(ANTLR REQUIRED)
 
 set(cpp_srcs
-        CuMatASTGenerator.cpp ASTNode.cpp CuMatVisitor.cpp BinaryExprNode.cpp FuncDefNode.cpp FunctionExprNode.cpp LiteralNode.cpp MatrixNode.cpp TernaryExprNode.cpp UnaryExprNode.cpp Type.cpp CodeGenUtils.cpp BlockNode.cpp AssignmentNode.cpp VariableNode.cpp SymbolTable.cpp ProgramNode.cpp SliceNode.cpp ImportsNode.cpp TypeDefAttributeNode.cpp CustomTypeDefNode.cpp DecompNode.cpp TypeException.cpp TypeCheckingUtils.cpp ../inc/TypeCheckingUtils.hpp)
+        CuMatASTGenerator.cpp ASTNode.cpp CuMatVisitor.cpp BinaryExprNode.cpp FuncDefNode.cpp FunctionExprNode.cpp LiteralNode.cpp MatrixNode.cpp TernaryExprNode.cpp UnaryExprNode.cpp Type.cpp CodeGenUtils.cpp BlockNode.cpp AssignmentNode.cpp VariableNode.cpp SymbolTable.cpp ProgramNode.cpp SliceNode.cpp ImportsNode.cpp TypeDefAttributeNode.cpp CustomTypeDefNode.cpp DecompNode.cpp TypeException.cpp TypeCheckingUtils.cpp ../inc/TypeCheckingUtils.hpp DimensionPass.cpp TreePrint.cpp)
 
 set(lexer_srcs
         CuMatLexer.g4)

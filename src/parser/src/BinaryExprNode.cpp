@@ -131,7 +131,7 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     if (lhsMat->rank != rhsMat->rank)
         throw std::runtime_error("Cannot compute matrix multiplication on matricies with different ranks!");
     // TODO: Sort out rank 1 multiplication (vector)
-    if (!lhsMat->rank == 2 || !rhsMat->rank == 2)
+    if (lhsMat->rank != 2 || rhsMat->rank != 2)
         throw std::runtime_error("Matrix rank too high to compute matrix multiplication! Must be sliced first.");
     if (lhsMat->primType != rhsMat->primType) throw std::runtime_error("Matrix primitive types do not match");
 

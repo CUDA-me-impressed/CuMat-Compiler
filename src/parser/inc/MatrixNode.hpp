@@ -11,7 +11,7 @@
 #include "Type.hpp"
 
 namespace Analysis {
-class NameTable;
+class DimensionSymbolTable;
 }
 
 namespace AST {
@@ -26,7 +26,7 @@ class MatrixNode : public ExprNode {
 
     llvm::Value* codeGen(Utils::IRContext* context) override;
     void semanticPass(Utils::IRContext* context) override;
-    void dimensionPass(Analysis::NameTable* nt) override{};
+    void dimensionPass(Analysis::DimensionSymbolTable* nt) override{};
     [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override;
 };
 }  // namespace AST
