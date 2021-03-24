@@ -9,10 +9,13 @@
 #include "AssignmentNode.hpp"
 #include "BinaryExprNode.hpp"
 #include "CuMatLexer.h"
+#include "CustomTypeDefNode.hpp"
 #include "FuncDefNode.hpp"
 #include "FunctionExprNode.hpp"
+#include "ImportsNode.hpp"
 #include "LiteralNode.hpp"
 #include "MatrixNode.hpp"
+#include "ProgramNode.hpp"
 #include "TernaryExprNode.hpp"
 #include "UnaryExprNode.hpp"
 #include "VariableNode.hpp"
@@ -23,28 +26,29 @@ std::shared_ptr<T> pConv(std::shared_ptr<AST::Node> n) {
 }
 
 antlrcpp::Any CuMatVisitor::visitProgram(CuMatParser::ProgramContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto i = visit(ctx->imports());
-    auto d = visit(ctx->definitions());
+    auto n = std::make_shared<AST::ProgramNode>();
+    n->literalText = ctx->getText();
 
-    n->addChild(std::move(i));
+    if (ctx->imports() != nullptr) {
+        auto i = visit(ctx->imports());
+        n->addChild(std::move(i));
+    }
+
+    auto d = visit(ctx->definitions());
     n->addChild(std::move(d));
 
     return std::move(n);
 }
 
 antlrcpp::Any CuMatVisitor::visitImports(CuMatParser::ImportsContext* ctx) {
-    auto n = std::make_shared<AST::Node>(ctx->getText());
-    auto is = ctx->cmimport();
-    for (auto& import : is) {
-        auto i = visit(import);
-        n->addChild(std::move(i));
+    auto n = std::make_shared<AST::ImportsNode>();
+    n->literalText = ctx->getText();
+    for (auto& import : ctx->cmimport()) {
+        auto path = import->path()->getText();
+        n->importPaths.emplace_back(path);
     }
+
     return std::move(n);
-}
-// TODO Implement
-antlrcpp::Any CuMatVisitor::visitCmimport(CuMatParser::CmimportContext* ctx) {
-    throw std::runtime_error("Unsupported Feature: Imports");
 }
 
 antlrcpp::Any CuMatVisitor::visitDefinitions(CuMatParser::DefinitionsContext* ctx) {
@@ -72,6 +76,7 @@ antlrcpp::Any CuMatVisitor::visitDefinition(CuMatParser::DefinitionContext* ctx)
 
     throw std::runtime_error("No definition found");
 }
+
 // TODO Check if anything extra is needed
 antlrcpp::Any CuMatVisitor::visitFuncdef(CuMatParser::FuncdefContext* ctx) {
     auto n = std::make_shared<AST::FuncDefNode>();
@@ -136,6 +141,7 @@ antlrcpp::Any CuMatVisitor::visitTypespec(CuMatParser::TypespecContext* ctx) {
                 if (dim->INT()) {
                     dims.emplace_back(std::stoi(dim->INT()->getText()));
                 } else {
+                    // Is this going to be a subtle bug?
                     dims.emplace_back(0);
                 }
             }
@@ -146,8 +152,19 @@ antlrcpp::Any CuMatVisitor::visitTypespec(CuMatParser::TypespecContext* ctx) {
 
         return std::make_shared<Typing::Type>(m);
     } else {
-        // TODO deal with customTypes
-        throw std::runtime_error("Unsupported feature: Custom Types");
+        if (ctx->cmtypename()->typeidentifier()->TYPE_ID() != nullptr) {
+            // Generic Type
+            Typing::GenericType g;
+            g.name = ctx->cmtypename()->typeidentifier()->TYPE_ID()->getText();
+            return std::make_shared<Typing::Type>(g);
+        } else if (ctx->cmtypename()->typeidentifier()->ID() != nullptr) {
+            // Custom Type
+            Typing::CustomType ct;
+            ct.name = ctx->cmtypename()->typeidentifier()->ID()->getText();
+            return std::make_shared<Typing::Type>(ct);
+        } else {
+            throw std::runtime_error("Something in typespec has gone horribly wrong");
+        }
     }
 }
 
@@ -174,9 +191,7 @@ antlrcpp::Any CuMatVisitor::visitAssignment(CuMatParser::AssignmentContext* ctx)
         auto name = ctx->asstarget()->varname()->identifier()->getText();
         n->name = name;
     } else if (ctx->asstarget()->decomp() != nullptr) {
-        // TODO Figure out what to do with decomposition
-        n->lVal = nullptr;
-        visit(ctx->asstarget()->decomp());
+        n->lVal = std::move(visit(ctx->asstarget()->decomp()));
     } else {
         throw std::runtime_error("No Asstarget found at: " + n->literalText);
     }
@@ -227,7 +242,7 @@ antlrcpp::Any CuMatVisitor::visitExp_logic(CuMatParser::Exp_logicContext* ctx) {
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
-                           // properly
+                // properly
             }
             auto op = (*opIt)->op;
             opIt++;
@@ -260,7 +275,7 @@ antlrcpp::Any CuMatVisitor::visitExp_comp(CuMatParser::Exp_compContext* ctx) {
             if (rightSide == nullptr) {
                 rightSide = std::move(visit(*it));
                 continue;  // Skip the last one so that we can setup the loop
-                           // properly
+                // properly
             }
             auto op = (*opIt)->op;
             opIt++;
@@ -524,7 +539,7 @@ antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext* ctx) {
             }
         }
         fN->args = std::move(arguments);  // This...might be an issue and need
-                                          // to use the copy semantics. We'll see
+        // to use the copy semantics. We'll see
     }
 
     return std::move(pConv<AST::ExprNode>(fN));
@@ -549,15 +564,12 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
     mN->literalText = ctx->getText();
     Typing::MatrixType t;
     std::vector<uint> dimensions;
-    std::vector<std::vector<std::shared_ptr<AST::ExprNode>>> values;
+    std::vector<std::shared_ptr<AST::ExprNode>> values;
     int inDimension = 0;
     dimensions.push_back(ctx->rowliteral()->cols.size());  // First size
-    std::vector<std::shared_ptr<AST::ExprNode>> valueContainer;
     for (auto exp : ctx->rowliteral()->cols) {
-        valueContainer.emplace_back(std::move(visit(exp)));
+        values.emplace_back(std::move(visit(exp)));
     }
-    values.emplace_back(std::move(valueContainer));
-    valueContainer.clear();
     if (!ctx->dimensionLiteral().empty()) {
         for (auto dim : ctx->dimensionLiteral()) {
             auto dimension = dim->BSLASH().size();
@@ -576,10 +588,8 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
             }
 
             for (auto exp : dim->rowliteral()->cols) {
-                valueContainer.emplace_back(std::move(visit(exp)));
+                values.emplace_back(std::move(visit(exp)));
             }
-            values.emplace_back(std::move(valueContainer));
-            valueContainer.clear();
         }
     }
 
@@ -631,30 +641,69 @@ antlrcpp::Any CuMatVisitor::visitVariable(CuMatParser::VariableContext* ctx) {
     n->name = ctx->varname()->identifier()->getText();
 
     if (ctx->cmnamespace() != nullptr) {
-        // TODO deal with namespacing
-        visit(ctx->cmnamespace());
+        for (auto id : ctx->cmnamespace()->identifier()) {
+            n->namespacePath.emplace_back(id->ID()->getText());
+        }
     }
 
     if (ctx->slice() != nullptr) {
-        // TODO deal with slicing
-        visit(ctx->slice());
+        n->variableSlicing = std::move(visit(ctx->slice()));
     }
 
     return std::move(pConv<AST::ExprNode>(n));
 }
-// TODO Implement
-antlrcpp::Any CuMatVisitor::visitCmnamespace(CuMatParser::CmnamespaceContext* ctx) {
-    throw std::runtime_error("Unsupported feature: Namespacing");
-}
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitCmtypedef(CuMatParser::CmtypedefContext* ctx) {
-    throw std::runtime_error("Unsupported feature: Type Definitions");
+    auto n = std::make_shared<AST::CustomTypeDefNode>();
+    n->literalText = ctx->getText();
+
+    n->name = ctx->newtype()->identifier()->getText();
+    for (auto& attr : ctx->attrblock()->attrs) {
+        n->attributes.emplace_back(std::move(visit(attr)));
+    }
+
+    return std::move(n);
 }
-// TODO Implement
+
+antlrcpp::Any CuMatVisitor::visitAttr(CuMatParser::AttrContext* ctx) {
+    auto n = std::make_shared<AST::TypeDefAttributeNode>();
+    n->literalText = ctx->getText();
+
+    n->name = ctx->attrname()->identifier()->getText();
+    n->attrType = std::move(visitTypespec(ctx->typespec()));
+
+    return std::move(n);
+}
+
 antlrcpp::Any CuMatVisitor::visitDecomp(CuMatParser::DecompContext* ctx) {
-    throw std::runtime_error("Unsupported feature: Decomposition");
+    auto n = std::make_shared<AST::DecompNode>();
+    n->literalText = ctx->getText();
+    n->lVal = ctx->varname()->getText();
+
+    if (ctx->asstarget()->varname() != nullptr) {
+        n->rVal = std::variant<std::string, std::shared_ptr<AST::DecompNode>>(ctx->asstarget()->varname()->getText());
+    } else if (ctx->asstarget()->decomp() != nullptr) {
+        n->rVal = std::variant<std::string, std::shared_ptr<AST::DecompNode>>(
+            std::move(visitDecomp(ctx->asstarget()->decomp())));
+    } else {
+        throw std::runtime_error("Something has gone wrong in Decomposition");
+    }
+    return std::move(n);
 }
-// TODO Implement
+
 antlrcpp::Any CuMatVisitor::visitSlice(CuMatParser::SliceContext* ctx) {
-    throw std::runtime_error("Unsupported feature: Slicing");
+    auto n = std::make_shared<AST::SliceNode>();
+    n->literalText = ctx->getText();
+    for (auto se : ctx->sliceelement()) {
+        if (se->STAR() != nullptr) {
+            n->slices.emplace_back(std::variant<bool, std::vector<int>>(true));
+        } else {
+            std::vector<int> slicingNums;
+            for (auto i : se->INT()) {
+                slicingNums.emplace_back(std::stoi(i->getText()));
+            }
+            n->slices.emplace_back(std::variant<bool, std::vector<int>>(slicingNums));
+        }
+    }
+    return std::move(n);
 }

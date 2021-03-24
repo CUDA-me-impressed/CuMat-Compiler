@@ -1,0 +1,5 @@
+func int main {
+    a = [54,65]
+    [x:xs] = a
+    return x
+}

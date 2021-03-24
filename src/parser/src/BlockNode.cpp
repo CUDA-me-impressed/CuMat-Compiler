@@ -17,3 +17,8 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
 
     return retVal;
 }
+
+void AST::BlockNode::semanticPass(Utils::IRContext* context) {
+    for (auto const& assignment : this->assignments) assignment->semanticPass(context);
+    this->returnExpr->semanticPass(context);
+}

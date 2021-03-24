@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include "CodeGenUtils.hpp"
+
 std::shared_ptr<Utils::SymbolTableEntry> Utils::SymbolTable::getValue(const std::string& symbolName,
                                                                       const std::string& funcName,
                                                                       const std::string& funcNamespace) {
@@ -16,6 +18,7 @@ std::shared_ptr<Utils::SymbolTableEntry> Utils::SymbolTable::getValue(const std:
         throw std::runtime_error("Cannot find function [" + funcName + "] for symbol [" + fullSymbolName + "]");
     }
 }
+
 void Utils::SymbolTable::setValue(std::shared_ptr<Typing::Type> type, llvm::Value* storeVal,
                                   const std::string& symbolName, const std::string& funcName,
                                   const std::string& funcNamespace) {
@@ -34,6 +37,7 @@ void Utils::SymbolTable::escapeFunction() {
         throw std::runtime_error("Failed to escape the function within code-block generation. No function!");
     this->functionStack.erase(this->functionStack.end());
 }
+
 std::string Utils::SymbolTable::getCurrentFunction() { return this->functionStack.at(this->functionStack.size() - 1); }
 
 bool Utils::SymbolTable::inSymbolTable(const std::string& symbolName, const std::string& funcName,
@@ -143,4 +147,22 @@ void Utils::SymbolTable::addNewFunction(const std::string& funcName,
     }
 
     this->funcTable[fullFuncName][params] = {};
+}
+
+/**
+ * Creates a nvvm metadata object that we access when we wish to store new functions as kernel (device code)
+ * @param context
+ */
+void Utils::SymbolTable::createNVVMMetadata(Utils::IRContext* context) {
+    nvvmMetadataNode = context->module->getOrInsertNamedMetadata("nvvm.annotations");
+    llvm::MDNode* MDNOdeNVVM =
+        llvm::MDNode::get(context->module->getContext(), llvm::MDString::get(context->module->getContext(), "kernel"));
+    nvvmMetadataNode->addOperand(MDNOdeNVVM);
+}
+
+llvm::NamedMDNode* Utils::SymbolTable::getNVVMMetadata() { return nvvmMetadataNode; }
+
+void Utils::SymbolTable::enterFunction(const std::string& function, const std::string& funcNamespace) {
+    const std::string fullFuncName = funcNamespace + "::" + function;
+    this->functionStack.emplace_back(fullFuncName);
 }

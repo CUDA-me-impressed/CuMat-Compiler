@@ -38,3 +38,8 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
     auto callRet = context->Builder->CreateCall(func, argVals, "calltmp");
     return callRet;
 }
+
+void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
+    this->nonAppliedFunction->semanticPass(context);
+    for (auto const& arg : this->args) arg->semanticPass(context);
+}
