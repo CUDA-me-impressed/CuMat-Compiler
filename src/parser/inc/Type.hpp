@@ -45,7 +45,7 @@ class MatrixType {
     llvm::Type* getLLVMType(Utils::IRContext* context);
 
     llvm::Type* getLLVMPrimitiveType(Utils::IRContext* context) const;
-    PRIMITIVE getPrimitiveType() const;
+    [[nodiscard]] PRIMITIVE getPrimitiveType() const;
 };
 
 class GenericType {
@@ -56,6 +56,7 @@ class GenericType {
 class CustomType {
    public:
     std::string name;
+    std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> attributes;
 };
 
 class FunctionType {

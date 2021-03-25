@@ -15,6 +15,34 @@ std::shared_ptr<Typing::Type> TypeCheckUtils::makeMatrixType(const std::vector<u
     return type;
 }
 
+std::shared_ptr<Typing::Type> TypeCheckUtils::makeCustomType(std::string name, const std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> attrs) {
+    auto ty = Typing::CustomType();
+    ty.name = name;
+    ty.attributes = attrs;
+    std::shared_ptr<Typing::Type> type = std::make_shared<Typing::Type>(ty);
+    return type;
+}
+
+bool TypeCheckUtils::isBool(Typing::PRIMITIVE ty) {
+    return ty == Typing::PRIMITIVE::BOOL;
+}
+
+bool TypeCheckUtils::isInt(Typing::PRIMITIVE ty) {
+    return ty == Typing::PRIMITIVE::INT;
+}
+
+bool TypeCheckUtils::isFloat(Typing::PRIMITIVE ty) {
+    return ty == Typing::PRIMITIVE::FLOAT;
+}
+
+bool TypeCheckUtils::isString(Typing::PRIMITIVE ty) {
+    return ty == Typing::PRIMITIVE::STRING;
+}
+
+bool TypeCheckUtils::isNone(Typing::PRIMITIVE ty) {
+    return ty == Typing::PRIMITIVE::NONE;
+}
+
 void TypeCheckUtils::assertLogicalType(Typing::PRIMITIVE ty) {
     if (not(ty == Typing::PRIMITIVE::BOOL or ty == Typing::PRIMITIVE::INT)) {
         std::string message = "Expected: bool, int";
@@ -57,6 +85,16 @@ void TypeCheckUtils::wrongTypeError(std::string message, Typing::PRIMITIVE ty) {
     std::exit(TypeCheckUtils::ErrorCodes::WRONG_TYPE);
 }
 
+void TypeCheckUtils::castingError() {
+    std::cerr << "Cannot cast to incompatible type" << std::endl;
+    std::exit(TypeCheckUtils::ErrorCodes::WRONG_TYPE);
+}
+
+void TypeCheckUtils::noneError() {
+    std::cerr << "Type should not be NONE" << std::endl;
+    std::exit(TypeCheckUtils::ErrorCodes::NONE_ERROR);
+}
+
 void TypeCheckUtils::assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
     if (not(lhs == rhs)) {
         std::cerr << "Mismatched types: " << primToString(lhs) << ", " << primToString(rhs) << std::endl;
@@ -95,4 +133,43 @@ Typing::MatrixType TypeCheckUtils::extractMatrixType(std::shared_ptr<AST::ExprNo
         std::cout << "Caught: " << b.what();
     }
     return exprType;
+}
+
+Typing::PRIMITIVE TypeCheckUtils::getHighestType(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
+    if (lhs == rhs) {
+        return lhs;
+    }
+    switch (lhs) {
+        case Typing::PRIMITIVE::INT:
+            switch (rhs) {
+                case Typing::PRIMITIVE::BOOL:
+                    return Typing::PRIMITIVE::INT;
+
+                case Typing::PRIMITIVE::FLOAT:
+                    return Typing::PRIMITIVE::FLOAT;
+
+                default:
+                    TypeCheckUtils::castingError();
+            }
+
+        case Typing::PRIMITIVE::FLOAT:
+            if (not (rhs == Typing::PRIMITIVE::INT or rhs == Typing::PRIMITIVE::FLOAT)) {
+                TypeCheckUtils::castingError();
+            }
+            return Typing::PRIMITIVE::FLOAT;
+
+        case Typing::PRIMITIVE::BOOL:
+            if (rhs == Typing::PRIMITIVE::INT) {
+                return Typing::PRIMITIVE::INT;
+            } else {
+                TypeCheckUtils::castingError();
+            }
+
+        case Typing::PRIMITIVE::STRING:
+            TypeCheckUtils::castingError();
+
+        case Typing::PRIMITIVE::NONE:
+            TypeCheckUtils::noneError();
+
+    }
 }

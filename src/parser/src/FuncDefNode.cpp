@@ -35,6 +35,7 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
         typesRaw.push_back(typeNamePair.second);
     }
 
+    // TODO: Update to use new semantic symbol table when it is made
     // Store within the symbol table
     context->symbolTable->addNewFunction(funcName, typesRaw);
 

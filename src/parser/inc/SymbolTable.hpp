@@ -67,7 +67,7 @@ class SymbolTable {
              std::map<std::vector<std::shared_ptr<Typing::Type>>, FunctionTableEntry, FunctionParamCompare>>
         funcTable;
 
-    llvm::NamedMDNode* nvvmMetadataNode;
+    llvm::NamedMDNode* nvvmMetadataNode = nullptr;
 
    public:
     // Symbol data
