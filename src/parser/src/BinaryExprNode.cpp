@@ -214,7 +214,7 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
 
     return nullptr;
 }
-// op = MATM, CHAIN
+// Still to do - op = CHAIN , Needs function types sorted
 void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
     this->lhs->semanticPass(context);
     this->rhs->semanticPass(context);
@@ -240,6 +240,7 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
         case AST::BIN_OPERATORS::MUL:
         case AST::BIN_OPERATORS::DIV:
         case AST::BIN_OPERATORS::POW:
+        case AST::BIN_OPERATORS::MATM: // Dimensions sorted by Thomas later
             TypeCheckUtils::assertNumericType(lhsPrim);
             TypeCheckUtils::assertNumericType(rhsPrim);
             primType = TypeCheckUtils::getHighestType(lhsPrim, rhsPrim);
