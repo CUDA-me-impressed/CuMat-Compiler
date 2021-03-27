@@ -59,7 +59,7 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
 
         // Clean up the allocation for the literal, else memory leak big time!
         auto* freeMat = llvm::CallInst::CreateFree(literalLLVMMat, context->Builder->GetInsertBlock());
-        context->Builder->Insert(freeMat, "matFree");
+        context->Builder->Insert(freeMat, "");
     }
 
     return matAlloc;
