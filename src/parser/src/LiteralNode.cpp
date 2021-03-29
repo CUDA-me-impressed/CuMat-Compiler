@@ -83,7 +83,7 @@ llvm::Value* AST::LiteralNode<int>::codeGen(Utils::IRContext* context) {
     auto* dataPtr = Utils::getValueFromPointerOffset(context, matAlloc, 0, "matArrPtr");
     auto ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
     auto* val = llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
-    Utils::insertValueAtPointerOffset(context, dataPtr, 0, val);
+    Utils::insertValueAtPointerOffset(context, dataPtr, 0, val, false);
     return matAlloc;
 }
 

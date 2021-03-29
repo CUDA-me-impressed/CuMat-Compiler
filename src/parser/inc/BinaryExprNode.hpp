@@ -21,7 +21,7 @@ class BinaryExprNode : public ExprNode {
     void semanticPass(Utils::IRContext* context) override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
     // Operation specific codegen
-    void elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
+    llvm::Value* elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
                             const Typing::MatrixType& lhsType, const Typing::MatrixType& rhsType,
                             llvm::Instruction* matAlloc, const Typing::MatrixType& resType);
 

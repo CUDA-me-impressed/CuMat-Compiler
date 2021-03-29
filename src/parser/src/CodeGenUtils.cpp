@@ -54,16 +54,16 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
     // LLVM requires us to actually insert the instruction when using CallInst
     context->Builder->Insert(matHeaderAlloc, "matStruct");
 
-    insertValueAtPointerOffset(context, matHeaderAlloc, 0, matAllocPtr);
-    insertValueAtPointerOffset(context, matHeaderAlloc, 1, rank);
-    insertValueAtPointerOffset(context, matHeaderAlloc, 2, numBytes);
+    insertValueAtPointerOffset(context, matHeaderAlloc, 0, matAllocPtr, false);
+    insertValueAtPointerOffset(context, matHeaderAlloc, 1, rank, false);
+    insertValueAtPointerOffset(context, matHeaderAlloc, 2, numBytes, false);
 
     // For the matrix dimensionality
     for (int i = 0; i < matType.rank; i++) {
         auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.dimensions.at(i)));
 
         // Offset of 3 from before
-        insertValueAtPointerOffset(context, matHeaderAlloc, i + 3, val);
+        insertValueAtPointerOffset(context, matHeaderAlloc, i + 3, val, false);
     }
 
     return matHeaderAlloc;
@@ -178,7 +178,10 @@ llvm::Value* Utils::getValueFromLLVM(IRContext* context, float val, Typing::PRIM
  * @param offset - Number of elements away (valsize in bits)
  * @param val - Value we are storing
  */
-void Utils::insertValueAtPointerOffset(Utils::IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val) {
+void Utils::insertValueAtPointerOffset(Utils::IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val, bool i64) {
+    // Handle the case where we have an i64
+    if(i64) offset *= 2;
+
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
     auto xOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), offset);
     auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset});
@@ -186,7 +189,10 @@ void Utils::insertValueAtPointerOffset(Utils::IRContext* context, llvm::Value* p
 }
 
 void Utils::insertValueAtPointerOffsetValue(Utils::IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue,
-                                            llvm::Value* val) {
+                                            llvm::Value* val, bool i64) {
+    // Handle the case where we have an i64
+    if(i64) offsetValue = context->Builder->CreateMul(offsetValue, llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 2));
+
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
     auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, offsetValue});
     context->Builder->CreateStore(val, offsetPtr);
@@ -263,7 +269,7 @@ llvm::Value* Utils::getValueFromIndex(Utils::IRContext* context, llvm::Value* pt
 
 void Utils::setValueFromMatrixPtr(Utils::IRContext* context, llvm::Value* mPtr, llvm::Value* offset, llvm::Value* val) {
     auto* dataPtr = getValueFromPointerOffset(context, mPtr, 0, "dataPtr");
-    insertValueAtPointerOffsetValue(context, dataPtr, offset, val);
+    insertValueAtPointerOffsetValue(context, dataPtr, offset, val, false);
 }
 
 llvm::AllocaInst* Utils::CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName,

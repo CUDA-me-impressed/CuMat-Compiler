@@ -13,6 +13,7 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     llvm::Value* rhsVal = rhs->codeGen(context);
     auto lhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->lhs);
     auto rhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->rhs);
+    llvm::Value* newMatAlloc;
 
     if (auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type)) {
         if (auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type)) {
@@ -26,13 +27,13 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                 resultType = rhsType;
             }
 
-            auto newMatAlloc = Utils::createMatrix(context, *resultType);
+            newMatAlloc = Utils::createMatrix(context, *resultType);
 
             switch (op) {
                 case PLUS:
                 case MINUS:
                 case LOR: {
-                    elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, newMatAlloc, *resultType);
+                    elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, (llvm::Instruction*)newMatAlloc, *resultType);
                     break;
                 }
                 default:
@@ -42,10 +43,10 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
         }
     }
 
-    return nullptr;
+    return newMatAlloc;
 }
 
-void AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
+llvm::Value* AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
                                              const Typing::MatrixType& lhsType, const Typing::MatrixType& rhsType,
                                              llvm::Instruction* matAlloc, const Typing::MatrixType& resType) {
     auto Builder = context->Builder;
@@ -85,6 +86,8 @@ void AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Va
 
     parent->getBasicBlockList().push_back(endBB);
     Builder->SetInsertPoint(endBB);
+
+    return matAlloc;
 }
 
 /**

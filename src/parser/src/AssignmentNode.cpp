@@ -70,8 +70,8 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
 
     llvm::Value* rValDataPtr = context->Builder->CreateGEP(matRecord.dataPtr, lValMatRecord.numBytes, "rValOffset");
     // Point both of the data pointers to the correct locations
-    Utils::insertValueAtPointerOffset(context, lValMatRecord.dataPtr, 0, matRecord.dataPtr);
-    Utils::insertValueAtPointerOffset(context, rValMatRecord.dataPtr, 0, rValDataPtr);
+    Utils::insertValueAtPointerOffset(context, lValMatRecord.dataPtr, 0, matRecord.dataPtr, false);
+    Utils::insertValueAtPointerOffset(context, rValMatRecord.dataPtr, 0, rValDataPtr, false);
 
     // Handle assignment symbol table code
     if (!context->symbolTable->inSymbolTable(this->name, context->symbolTable->getCurrentFunction())) {

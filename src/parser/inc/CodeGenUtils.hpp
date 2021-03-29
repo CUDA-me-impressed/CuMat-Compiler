@@ -43,9 +43,9 @@ llvm::Instruction* createMatrix(IRContext* context, const Typing::Type& type);
 
 LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
 
-void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val);
+void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val, bool i64);
 
-void insertValueAtPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, llvm::Value* val);
+void insertValueAtPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, llvm::Value* val, bool i64);
 
 llvm::Value* getValueFromPointerOffset(IRContext* context, llvm::Value* ptr, int offset, const std::string& name);
 
