@@ -25,11 +25,14 @@ TEST_CASE("ASTNode default implementation forwards calls to its children", "[AST
     std::vector<expectation> exps;
 
     SECTION("semanticPass") {
+        // create a blank context
+        Utils::IRContext ctx{};
+
         for (auto& mock : mocks) {
-            exps.push_back(NAMED_REQUIRE_CALL(*mock, semanticPass()));
+            exps.push_back(NAMED_REQUIRE_CALL(*mock, semanticPass(&ctx)));
         }
 
-        testNode.semanticPass();
+        testNode.semanticPass(&ctx);
     }
 
     SECTION("codeGen") {

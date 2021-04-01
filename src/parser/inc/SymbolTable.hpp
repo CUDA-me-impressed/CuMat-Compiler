@@ -39,6 +39,7 @@ struct FunctionParamCompare {
         }
         return retVal;
     }
+
     bool operator()(const std::vector<std::shared_ptr<Typing::Type>>& l,
                     const std::vector<std::shared_ptr<Typing::Type>>& r) const {
         // This is the worst possible way to do this but I really really really am out of options here fuck it
@@ -66,6 +67,8 @@ class SymbolTable {
              std::map<std::vector<std::shared_ptr<Typing::Type>>, FunctionTableEntry, FunctionParamCompare>>
         funcTable;
 
+    llvm::NamedMDNode* nvvmMetadataNode = nullptr;
+
    public:
     // Symbol data
     std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName, const std::string& funcName,
@@ -73,6 +76,7 @@ class SymbolTable {
 
     void setValue(std::shared_ptr<Typing::Type> type, llvm::Value* storeVal, const std::string& symbolName,
                   const std::string& funcName, const std::string& funcNamespace = "");
+
     void updateValue(llvm::Value* value, const std::string& symbolName, const std::string& funcName,
                      const std::string& funcNamespace = "");
 
@@ -82,16 +86,26 @@ class SymbolTable {
     // Function data
     void addNewFunction(const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
                         const std::string& funcNamespace = "");
+
     void setFunctionData(const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
                          llvm::Function* func, const std::string& funcNamespace = "");
+
     FunctionTableEntry getFunction(const std::string& funcName,
                                    const std::vector<std::shared_ptr<Typing::Type>>& params,
                                    const std::string& funcNamespace = "");
+
     bool isFunctionDefined(const std::string& funcName, const std::string& funcNamespace = "");
+
     bool isFunctionDefinedParam(const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
                                 const std::string& funcNamespace = "");
+
+    void createNVVMMetadata(Utils::IRContext* context);
+
+    llvm::NamedMDNode* getNVVMMetadata();
+
     // Function stack
     void escapeFunction();
+    void enterFunction(const std::string& function, const std::string& funcNamespace = "");
     std::string getCurrentFunction();
 };
 }  // namespace Utils

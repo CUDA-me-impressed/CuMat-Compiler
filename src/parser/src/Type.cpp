@@ -14,6 +14,7 @@
  * primitive type within CuMat
  * @return
  */
+
 int Typing::MatrixType::offset() const {
     switch (primType) {
         case PRIMITIVE::STRING:
@@ -26,6 +27,7 @@ int Typing::MatrixType::offset() const {
             throw std::runtime_error("Invalid type for offset");
     }
 }
+
 int Typing::MatrixType::getLength() const {
     return std::accumulate(this->dimensions.begin(), this->dimensions.end(), 1, std::multiplies());
 }
@@ -112,3 +114,5 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) {
 
     return matHeaderType;
 }
+
+Typing::PRIMITIVE Typing::MatrixType::getPrimitiveType() const { return this->primType; }
