@@ -11,6 +11,7 @@
 
 #include "SymbolTable.hpp"
 #include "Type.hpp"
+#include "CompilerOptions.hpp"
 
 namespace Utils {
 struct IRContext {
@@ -18,6 +19,7 @@ struct IRContext {
     llvm::IRBuilder<>* Builder;
     llvm::Function* function;
     SymbolTable* symbolTable;
+    CompilerOptions* compilerOptions;
 };
 
 struct LLVMMatrixRecord {
@@ -63,4 +65,5 @@ void setValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* o
 llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type);
 
 int getRealIndexOffset(const std::vector<uint>& dimensions, const std::vector<int>& index);
+
 }  // namespace Utils

@@ -94,3 +94,20 @@ void AST::UnaryExprNode::semanticPass(Utils::IRContext* context) {
     }
     this->type = std::make_shared<Typing::Type>(operandType);
 }
+
+/**
+ * Function to calculate whenever or not we should execute the unary operation on the GPU
+ * @param op
+ * @return
+ */
+bool AST::UnaryExprNode::shouldExecuteGPU(Utils::IRContext * context, AST::UNA_OPERATORS op) {
+    if(context->compilerOptions->optimisationLevel == OPTIMISATION::EXPERIMENTAL) {
+        // Define a lookup table for the operation complexity
+        auto operandMatrix = std::dynamic_pointer_cast<AST::ExprNode>(this->operand);
+        auto* operandMatrixType = std::get_if<Typing::MatrixType>(&*operandMatrix->type);
+        int entropy = operandMatrixType->getLength();
+        int maxCPUEntropy = 400;  // 400 corresponds to 20x20 matrix
+        return entropy >= maxCPUEntropy;
+    }
+    return true;
+}

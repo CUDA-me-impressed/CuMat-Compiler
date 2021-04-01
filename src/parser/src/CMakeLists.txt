@@ -43,6 +43,8 @@ add_library(Parser
         ${cpp_srcs})
 target_include_directories(Parser PUBLIC
         ../inc)
+target_include_directories(Parser PUBLIC ../../compiler/inc)
+
 target_link_libraries(Parser PUBLIC
         llvm_interface
         parser_gen)

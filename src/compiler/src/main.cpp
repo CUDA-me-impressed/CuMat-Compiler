@@ -137,7 +137,7 @@ int main(int argc, char* argv[], char* envp[]) {
         Utils::SymbolTable symbolTable;
 
         // Context containing the module and IR Builder AND SYMBOL TABLE
-        Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable};
+        Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable, &co};
         std::get<1>(tree)->semanticPass(&treeContext);
         treeContext.symbolTable->createNVVMMetadata(&treeContext);  // TODO: Replace when program node codegen done
         std::get<1>(tree)->codeGen(&treeContext);

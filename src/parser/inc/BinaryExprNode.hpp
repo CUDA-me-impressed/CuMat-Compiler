@@ -27,5 +27,7 @@ class BinaryExprNode : public ExprNode {
 
     llvm::Value* matrixMultiply(Utils::IRContext* context, std::shared_ptr<Typing::MatrixType> lhsMat,
                                 std::shared_ptr<Typing::MatrixType> rhsMat, llvm::Value* lhsVal, llvm::Value* rhsVal);
+
+    bool shouldExecuteGPU(Utils::IRContext * context, BIN_OPERATORS op);
 };
 }  // namespace AST

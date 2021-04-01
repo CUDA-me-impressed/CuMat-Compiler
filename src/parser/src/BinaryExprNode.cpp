@@ -5,6 +5,7 @@
 #include <TypeException.hpp>
 
 #include "TypeCheckingUtils.hpp"
+#include "CompilerOptions.hpp"
 
 llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     // Assumption is that our types are two evaluated matricies of compatible
@@ -281,4 +282,34 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
             }
             break;
     }
+}
+
+/**
+ * Function to determine whenever or not we execute the binary operation on the GPU or not
+ * @param op
+ * @return
+ */
+bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext * context, AST::BIN_OPERATORS op) {
+    // Define a lookup table for the operation complexity
+    if(context->compilerOptions->optimisationLevel == OPTIMISATION::EXPERIMENTAL) {
+        int entropy = 1;
+        auto lhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->lhs);
+        auto rhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->rhs);
+        auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type);
+        auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type);
+        if (op == MATM) {
+            // This is the only complex operation
+            if (lhsType) {
+                entropy = lhsType->dimensions[1];
+            } else {
+                std::cout << "[Warning] - Matrix Multiplication entropy calculation failed - Using element wise entropy"
+                          << std::endl;
+            }
+        }
+        entropy *= rhsType->getLength() * lhsType->getLength();
+        int maxCPUEntropy = 400;  // 400 corresponds to 20x20 matrix
+        return entropy >= maxCPUEntropy;
+    }
+
+    return true;
 }

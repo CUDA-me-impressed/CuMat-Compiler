@@ -13,5 +13,7 @@ class UnaryExprNode : public ExprNode {
     std::shared_ptr<ExprNode> operand;
     void semanticPass(Utils::IRContext* context) override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
+
+    bool shouldExecuteGPU(Utils::IRContext * context, UNA_OPERATORS op);
 };
 }  // namespace AST
