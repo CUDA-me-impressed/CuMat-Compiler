@@ -302,8 +302,11 @@ bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext * context, AST::BIN_
             if (lhsType) {
                 entropy = lhsType->dimensions[1];
             } else {
-                std::cout << "[Warning] - Matrix Multiplication entropy calculation failed - Using element wise entropy"
-                          << std::endl;
+                if(context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+                    std::cout
+                        << "[Warning] - Matrix Multiplication entropy calculation failed - Using element wise entropy"
+                        << std::endl;
+                }
             }
         }
         entropy *= rhsType->getLength() * lhsType->getLength();
