@@ -236,6 +236,25 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
             this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), lhsPrim);
             break;
         case AST::BIN_OPERATORS::PLUS:
+            if ((not TypeCheckUtils::isString(lhsPrim)) and (not TypeCheckUtils::isNone(lhsPrim))) {
+                if ((not TypeCheckUtils::isString(rhsPrim)) and (not TypeCheckUtils::isNone(rhsPrim))) {
+                    if (TypeCheckUtils::isBool(lhsPrim)) {
+                        TypeCheckUtils::assertMatchingTypes(lhsPrim, rhsPrim);
+                        this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), Typing::PRIMITIVE::BOOL);
+                    } else {
+                        TypeCheckUtils::assertNumericType(lhsPrim);
+                        TypeCheckUtils::assertNumericType(rhsPrim);
+                        primType = TypeCheckUtils::getHighestType(lhsPrim, rhsPrim);
+                        this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), primType);
+                        break;
+                    }
+                } else {
+                    TypeCheckUtils::wrongTypeError("Expected: int, float, bool", rhsPrim);
+                }
+            } else {
+                TypeCheckUtils::wrongTypeError("Expected: int, float, bool", lhsPrim);
+            }
+            break;
         case AST::BIN_OPERATORS::MINUS:
         case AST::BIN_OPERATORS::MUL:
         case AST::BIN_OPERATORS::DIV:
