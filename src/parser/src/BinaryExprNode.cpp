@@ -21,20 +21,18 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
             auto lhsDimension = lhsType->getDimensions();
             auto rhsDimension = rhsType->getDimensions();
 
-            Typing::MatrixType* resultType{};
-            if (lhsDimension.size() > rhsDimension.size()) {
-                resultType = lhsType;
-            } else {
-                resultType = rhsType;
-            }
+            auto* resType = std::get_if<Typing::MatrixType>(&*type);
+            resType->dimensions = lhsDimension.size() > rhsDimension.size() ? lhsDimension : rhsDimension;
 
-            newMatAlloc = Utils::createMatrix(context, *resultType);
+            newMatAlloc = Utils::createMatrix(context, *resType);
 
             switch (op) {
                 case PLUS:
                 case MINUS:
+                case MUL:
+                case DIV:
                 case LOR: {
-                    elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, (llvm::Instruction*)newMatAlloc, *resultType);
+                    elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, (llvm::Instruction*)newMatAlloc, *resType);
                     break;
                 }
                 default:
@@ -101,19 +99,55 @@ llvm::Value* AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, 
  */
 llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* context, const AST::BIN_OPERATORS& op,
                                                           llvm::Value* lhs, llvm::Value* rhs, const std::string& name) {
-    // TODO: Currently only works with integer values, will need to be extended to FP
-    switch (op) {
-        case PLUS: {
-            return context->Builder->CreateAdd(lhs, rhs, name);
+    // TODO: Upcast to float -> Loss of precision? Discuss.
+
+    if (lhs->getType()->isIntegerTy() && rhs->getType()->isIntegerTy()) {
+        // Handle the integer-integer operations
+        switch (op) {
+            case PLUS: {
+                return context->Builder->CreateAdd(lhs, rhs, name);
+            }
+            case MINUS: {
+                return context->Builder->CreateSub(lhs, rhs, name);
+            }
+            case MUL: {
+                return context->Builder->CreateMul(lhs, rhs, name);
+            }
+            case DIV: {
+                return context->Builder->CreateSDiv(lhs, rhs, name);
+            }
+            case LOR: {
+                return context->Builder->CreateOr(lhs, rhs, name);
+            }
+            default: {
+                if (context->compilerOptions->warningVerbosity == WARNINGS::INFO ||
+                    context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+                    throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) +
+                                             "]");
+                }
+            }
         }
-        case MINUS: {
-            return context->Builder->CreateSub(lhs, rhs, name);
+    } else if (lhs->getType()->isFloatTy() && rhs->getType()->isFloatTy()) {
+        // Handle the float-float operations
+        switch (op) {
+            case PLUS: {
+                return context->Builder->CreateFAdd(lhs, rhs, name);
+            }
+            case MINUS: {
+                return context->Builder->CreateFSub(lhs, rhs, name);
+            }
+            case MUL: {
+                return context->Builder->CreateFMul(lhs, rhs, name);
+            }
+            case DIV: {
+                return context->Builder->CreateFDiv(lhs, rhs, name);
+            }
         }
-        case LOR: {
-            return context->Builder->CreateOr(lhs, rhs, name);
-        }
-        default: {
-            throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) + "]");
+    } else {
+        if (context->compilerOptions->warningVerbosity == WARNINGS::INFO ||
+            context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+            // TODO: Better reporting
+            throw std::runtime_error("Mutli-dimensional array multiplication occurred between two undefined types!");
         }
     }
 }
