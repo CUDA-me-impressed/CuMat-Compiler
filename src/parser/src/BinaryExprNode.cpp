@@ -416,7 +416,7 @@ llvm::Value* AST::BinaryExprNode::applyPowerToOperands(Utils::IRContext* context
                                                        const bool isFloat, const std::string& name) {
     if(lhs->getType()->isIntegerTy() && rhs->getType()->isIntegerTy()) {
         auto ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
-        auto* a = llvm::ConstantInt::get(ty, llvm::APInt(64, 1, true));
+        llvm::Value* a = llvm::ConstantInt::get(ty, llvm::APInt(64, 1, true));
 
         // Copy over the values within our scope
         llvm::Value* c = lhs;
@@ -431,13 +431,29 @@ llvm::Value* AST::BinaryExprNode::applyPowerToOperands(Utils::IRContext* context
             llvm::Value* r = context->Builder->CreateSRem(n, llvm::ConstantInt::get(ty, 2));
 
             llvm::BasicBlock* powLoopInsideCondition = llvm::BasicBlock::Create(context->module->getContext(), "pow.cond", context->function);
-            llvm::
+            llvm::BasicBlock* powLoopInsideConditionEnd = llvm::BasicBlock::Create(context->module->getContext(), "pow.condEnd", context->function);
+
+            // r == 1 condition
+            auto* innerComparison = context->Builder->CreateICmpEQ(r, llvm::ConstantInt::get(ty, 1));
+            // break if true
+            context->Builder->CreateCondBr(innerComparison, powLoopInsideCondition, powLoopInsideConditionEnd);
+            {
+                context->Builder->SetInsertPoint(powLoopInsideCondition);
+                a = context->Builder->CreateMul(a, c);
+            }
+
+            // n = n div 2
+            n = context->Builder->CreateSDiv(n, llvm::ConstantInt::get(ty, 2));
+            // c = c * c
+            c = context->Builder->CreateMul(c, c);
+
             // break if n == 0
             auto* endCondition = context->Builder->CreateICmpEQ(n, llvm::ConstantInt::get(ty, 0));
             context->Builder->CreateCondBr(endCondition, powerLoopEnd, powerLoopStart);
         }
         // End of power loop
         context->Builder->SetInsertPoint(powerLoopEnd);
+        return a;
     }else if(lhs->getType()->isFloatTy() && rhs->getType()->isFloatTy()){
 
     }else{
