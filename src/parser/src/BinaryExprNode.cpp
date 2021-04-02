@@ -31,7 +31,8 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                 case MINUS:
                 case MUL:
                 case DIV:
-                case LOR: {
+                case LOR:
+                case EQ: {
                     elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, (llvm::Instruction*)newMatAlloc, *resType);
                     break;
                 }
@@ -101,7 +102,7 @@ llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* cont
                                                           llvm::Value* lhs, llvm::Value* rhs, const std::string& name) {
     // TODO: Upcast to float -> Loss of precision? Discuss.
 
-    if (lhs->getType()->isIntegerTy() && rhs->getType()->isIntegerTy()) {
+    if (lhs->getType()->isIntegerTy(64) && rhs->getType()->isIntegerTy(64)) {
         // Handle the integer-integer operations
         switch (op) {
             case PLUS: {
@@ -117,8 +118,42 @@ llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* cont
                 return context->Builder->CreateSDiv(lhs, rhs, name);
             }
             case LOR: {
+                // We use CreateBinOp because it refers to logical version rather than bitwise
+                // See https://github.com/llvm-mirror/llvm/blob/master/include/llvm/IR/Instruction.def for the operators
+                return context->Builder->CreateBinOp(llvm::Instruction::BinaryOps::Or, lhs, rhs, name);
+            }
+            case LAND: {
+                return context->Builder->CreateBinOp(llvm::Instruction::BinaryOps::And, lhs, rhs, name);
+            }
+            // Dealing with comparison operators
+            case EQ: {
+                return context->Builder->CreateICmpEQ(lhs, rhs, name);
+            }
+            case NEQ: {
+                return context->Builder->CreateICmpNE(lhs, rhs, name);
+            }
+            case LT: {
+                return context->Builder->CreateICmpSLT(lhs, rhs, name);
+            }
+            case GT: {
+                return context->Builder->CreateICmpSGT(lhs, rhs, name);
+            }
+            case GTE: {
+                return context->Builder->CreateICmpSGE(lhs, rhs, name);
+            }
+            case LTE: {
+                return context->Builder->CreateICmpSLE(lhs, rhs, name);
+            }
+            case BAND: {
+                return context->Builder->CreateAnd(lhs, rhs, name);
+            }
+            case BOR: {
                 return context->Builder->CreateOr(lhs, rhs, name);
             }
+            case POW: {
+                return applyPowerToOperands(context, lhs, rhs, false, name);
+            }
+
             default: {
                 if (context->compilerOptions->warningVerbosity == WARNINGS::INFO ||
                     context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
@@ -143,12 +178,26 @@ llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* cont
                 return context->Builder->CreateFDiv(lhs, rhs, name);
             }
         }
-    } else {
-        if (context->compilerOptions->warningVerbosity == WARNINGS::INFO ||
-            context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
-            // TODO: Better reporting
-            throw std::runtime_error("Mutli-dimensional array multiplication occurred between two undefined types!");
+    } else if (lhs->getType()->isIntegerTy(1) && rhs->getType()->isIntegerTy(1)) {
+        // Handle boolean functions
+        switch (op) {
+            case PLUS:
+            case MINUS: {
+                return context->Builder->CreateXor(lhs, rhs, name);  // Add / Sub on GF(2) is equivalent to XOR
+            }
+            case MUL: {
+                return context->Builder->CreateAnd(lhs, rhs, name);  // Multiplication on GF(2) is AND
+            }
+            case DIV: {
+                break;  // Division on booleans not defined
+            }
         }
+    }
+
+    if (context->compilerOptions->warningVerbosity == WARNINGS::INFO ||
+        context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+        // TODO: Better reporting
+        throw std::runtime_error("Mutli-dimensional array multiplication occurred between two undefined types!");
     }
 }
 
@@ -349,4 +398,49 @@ bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext * context, AST::BIN_
     }
 
     return true;
+}
+
+/**
+ * Function computes the fast power of a value and an exponent using an iterative method described in
+ * https://mathstats.uncg.edu/sites/pauli/112/HTML/secfastexp.html.
+ *
+ * This is O(ceil(log2(n))+1), rather than the O(n) multiplications required with naive method of multiplication power
+ * @param context
+ * @param lhs
+ * @param rhs
+ * @param isFloat
+ * @param name
+ * @return
+ */
+llvm::Value* AST::BinaryExprNode::applyPowerToOperands(Utils::IRContext* context, llvm::Value* lhs, llvm::Value* rhs,
+                                                       const bool isFloat, const std::string& name) {
+    if(lhs->getType()->isIntegerTy() && rhs->getType()->isIntegerTy()) {
+        auto ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
+        auto* a = llvm::ConstantInt::get(ty, llvm::APInt(64, 1, true));
+
+        // Copy over the values within our scope
+        llvm::Value* c = lhs;
+        llvm::Value* n = rhs;
+
+        llvm::BasicBlock* powerLoopStart = llvm::BasicBlock::Create(context->module->getContext(), "pow.begin",context->function);
+        llvm::BasicBlock* powerLoopEnd = llvm::BasicBlock::Create(context->module->getContext(), "pow.end",context->function);
+        // Power function loop
+        context->Builder->SetInsertPoint(powerLoopStart);
+        {
+            // r = n mod 2
+            llvm::Value* r = context->Builder->CreateSRem(n, llvm::ConstantInt::get(ty, 2));
+
+            llvm::BasicBlock* powLoopInsideCondition = llvm::BasicBlock::Create(context->module->getContext(), "pow.cond", context->function);
+            llvm::
+            // break if n == 0
+            auto* endCondition = context->Builder->CreateICmpEQ(n, llvm::ConstantInt::get(ty, 0));
+            context->Builder->CreateCondBr(endCondition, powerLoopEnd, powerLoopStart);
+        }
+        // End of power loop
+        context->Builder->SetInsertPoint(powerLoopEnd);
+    }else if(lhs->getType()->isFloatTy() && rhs->getType()->isFloatTy()){
+
+    }else{
+        throw std::runtime_error("Cannot apply power operands to incompatible types!");
+    }
 }

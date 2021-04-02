@@ -39,7 +39,7 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
     // This will by default be i64, need to cast to i32 (I think its safe)
     matAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(matAllocaSize, intPtrType);
     auto* matAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), intPtrType, matDataType,
-                                                  matAllocaSize, nullptr, nullptr, "");
+                                                  matAllocaSize, nullptr, nullptr, "bitcast");
     context->Builder->Insert(matAlloc, "matArrData");
 
     // Pointer for the array itself accessible for loading
@@ -50,7 +50,7 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
     llvm::Constant* matHeaderAllocaSize = llvm::ConstantExpr::getSizeOf(matHeaderType);
     matHeaderAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(matHeaderAllocaSize, intPtrType);
     auto* matHeaderAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), intPtrType, matHeaderType,
-                                                        matHeaderAllocaSize, nullptr, nullptr, "");
+                                                        matHeaderAllocaSize, nullptr, nullptr, "bitcast");
     // LLVM requires us to actually insert the instruction when using CallInst
     context->Builder->Insert(matHeaderAlloc, "matStruct");
 
@@ -184,7 +184,7 @@ void Utils::insertValueAtPointerOffset(Utils::IRContext* context, llvm::Value* p
 
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
     auto xOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), offset);
-    auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset});
+    auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset}, "insertPtr");
     context->Builder->CreateStore(val, offsetPtr);
 }
 
@@ -209,7 +209,7 @@ llvm::Value* Utils::getValueFromPointerOffset(Utils::IRContext* context, llvm::V
                                               const std::string& name) {
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
     auto xOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), offset);
-    auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset});
+    auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset}, "getPtr");
     return context->Builder->CreateLoad(offsetPtr, name);
 }
 
