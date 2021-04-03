@@ -26,20 +26,14 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
 
             newMatAlloc = Utils::createMatrix(context, *resType);
 
-            switch (op) {
-                case PLUS:
-                case MINUS:
-                case MUL:
-                case DIV:
-                case LOR:
-                case EQ: {
-                    elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, (llvm::Instruction*)newMatAlloc, *resType);
-                    break;
-                }
-                default:
-                    throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) +
-                                             "]");
+            if (op != BIN_OPERATORS::MATM) {
+                elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, (llvm::Instruction*)newMatAlloc,
+                                   *resType);
+            } else {
+                throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) +
+                                         "]");
             }
+
         }
     }
 
@@ -414,49 +408,70 @@ bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext * context, AST::BIN_
  */
 llvm::Value* AST::BinaryExprNode::applyPowerToOperands(Utils::IRContext* context, llvm::Value* lhs, llvm::Value* rhs,
                                                        const bool isFloat, const std::string& name) {
-    if(lhs->getType()->isIntegerTy() && rhs->getType()->isIntegerTy()) {
-        auto ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
-        llvm::Value* a = llvm::ConstantInt::get(ty, llvm::APInt(64, 1, true));
+    auto tyInt = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
+    auto tyFloat64 = static_cast<llvm::Type*>(llvm::Type::getDoubleTy(context->module->getContext()));
 
+    if (lhs->getType()->isIntegerTy() && rhs->getType()->isIntegerTy()) {
+        llvm::Value* a = llvm::ConstantInt::get(tyInt, llvm::APInt(64, 1, true));
         // Copy over the values within our scope
         llvm::Value* c = lhs;
         llvm::Value* n = rhs;
 
-        llvm::BasicBlock* powerLoopStart = llvm::BasicBlock::Create(context->module->getContext(), "pow.begin",context->function);
-        llvm::BasicBlock* powerLoopEnd = llvm::BasicBlock::Create(context->module->getContext(), "pow.end",context->function);
+        llvm::BasicBlock* negativeReverse =
+            llvm::BasicBlock::Create(context->module->getContext(), "pow.neg", context->function);
+        llvm::BasicBlock* powerLoopStart =
+            llvm::BasicBlock::Create(context->module->getContext(), "pow.begin", context->function);
+        llvm::BasicBlock* powerLoopEnd =
+            llvm::BasicBlock::Create(context->module->getContext(), "pow.end", context->function);
+        // Flip n if negative
+        llvm::Value* negCmp = context->Builder->CreateICmpSLT(n, llvm::ConstantInt::get(tyInt, 0));
+        context->Builder->CreateCondBr(negCmp, negativeReverse, powerLoopStart);
+        context->Builder->SetInsertPoint(negativeReverse);
+        {
+            // n = (-1)*n
+            n = context->Builder->CreateNeg(n);
+        }
         // Power function loop
         context->Builder->SetInsertPoint(powerLoopStart);
         {
             // r = n mod 2
-            llvm::Value* r = context->Builder->CreateSRem(n, llvm::ConstantInt::get(ty, 2));
+            llvm::Value* r = context->Builder->CreateSRem(n, llvm::ConstantInt::get(tyInt, 2));
 
-            llvm::BasicBlock* powLoopInsideCondition = llvm::BasicBlock::Create(context->module->getContext(), "pow.cond", context->function);
-            llvm::BasicBlock* powLoopInsideConditionEnd = llvm::BasicBlock::Create(context->module->getContext(), "pow.condEnd", context->function);
+            llvm::BasicBlock* powLoopInsideCondition =
+                llvm::BasicBlock::Create(context->module->getContext(), "pow.cond", context->function);
+            llvm::BasicBlock* powLoopInsideConditionEnd =
+                llvm::BasicBlock::Create(context->module->getContext(), "pow.condEnd", context->function);
 
             // r == 1 condition
-            auto* innerComparison = context->Builder->CreateICmpEQ(r, llvm::ConstantInt::get(ty, 1));
+            auto* innerComparison = context->Builder->CreateICmpEQ(r, llvm::ConstantInt::get(tyInt, 1));
             // break if true
             context->Builder->CreateCondBr(innerComparison, powLoopInsideCondition, powLoopInsideConditionEnd);
             {
                 context->Builder->SetInsertPoint(powLoopInsideCondition);
                 a = context->Builder->CreateMul(a, c);
             }
-
             // n = n div 2
-            n = context->Builder->CreateSDiv(n, llvm::ConstantInt::get(ty, 2));
+            n = context->Builder->CreateSDiv(n, llvm::ConstantInt::get(tyInt, 2));
             // c = c * c
             c = context->Builder->CreateMul(c, c);
-
             // break if n == 0
-            auto* endCondition = context->Builder->CreateICmpEQ(n, llvm::ConstantInt::get(ty, 0));
+            auto* endCondition = context->Builder->CreateICmpEQ(n, llvm::ConstantInt::get(tyInt, 0));
             context->Builder->CreateCondBr(endCondition, powerLoopEnd, powerLoopStart);
         }
         // End of power loop
         context->Builder->SetInsertPoint(powerLoopEnd);
+        llvm::BasicBlock* flipPos =
+            llvm::BasicBlock::Create(context->module->getContext(), "pow.negFinish", context->function);
+        llvm::BasicBlock* flipPosEnd =
+            llvm::BasicBlock::Create(context->module->getContext(), "pow.negFinishEnd", context->function);
+        // if negCmp is true, a = 1/a
+        context->Builder->CreateCondBr(negCmp, flipPos, flipPosEnd);
+        context->Builder->SetInsertPoint(flipPos);
+        { a = context->Builder->CreateFDiv(llvm::ConstantFP::get(tyFloat64, 1), a); }
+        context->Builder->SetInsertPoint(flipPosEnd);
         return a;
-    }else if(lhs->getType()->isFloatTy() && rhs->getType()->isFloatTy()){
-
-    }else{
-        throw std::runtime_error("Cannot apply power operands to incompatible types!");
+    } else if (lhs->getType()->isFloatTy() && rhs->getType()->isIntegerTy()) {
+    } else {
+        throw std::runtime_error("Unsupported exponent or base: Supported operations: Integer^Integer, Float^Integer");
     }
 }
