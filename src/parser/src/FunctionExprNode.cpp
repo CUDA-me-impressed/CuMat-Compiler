@@ -43,6 +43,7 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
 void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
     this->nonAppliedFunction->semanticPass(context);
     for (auto const& arg : this->args) arg->semanticPass(context);
+    // TODO: Check that types align with the argument types specified in the symbol table
 }
 
 std::string AST::FunctionExprNode::toTree(const std::string& prefix, const std::string& childPrefix) const {

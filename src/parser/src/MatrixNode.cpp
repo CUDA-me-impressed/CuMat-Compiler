@@ -86,8 +86,6 @@ std::vector<uint> AST::MatrixNode::getDimensions() {
 }
 
 void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
-    //    std::cout << "Performing Matrix Semantic Pass" << std::endl;
-    for (auto const& child : this->children) child->semanticPass(context);
     bool sameType = true;
     bool zeroRank = true;
     Typing::PRIMITIVE primType = Typing::PRIMITIVE::NONE;
