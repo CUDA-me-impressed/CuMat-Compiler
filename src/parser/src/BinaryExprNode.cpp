@@ -258,12 +258,20 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
         case AST::BIN_OPERATORS::MINUS:
         case AST::BIN_OPERATORS::MUL:
         case AST::BIN_OPERATORS::DIV:
-        case AST::BIN_OPERATORS::POW:
         case AST::BIN_OPERATORS::MATM: // Dimensions sorted by Thomas later
             TypeCheckUtils::assertNumericType(lhsPrim);
             TypeCheckUtils::assertNumericType(rhsPrim);
             primType = TypeCheckUtils::getHighestType(lhsPrim, rhsPrim);
             this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), primType);
+            break;
+        case AST::BIN_OPERATORS::POW:
+            TypeCheckUtils::assertNumericType(lhsPrim);
+            if (TypeCheckUtils::isInt(rhsPrim)) {
+                primType = Typing::PRIMITIVE::FLOAT;
+                this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), primType);
+            } else {
+                TypeCheckUtils::wrongTypeError("Expected Int exponent", rhsPrim);
+            }
             break;
         case AST::BIN_OPERATORS::LOR:
         case AST::BIN_OPERATORS::LAND:

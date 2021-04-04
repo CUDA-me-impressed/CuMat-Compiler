@@ -40,7 +40,17 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
-    this->nonAppliedFunction->semanticPass(context);
-    for (auto const& arg : this->args) arg->semanticPass(context);
-    // TODO: Check that types align with the argument types specified in the symbol table
+    // Check that function exists in the symbol table
+    if (context->semanticSymbolTable->inSymbolTable(this->funcName)) {
+        std::shared_ptr<Typing::Type> fTy = context->semanticSymbolTable->getType(this->funcName);
+        this->type = fTy->returnType;
+    }
+        this->nonAppliedFunction->semanticPass(context);
+        // Get the argument types for the function
+        for (auto const& arg : this->args) {
+            arg->semanticPass(context);
+            // Check that the argument type in this position matches the argument type in the function type
+        };
+        // TODO: Check that types align with the argument types specified in the symbol table
+        // Finally, set the type of this node to equal the return type of the function
 }

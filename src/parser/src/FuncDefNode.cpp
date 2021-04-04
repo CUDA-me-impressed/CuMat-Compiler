@@ -1,4 +1,5 @@
 #include "FuncDefNode.hpp"
+#include "TypeCheckingUtils.hpp"
 
 llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     // Let us generate a new function -> We will first generate the function argument types
@@ -35,7 +36,6 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
         typesRaw.push_back(typeNamePair.second);
     }
 
-    // TODO: Update to use new semantic symbol table when it is made
     // Store within the symbol table
     context->symbolTable->addNewFunction(funcName, typesRaw);
 
@@ -43,4 +43,7 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
 
     // Pop the function as we leave the definition of the code
     context->symbolTable->escapeFunction();
+
+    auto type = TypeCheckUtils::makeFunctionType(this->returnType, typesRaw);
+    context->semanticSymbolTable->storeType(this->funcName, type);
 }

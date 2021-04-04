@@ -113,7 +113,7 @@ void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
         }
     }
 
-    std::vector<uint> dimensions = this->getDimensions();
+    std::vector<uint> dimensions = this->getDimensions(); // Maybe use dimensions of inner matrix?
 
     this->type = TypeCheckUtils::makeMatrixType(dimensions, primType);
 }

@@ -23,6 +23,14 @@ std::shared_ptr<Typing::Type> TypeCheckUtils::makeCustomType(std::string name, c
     return type;
 }
 
+std::shared_ptr<Typing::Type> TypeCheckUtils::makeFunctionType(std::shared_ptr<Typing::Type> returnType, const std::vector<std::shared_ptr<Typing::Type>> params) {
+    auto ty = Typing::FunctionType();
+    ty.returnType = returnType;
+    ty.parameters = params;
+    std::shared_ptr<Typing::Type> type = std::make_shared<Typing::Type>(ty);
+    return type;
+}
+
 bool TypeCheckUtils::isBool(Typing::PRIMITIVE ty) {
     return ty == Typing::PRIMITIVE::BOOL;
 }
@@ -95,6 +103,11 @@ void TypeCheckUtils::noneError() {
     std::exit(TypeCheckUtils::ErrorCodes::NONE_ERROR);
 }
 
+void TypeCheckUtils::alreadyDefinedError(std::string funcName) {
+    std::cerr << "Function with same name already defined: " << funcName << std::endl;
+    std::exit(TypeCheckUtils::ErrorCodes::ALREADY_DEFINED_ERROR);
+}
+
 void TypeCheckUtils::assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
     if (not(lhs == rhs)) {
         std::cerr << "Mismatched types: " << primToString(lhs) << ", " << primToString(rhs) << std::endl;
@@ -109,6 +122,8 @@ void TypeCheckUtils::assertCompatibleTypes(Typing::PRIMITIVE lhs, Typing::PRIMIT
             compatible = rhs == Typing::PRIMITIVE::STRING;
             break;
         case Typing::PRIMITIVE::INT:
+            compatible = (rhs == Typing::PRIMITIVE::INT or rhs == Typing::PRIMITIVE::FLOAT or rhs == Typing::PRIMITIVE::BOOL);
+            break;
         case Typing::PRIMITIVE::FLOAT:
             compatible = (rhs == Typing::PRIMITIVE::INT or rhs == Typing::PRIMITIVE::FLOAT);
             break;

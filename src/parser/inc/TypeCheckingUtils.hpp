@@ -6,11 +6,12 @@
 namespace TypeCheckUtils {
 
     enum ErrorCodes {
-        WRONG_TYPE = 2, MISMATCH_CODE = 3, CASTING_ERROR = 4, NONE_ERROR = 5
+        WRONG_TYPE = 2, MISMATCH_CODE = 3, CASTING_ERROR = 4, NONE_ERROR = 5, ALREADY_DEFINED_ERROR = 6
     };
 
     std::shared_ptr<Typing::Type> makeMatrixType(const std::vector<uint> dimensions, Typing::PRIMITIVE primType);
     std::shared_ptr<Typing::Type> makeCustomType(std::string name, const std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> attrs);
+    std::shared_ptr<Typing::Type> makeFunctionType(std::shared_ptr<Typing::Type> returnType, const std::vector<std::shared_ptr<Typing::Type>> params);
 
     bool isBool(Typing::PRIMITIVE ty);
     bool isInt(Typing::PRIMITIVE ty);
@@ -29,6 +30,7 @@ namespace TypeCheckUtils {
     void wrongTypeError(std::string message, Typing::PRIMITIVE ty);
     void castingError();
     void noneError();
+    void alreadyDefinedError(std::string funcName);
 
     std::string primToString(Typing::PRIMITIVE ty);
 

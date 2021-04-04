@@ -17,6 +17,7 @@
 #include "CompilerOptions.hpp"
 #include "CuMatASTGenerator.hpp"
 #include "Preprocessor.hpp"
+#include "TypeCheckingSymbolTable.hpp"
 
 void printArgumentError(std::string message, std::string arg) {
     const std::string helpText =
@@ -135,9 +136,10 @@ int main(int argc, char* argv[], char* envp[]) {
         llvm::Module TheModule(std::get<0>(tree), TheContext);
         llvm::IRBuilder<> Builder(TheContext);
         Utils::SymbolTable symbolTable;
+        TypeCheckUtils::TypeCheckingSymbolTable semanticSymbolTable;
 
         // Context containing the module and IR Builder AND SYMBOL TABLE
-        Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable};
+        Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable, &semanticSymbolTable};
         std::get<1>(tree)->semanticPass(&treeContext);
         treeContext.symbolTable->createNVVMMetadata(&treeContext);  // TODO: Replace when program node codegen done
         std::get<1>(tree)->codeGen(&treeContext);
