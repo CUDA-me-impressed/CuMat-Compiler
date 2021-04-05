@@ -11,6 +11,7 @@
 
 #include "SymbolTable.hpp"
 #include "Type.hpp"
+#include "CompilerOptions.hpp"
 #include "TypeCheckingSymbolTable.hpp"
 
 namespace Utils {
@@ -19,6 +20,7 @@ struct IRContext {
     llvm::IRBuilder<>* Builder;
     llvm::Function* function;
     SymbolTable* symbolTable;
+    CompilerOptions* compilerOptions;
     TypeCheckUtils::TypeCheckingSymbolTable* semanticSymbolTable;
 };
 
@@ -45,9 +47,9 @@ llvm::Instruction* createMatrix(IRContext* context, const Typing::Type& type);
 
 LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
 
-void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val);
+void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val, bool i64);
 
-void insertValueAtPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, llvm::Value* val);
+void insertValueAtPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, llvm::Value* val, bool i64);
 
 llvm::Value* getValueFromPointerOffset(IRContext* context, llvm::Value* ptr, int offset, const std::string& name);
 
@@ -65,4 +67,5 @@ void setValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* o
 llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type);
 
 int getRealIndexOffset(const std::vector<uint>& dimensions, const std::vector<int>& index);
+
 }  // namespace Utils

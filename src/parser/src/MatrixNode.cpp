@@ -55,7 +55,7 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
         auto literalRecord = Utils::getMatrixFromPointer(context, literalLLVMMat);
         // Get the value at the pointer
         llvm::Value* literalLLVVal = Utils::getValueFromPointerOffset(context, literalRecord.dataPtr, 0, "literalVal");
-        Utils::insertValueAtPointerOffset(context, matRecord.dataPtr, 0, literalLLVVal);
+        Utils::insertValueAtPointerOffset(context, matRecord.dataPtr, 0, literalLLVVal, false);
 
         // Clean up the allocation for the literal, else memory leak big time!
         auto* freeMat = llvm::CallInst::CreateFree(literalLLVMMat, context->Builder->GetInsertBlock());

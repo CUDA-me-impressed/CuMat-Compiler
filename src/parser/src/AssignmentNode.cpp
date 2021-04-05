@@ -14,10 +14,12 @@ llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
         if (!context->symbolTable->inSymbolTable(this->name, context->symbolTable->getCurrentFunction())) {
             // Something has gone wrong during the parse stage and we have not added the symbol into the table
             // Raising a warning!
-            std::cout << "[Internal Warning] Symbol " << this->name
-                      << " was not found within the symbol"
-                         " table. Created during codegen"
-                      << std::endl;
+            if (context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+                std::cout << "[Internal Warning] Symbol " << this->name
+                          << " was not found within the symbol"
+                             " table. Created during codegen"
+                          << std::endl;
+            }
             // No typing information can be inferred at this stage (nullptr) - Can and will cause issues hence the
             // warning
             context->symbolTable->setValue(nullptr, rValLLVM, this->name, context->symbolTable->getCurrentFunction());
@@ -46,7 +48,9 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
     // Get the type for the original value
     auto matType = std::get_if<Typing::MatrixType>(&*this->rVal->type);
     if (!matType) {
-        std::cout << "[Internal Warning] Cannot find type information for rVal with variable " << name << std::endl;
+        if (context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+            std::cout << "[Internal Warning] Cannot find type information for rVal with variable " << name << std::endl;
+        }
         // Attempt correction
     }
 
@@ -70,17 +74,19 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
 
     llvm::Value* rValDataPtr = context->Builder->CreateGEP(matRecord.dataPtr, lValMatRecord.numBytes, "rValOffset");
     // Point both of the data pointers to the correct locations
-    Utils::insertValueAtPointerOffset(context, lValMatRecord.dataPtr, 0, matRecord.dataPtr);
-    Utils::insertValueAtPointerOffset(context, rValMatRecord.dataPtr, 0, rValDataPtr);
+    Utils::insertValueAtPointerOffset(context, lValMatRecord.dataPtr, 0, matRecord.dataPtr, false);
+    Utils::insertValueAtPointerOffset(context, rValMatRecord.dataPtr, 0, rValDataPtr, false);
 
     // Handle assignment symbol table code
     if (!context->symbolTable->inSymbolTable(this->name, context->symbolTable->getCurrentFunction())) {
         // Something has gone wrong during the parse stage and we have not added the symbol into the table
         // Raising a warning!
-        std::cout << "[Internal Warning] Symbol " << this->name
-                  << " was not found within the symbol"
-                     " table. Created during codegen"
-                  << std::endl;
+        if(context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+            std::cout << "[Internal Warning] Symbol " << this->name
+                      << " was not found within the symbol"
+                         " table. Created during codegen"
+                      << std::endl;
+        }
         // No typing information can be inferred at this stage (nullptr) - Can and will cause issues hence the warning
         context->symbolTable->setValue(nullptr, lValMatAlloc, this->name, context->symbolTable->getCurrentFunction());
     } else {
