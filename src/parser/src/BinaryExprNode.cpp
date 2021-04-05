@@ -471,6 +471,65 @@ llvm::Value* AST::BinaryExprNode::applyPowerToOperands(Utils::IRContext* context
         context->Builder->SetInsertPoint(flipPosEnd);
         return a;
     } else if (lhs->getType()->isFloatTy() && rhs->getType()->isIntegerTy()) {
+        // For floating point numbers
+        llvm::Value* a = llvm::ConstantFP::get(tyFloat64, 1);
+        // Copy over the values within our scope
+        llvm::Value* c = lhs;
+        llvm::Value* n = rhs;
+
+        llvm::BasicBlock* negativeReverse =
+            llvm::BasicBlock::Create(context->module->getContext(), "pow.neg", context->function);
+        llvm::BasicBlock* powerLoopStart =
+            llvm::BasicBlock::Create(context->module->getContext(), "pow.begin", context->function);
+        llvm::BasicBlock* powerLoopEnd =
+            llvm::BasicBlock::Create(context->module->getContext(), "pow.end", context->function);
+        // Flip n if negative
+        llvm::Value* negCmp = context->Builder->CreateICmpSLT(n, llvm::ConstantInt::get(tyInt, 0));
+        context->Builder->CreateCondBr(negCmp, negativeReverse, powerLoopStart);
+        context->Builder->SetInsertPoint(negativeReverse);
+        {
+            // n = (-1)*n
+            n = context->Builder->CreateNeg(n);
+        }
+        // Power function loop
+        context->Builder->SetInsertPoint(powerLoopStart);
+        {
+            // r = n mod 2
+            llvm::Value* r = context->Builder->CreateSRem(n, llvm::ConstantInt::get(tyInt, 2));
+
+            llvm::BasicBlock* powLoopInsideCondition =
+                llvm::BasicBlock::Create(context->module->getContext(), "pow.cond", context->function);
+            llvm::BasicBlock* powLoopInsideConditionEnd =
+                llvm::BasicBlock::Create(context->module->getContext(), "pow.condEnd", context->function);
+
+            // r == 1 condition (ordered fp)
+            auto* innerComparison = context->Builder->CreateICmpEQ(r, llvm::ConstantInt::get(tyInt, 1));
+            // break if true
+            context->Builder->CreateCondBr(innerComparison, powLoopInsideCondition, powLoopInsideConditionEnd);
+            {
+                context->Builder->SetInsertPoint(powLoopInsideCondition);
+                a = context->Builder->CreateFMul(a, c);
+            }
+            // n = n div 2 (n remains int)
+            n = context->Builder->CreateSDiv(n, llvm::ConstantInt::get(tyInt, 2));
+            // c = c * c
+            c = context->Builder->CreateFMul(c, c);
+            // break if n == 0
+            auto* endCondition = context->Builder->CreateICmpEQ(n, llvm::ConstantInt::get(tyInt, 0));
+            context->Builder->CreateCondBr(endCondition, powerLoopEnd, powerLoopStart);
+        }
+        // End of power loop
+        context->Builder->SetInsertPoint(powerLoopEnd);
+        llvm::BasicBlock* flipPos =
+            llvm::BasicBlock::Create(context->module->getContext(), "pow.negFinish", context->function);
+        llvm::BasicBlock* flipPosEnd =
+            llvm::BasicBlock::Create(context->module->getContext(), "pow.negFinishEnd", context->function);
+        // if negCmp is true, a = 1/a
+        context->Builder->CreateCondBr(negCmp, flipPos, flipPosEnd);
+        context->Builder->SetInsertPoint(flipPos);
+        { a = context->Builder->CreateFDiv(llvm::ConstantFP::get(tyFloat64, 1), a); }
+        context->Builder->SetInsertPoint(flipPosEnd);
+        return a;
     } else {
         throw std::runtime_error("Unsupported exponent or base: Supported operations: Integer^Integer, Float^Integer");
     }
