@@ -8,6 +8,9 @@
 #include "CompilerOptions.hpp"
 
 llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
+    // We need to determine whenever or not we apply the CPU code, ultimately this is determined by the complexity of
+    // the operation (i.e. if it would be simpler to just execute on the CPU, and complexity of the operation for us
+    // i.e. not MAT-MAT mult)
     // Assumption is that our types are two evaluated matricies of compatible
     // dimensions. We first generate code for each of the l and r matricies
     llvm::Value* lhsVal = lhs->codeGen(context);
@@ -16,24 +19,28 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     auto rhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->rhs);
     llvm::Value* newMatAlloc;
 
-    if (auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type)) {
-        if (auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type)) {
-            auto lhsDimension = lhsType->getDimensions();
-            auto rhsDimension = rhsType->getDimensions();
+    if (shouldExecuteGPU(context, op) || this->op == BIN_OPERATORS::MATM) {
+        // TODO: Link matt's code with the codegen stage
+    } else {
+        // Execute this operation on CPU
+        if (auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type)) {
+            if (auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type)) {
+                auto lhsDimension = lhsType->getDimensions();
+                auto rhsDimension = rhsType->getDimensions();
 
-            auto* resType = std::get_if<Typing::MatrixType>(&*type);
-            resType->dimensions = lhsDimension.size() > rhsDimension.size() ? lhsDimension : rhsDimension;
+                auto* resType = std::get_if<Typing::MatrixType>(&*type);
+                resType->dimensions = lhsDimension.size() > rhsDimension.size() ? lhsDimension : rhsDimension;
 
-            newMatAlloc = Utils::createMatrix(context, *resType);
+                newMatAlloc = Utils::createMatrix(context, *resType);
 
-            if (op != BIN_OPERATORS::MATM) {
-                elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, (llvm::Instruction*)newMatAlloc,
-                                   *resType);
-            } else {
-                throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) +
-                                         "]");
+                if (op != BIN_OPERATORS::MATM) {
+                    elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, (llvm::Instruction*)newMatAlloc,
+                                       *resType);
+                } else {
+                    throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) +
+                                             "]");
+                }
             }
-
         }
     }
 
@@ -366,32 +373,27 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
  * @param op
  * @return
  */
-bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext * context, AST::BIN_OPERATORS op) {
+bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext * context, AST::BIN_OPERATORS op) const {
     // Define a lookup table for the operation complexity
-    if(context->compilerOptions->optimisationLevel == OPTIMISATION::EXPERIMENTAL) {
-        int entropy = 1;
-        auto lhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->lhs);
-        auto rhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->rhs);
-        auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type);
-        auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type);
-        if (op == MATM) {
-            // This is the only complex operation
-            if (lhsType) {
-                entropy = lhsType->dimensions[1];
-            } else {
-                if(context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
-                    std::cout
-                        << "[Warning] - Matrix Multiplication entropy calculation failed - Using element wise entropy"
-                        << std::endl;
-                }
+    int entropy = 1;
+    auto lhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->lhs);
+    auto rhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->rhs);
+    auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type);
+    auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type);
+    if (op == MATM) {
+        // This is the only complex operation
+        if (lhsType) {
+            entropy = lhsType->dimensions[1];
+        } else {
+            if (context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+                std::cout << "[Warning] - Matrix Multiplication entropy calculation failed - Using element wise entropy"
+                          << std::endl;
             }
         }
-        entropy *= rhsType->getLength() * lhsType->getLength();
-        int maxCPUEntropy = 400;  // 400 corresponds to 20x20 matrix
-        return entropy >= maxCPUEntropy;
     }
-
-    return true;
+    entropy *= rhsType->getLength() * lhsType->getLength();
+    int maxCPUEntropy = 400;  // 400 corresponds to 20x20 matrix
+    return entropy >= maxCPUEntropy;
 }
 
 /**

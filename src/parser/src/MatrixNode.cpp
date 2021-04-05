@@ -50,16 +50,35 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
 
     // Compress literal nodes to matrix representation
     for (int i = 0; i < this->data.size(); i++) {
-        auto literal = this->data.at(i);
-        llvm::Value* literalLLVMMat = literal->codeGen(context);
-        auto literalRecord = Utils::getMatrixFromPointer(context, literalLLVMMat);
-        // Get the value at the pointer
-        llvm::Value* literalLLVVal = Utils::getValueFromPointerOffset(context, literalRecord.dataPtr, 0, "literalVal");
-        Utils::insertValueAtPointerOffset(context, matRecord.dataPtr, 0, literalLLVVal, false);
+        auto element = this->data.at(i);
+        auto* dataPtr = Utils::getValueFromPointerOffset(context, matRecord.dataPtr, i, "matArrPtr");
 
-        // Clean up the allocation for the literal, else memory leak big time!
-        auto* freeMat = llvm::CallInst::CreateFree(literalLLVMMat, context->Builder->GetInsertBlock());
-        context->Builder->Insert(freeMat, "");
+        // Check if we can naively do this without causing recursive check -> Yes its not technically a matrix
+        // Yes this violates our idea of every type being a matrix but its equivalent fuck it
+        auto* literal = std::get_if<Typing::MatrixType>(&*element->type);
+        if(literal != nullptr){
+
+            // Let's just generate code for the literal itself -> This returns a single value
+            llvm::Value* elementLLVMMat = element->codeGen(context);
+            Utils::insertValueAtPointerOffset(context, matRecord.dataPtr, i, elementLLVMMat, false);
+        }
+//        llvm::Value* elementLLVMMat = element->codeGen(context);
+//        // ElementLLVMMat may be a nested matrix. We place the length in continuous memory
+//        auto elementRecord = Utils::getMatrixFromPointer(context, elementLLVMMat);
+//        // We can make two assumptions as we know the semantic passes must have discovered incompatible types thus far
+//        // 1. Type of elementLLVMMat data = Type of this node
+//        // 2. The data from this point on is sequential in memory
+//        // Let us insert this new matrix into the next memory block
+//
+//
+//
+//        // Get the value at the pointer
+//        llvm::Value* literalLLVVal = Utils::getValueFromPointerOffset(context, literalRecord.dataPtr, 0, "literalVal");
+//        Utils::insertValueAtPointerOffset(context, matRecord.dataPtr, 0, literalLLVVal, false);
+//
+//        // Clean up the allocation for the literal, else memory leak big time!
+//        auto* freeMat = llvm::CallInst::CreateFree(literalLLVMMat, context->Builder->GetInsertBlock());
+//        context->Builder->Insert(freeMat, "");
     }
 
     return matAlloc;
