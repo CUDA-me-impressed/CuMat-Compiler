@@ -82,6 +82,8 @@ std::string TypeCheckUtils::primToString(Typing::PRIMITIVE ty) {
             return "float";
         case Typing::PRIMITIVE::BOOL:
             return "bool";
+        case Typing::PRIMITIVE::FUNCTION:
+            return "function";
         case Typing::PRIMITIVE::NONE:
             return "none";
     }
@@ -132,6 +134,9 @@ void TypeCheckUtils::assertCompatibleTypes(Typing::PRIMITIVE lhs, Typing::PRIMIT
             break;
         case Typing::PRIMITIVE::NONE:
             compatible = false;
+            break;
+        case Typing::PRIMITIVE::FUNCTION:
+            compatible = (rhs == Typing::PRIMITIVE::FUNCTION);
             break;
     }
     if (not compatible) {
