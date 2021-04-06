@@ -29,7 +29,7 @@ TEST_CASE("ASTNode default implementation forwards calls to its children", "[AST
         Utils::IRContext ctx{};
 
         for (auto& mock : mocks) {
-            exps.push_back(NAMED_REQUIRE_CALL(*mock, semanticPass()));
+            exps.push_back(NAMED_REQUIRE_CALL(*mock, semanticPass(&ctx)));
         }
 
         testNode.semanticPass(&ctx);
