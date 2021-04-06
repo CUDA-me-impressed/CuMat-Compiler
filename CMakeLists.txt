@@ -28,7 +28,11 @@ if (${LLVM_PACKAGE_VERSION} VERSION_LESS 10 OR ${LLVM_PACKAGE_VERSION} VERSION_G
 endif ()
 
 # include all of the components, may need to include nvvm at some point
-llvm_map_components_to_libnames(llvm_libs support core irreader)
+llvm_map_components_to_libnames(llvm_libs
+        support core irreader
+        # targets
+        NVPTX X86
+        )
 add_library(llvm_interface INTERFACE)
 target_link_libraries(llvm_interface INTERFACE ${llvm_libs})
 target_include_directories(llvm_interface INTERFACE ${LLVM_INCLUDE_DIRS})
