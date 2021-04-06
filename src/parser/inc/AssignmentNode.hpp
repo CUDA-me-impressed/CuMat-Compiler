@@ -13,7 +13,9 @@ class AssignmentNode : public Node {
     std::shared_ptr<DecompNode> lVal;
     std::shared_ptr<ExprNode> rVal;
 
-    void semanticPass() override;
+    void semanticPass(Utils::IRContext* context) override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
+    llvm::Value* decompAssign(Utils::IRContext* context, std::shared_ptr<DecompNode> decompNode,
+                              llvm::Value* matHeader);
 };
 }  // namespace AST

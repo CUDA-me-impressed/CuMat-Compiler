@@ -105,7 +105,7 @@ class SymbolTable {
 
     // Function stack
     void escapeFunction();
-
+    void enterFunction(const std::string& function, const std::string& funcNamespace = "");
     std::string getCurrentFunction();
 };
 }  // namespace Utils
