@@ -61,7 +61,7 @@ void CuMatMatMultMatrixI(long * matA, long * matB, long * matRes, long i, long p
     // Copy result from device to host
     cudaMemcpyAsync(matRes, d_Res, matResSize, cudaMemcpyDeviceToHost, stream);
     // Copy the results out of device memory
-    cudaMemcpy(matRes, d_Res, matResSize, cudaMemcpyDeviceToHost);
+//    cudaMemcpy(matRes, d_Res, matResSize, cudaMemcpyDeviceToHost);
     cudaStreamSynchronize(stream);
 
     // Clean up memory
