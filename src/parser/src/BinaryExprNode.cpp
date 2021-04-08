@@ -7,6 +7,10 @@
 #include "TypeCheckingUtils.hpp"
 #include "CompilerOptions.hpp"
 
+#include "TreePrint.hpp"
+
+namespace AST {
+
 llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     // We need to determine whenever or not we apply the CPU code, ultimately this is determined by the complexity of
     // the operation (i.e. if it would be simpler to just execute on the CPU, and complexity of the operation for us
@@ -230,7 +234,7 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     if (lhsMat->rank != rhsMat->rank)
         throw std::runtime_error("Cannot compute matrix multiplication on matricies with different ranks!");
     // TODO: Sort out rank 1 multiplication (vector)
-    if (!lhsMat->rank == 2 || !rhsMat->rank == 2)
+    if (lhsMat->rank != 2 || rhsMat->rank != 2)
         throw std::runtime_error("Matrix rank too high to compute matrix multiplication! Must be sliced first.");
     if (lhsMat->primType != rhsMat->primType) throw std::runtime_error("Matrix primitive types do not match");
 
@@ -551,3 +555,14 @@ llvm::Value* AST::BinaryExprNode::applyPowerToOperands(Utils::IRContext* context
         throw std::runtime_error("Unsupported exponent or base: Supported operations: Integer^Integer, Float^Integer");
     }
 }
+
+const char* op_name(BIN_OPERATORS i) { return BIN_OP_ENUM_STRING[(int)i]; }
+
+std::string AST::BinaryExprNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    using namespace Tree;
+    std::string str{prefix + std::string{"Binary Expression: "} + op_name(this->op) + "\n"};
+    str += lhs->toTree(childPrefix + T, childPrefix + I);
+    str += rhs->toTree(childPrefix + L, childPrefix + B);
+    return str;
+}
+}  // namespace AST

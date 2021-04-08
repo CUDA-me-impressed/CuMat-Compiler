@@ -51,4 +51,14 @@ void AST::TernaryExprNode::semanticPass(Utils::IRContext* context) {
     this->condition->semanticPass(context);
     this->truthy->semanticPass(context);
     this->falsey->semanticPass(context);
+    // TODO Doesn't this need to check that the type is the same for both paths?
+}
+void AST::TernaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    condition->dimensionPass(nt);
+    truthy->dimensionPass(nt);
+    falsey->dimensionPass(nt);
+    auto* true_mt = std::get_if<Typing::MatrixType>(&*truthy->type);
+    auto* false_mt = std::get_if<Typing::MatrixType>(&*falsey->type);
+    if (true_mt && false_mt) {
+    }
 }

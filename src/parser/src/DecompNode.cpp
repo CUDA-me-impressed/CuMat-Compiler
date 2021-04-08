@@ -44,6 +44,7 @@ llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {
     //
     //        return nullptr;
     //    }
+    return nullptr;
 }
 
 void AST::DecompNode::semanticPass(Utils::IRContext* context) {

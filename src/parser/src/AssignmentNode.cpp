@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "TreePrint.hpp"
+
 llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
     // Generate LLVM value for the rval expression
     llvm::Value* rValLLVM = this->rVal->codeGen(context);
@@ -100,4 +102,12 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
         decompAssign(context, nestedDecomp, lValMatAlloc);
     }
     return lValMatAlloc;  // Dunno, seems to be what I would want, maybe change?
+}
+
+std::string AST::AssignmentNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    using namespace Tree;
+    std::string str{prefix + std::string{"Assignment\n"}};
+    str += lVal->toTree(childPrefix + T, childPrefix + I);
+    str += rVal->toTree(childPrefix + L, childPrefix + B);
+    return str;
 }
