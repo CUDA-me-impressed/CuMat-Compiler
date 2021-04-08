@@ -169,11 +169,13 @@ void Utils::SymbolTable::enterFunction(const std::string& function, const std::s
 }
 void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) {
     const std::vector<std::string> binFuncNamesInt({"CuMatAddMatrixI", "CuMatSubMatrixI", "CuMatMultMatrixI",
-                                                    "CuMatDivMatrixI", "CuMatLORMatrixI", "CuMatLANDMatrixI", "lt", "gt", "lte", "gte", "eq",
-                                                    "neq", "band", "bor", "pow", "CuMatMatMultMatrixI", "chain"});
+                                                    "CuMatDivMatrixI", "CuMatLORMatrixI", "CuMatLANDMatrixI",
+                                                    "CuMatLTMatrixI", "CuMatGTMatrixI", "lte", "gte", "eq", "neq",
+                                                    "band", "bor", "pow", "CuMatMatMultMatrixI", "chain"});
     const std::vector<std::string> binFuncNamesFloat({"CuMatAddMatrixD", "CuMatSubMatrixD", "CuMatMultMatrixD",
-                                                      "CuMatDivMatrixD", "CuMatLORMatrixD", "CuMatLANDMatrixD", "lt", "gt", "lte", "gte", "eq",
-                                                      "neq", "band", "bor", "pow", "CuMatMatMultMatrixD", "chain"});
+                                                      "CuMatDivMatrixD", "CuMatLORMatrixD", "CuMatLANDMatrixD",
+                                                      "CuMatLTMatrixD", "CuMatGTMatrixD", "lte", "gte", "eq", "neq",
+                                                      "band", "bor", "pow", "CuMatMatMultMatrixD", "chain"});
     const std::vector<std::string> unaryFuncNames({"neg", "lnot", "bnot"});
 
     // Enum is just fancy int
@@ -184,14 +186,32 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
         const std::string& unFuncNameFloat = "";
 
         auto* retType = llvm::Type::getVoidTy(context->module->getContext());
-        std::vector<llvm::Type*> argTypesInt({llvm::Type::getInt64PtrTy(context->module->getContext()),
-                                           llvm::Type::getInt64PtrTy(context->module->getContext()),
-                                           llvm::Type::getInt64PtrTy(context->module->getContext()),
-                                           llvm::Type::getInt64Ty(context->module->getContext())});
-        std::vector<llvm::Type*> argTypesDouble({llvm::Type::getDoublePtrTy(context->module->getContext()),
-                                              llvm::Type::getDoublePtrTy(context->module->getContext()),
-                                              llvm::Type::getDoublePtrTy(context->module->getContext()),
-                                              llvm::Type::getInt64Ty(context->module->getContext())});
+        std::vector<llvm::Type*> argTypesInt;
+        std::vector<llvm::Type*> argTypesDouble;
+
+        if (i == 15) {  // If MATM
+            argTypesInt = std::vector<llvm::Type*>({llvm::Type::getInt64PtrTy(context->module->getContext()),
+                                                    llvm::Type::getInt64PtrTy(context->module->getContext()),
+                                                    llvm::Type::getInt64PtrTy(context->module->getContext()),
+                                                    llvm::Type::getInt64Ty(context->module->getContext()),
+                                                    llvm::Type::getInt64Ty(context->module->getContext()),
+                                                    llvm::Type::getInt64Ty(context->module->getContext())});
+            argTypesDouble = std::vector<llvm::Type*>({llvm::Type::getDoublePtrTy(context->module->getContext()),
+                                                       llvm::Type::getDoublePtrTy(context->module->getContext()),
+                                                       llvm::Type::getDoublePtrTy(context->module->getContext()),
+                                                       llvm::Type::getInt64Ty(context->module->getContext()),
+                                                       llvm::Type::getInt64Ty(context->module->getContext()),
+                                                       llvm::Type::getInt64Ty(context->module->getContext())});
+        } else {
+            argTypesInt = std::vector<llvm::Type*>({llvm::Type::getInt64PtrTy(context->module->getContext()),
+                                                    llvm::Type::getInt64PtrTy(context->module->getContext()),
+                                                    llvm::Type::getInt64PtrTy(context->module->getContext()),
+                                                    llvm::Type::getInt64Ty(context->module->getContext())});
+            argTypesDouble = std::vector<llvm::Type*>({llvm::Type::getDoublePtrTy(context->module->getContext()),
+                                                       llvm::Type::getDoublePtrTy(context->module->getContext()),
+                                                       llvm::Type::getDoublePtrTy(context->module->getContext()),
+                                                       llvm::Type::getInt64Ty(context->module->getContext())});
+        }
 
         llvm::FunctionType* ftInt = llvm::FunctionType::get(retType, argTypesInt, false);
         llvm::FunctionType* ftDouble = llvm::FunctionType::get(retType, argTypesDouble, false);

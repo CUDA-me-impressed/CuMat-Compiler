@@ -29,6 +29,9 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
             auto rhsDimension = rhsType->getDimensions();
 
             auto* resType = std::get_if<Typing::MatrixType>(&*type);
+            if(!resType){
+                throw std::runtime_error("Resultant Matrix Type not determined!");
+            }
             resType->dimensions = lhsDimension.size() > rhsDimension.size() ? lhsDimension : rhsDimension;
 
             newMatAlloc = Utils::createMatrix(context, *resType);
@@ -39,14 +42,37 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                 auto resRecord = Utils::getMatrixFromPointer(context, newMatAlloc);
                 llvm::Type* dataPtrType = llvm::Type::getInt64PtrTy(context->module->getContext());
 
-                // TODO: Link matt's code with the codegen stage
-                llvm::Value* resLenLLVM = llvm::ConstantInt::get(llvm::Type::getInt64Ty(context->module->getContext()), resType->getLength());
-                std::vector<llvm::Value*> argVals({lhsRecord.dataPtr, rhsRecord.dataPtr, resRecord.dataPtr, resLenLLVM});
+                if(this->op != BIN_OPERATORS::MATM) {
+                    llvm::Value* resLenLLVM = llvm::ConstantInt::get(
+                        llvm::Type::getInt64Ty(context->module->getContext()), resType->getLength());
+                    std::vector<llvm::Value*> argVals(
+                        {lhsRecord.dataPtr, rhsRecord.dataPtr, resRecord.dataPtr, resLenLLVM});
 
-                if(lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT){
-                    auto callRet = context->Builder->CreateCall(context->symbolTable->binaryFunctions[this->op].funcInt, argVals);
-                }else if (lhsType->primType == Typing::PRIMITIVE::FLOAT && rhsType->primType == Typing::PRIMITIVE::FLOAT){
-                    auto callRet = context->Builder->CreateCall(context->symbolTable->binaryFunctions[this->op].funcFloat, argVals);
+                    if (lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT) {
+                        auto callRet = context->Builder->CreateCall(
+                            context->symbolTable->binaryFunctions[this->op].funcInt, argVals);
+                    } else if (lhsType->primType == Typing::PRIMITIVE::FLOAT &&
+                               rhsType->primType == Typing::PRIMITIVE::FLOAT) {
+                        auto callRet = context->Builder->CreateCall(
+                            context->symbolTable->binaryFunctions[this->op].funcFloat, argVals);
+                    }
+                }else {
+                    auto* lenType = llvm::Type::getInt64Ty(context->module->getContext());
+                    llvm::Value* lenI = llvm::ConstantInt::get(lenType, lhsType->dimensions[0]);
+                    llvm::Value* lenK = llvm::ConstantInt::get(lenType, lhsType->dimensions[1]);
+                    llvm::Value* lenJ = llvm::ConstantInt::get(lenType, lhsType->dimensions[1]);
+
+                    std::vector<llvm::Value*> argVals(
+                        {lhsRecord.dataPtr, rhsRecord.dataPtr, resRecord.dataPtr, lenI, lenK, lenJ});
+
+                    if (lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT) {
+                        auto callRet = context->Builder->CreateCall(
+                            context->symbolTable->binaryFunctions[this->op].funcInt, argVals);
+                    } else if (lhsType->primType == Typing::PRIMITIVE::FLOAT &&
+                               rhsType->primType == Typing::PRIMITIVE::FLOAT) {
+                        auto callRet = context->Builder->CreateCall(
+                            context->symbolTable->binaryFunctions[this->op].funcFloat, argVals);
+                    }
                 }
 
             } else {
