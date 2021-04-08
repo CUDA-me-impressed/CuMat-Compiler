@@ -178,9 +178,10 @@ llvm::Value* Utils::getValueFromLLVM(IRContext* context, float val, Typing::PRIM
  * @param offset - Number of elements away (valsize in bits)
  * @param val - Value we are storing
  */
-void Utils::insertValueAtPointerOffset(Utils::IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val, bool i64) {
+void Utils::insertValueAtPointerOffset(Utils::IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val,
+                                       bool i64) {
     // Handle the case where we have an i64
-    if(i64) offset *= 2;
+    if (i64) offset *= 2;
 
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
     auto xOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), offset);
@@ -191,7 +192,9 @@ void Utils::insertValueAtPointerOffset(Utils::IRContext* context, llvm::Value* p
 void Utils::insertValueAtPointerOffsetValue(Utils::IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue,
                                             llvm::Value* val, bool i64) {
     // Handle the case where we have an i64
-    if(i64) offsetValue = context->Builder->CreateMul(offsetValue, llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 2));
+    if (i64)
+        offsetValue = context->Builder->CreateMul(
+            offsetValue, llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 2));
 
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
     auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, offsetValue});

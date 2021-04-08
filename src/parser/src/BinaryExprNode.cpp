@@ -4,10 +4,9 @@
 #include <MatrixNode.hpp>
 #include <TypeException.hpp>
 
-#include "TypeCheckingUtils.hpp"
 #include "CompilerOptions.hpp"
-
 #include "TreePrint.hpp"
+#include "TypeCheckingUtils.hpp"
 
 namespace AST {
 
@@ -29,7 +28,7 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
             auto rhsDimension = rhsType->getDimensions();
 
             auto* resType = std::get_if<Typing::MatrixType>(&*type);
-            if(!resType){
+            if (!resType) {
                 throw std::runtime_error("Resultant Matrix Type not determined!");
             }
             resType->dimensions = lhsDimension.size() > rhsDimension.size() ? lhsDimension : rhsDimension;
@@ -42,7 +41,7 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                 auto resRecord = Utils::getMatrixFromPointer(context, newMatAlloc);
                 llvm::Type* dataPtrType = llvm::Type::getInt64PtrTy(context->module->getContext());
 
-                if(this->op != BIN_OPERATORS::MATM) {
+                if (this->op != BIN_OPERATORS::MATM) {
                     llvm::Value* resLenLLVM = llvm::ConstantInt::get(
                         llvm::Type::getInt64Ty(context->module->getContext()), resType->getLength());
                     std::vector<llvm::Value*> argVals(
@@ -56,7 +55,7 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                         auto callRet = context->Builder->CreateCall(
                             context->symbolTable->binaryFunctions[this->op].funcFloat, argVals);
                     }
-                }else {
+                } else {
                     auto* lenType = llvm::Type::getInt64Ty(context->module->getContext());
                     llvm::Value* lenI = llvm::ConstantInt::get(lenType, lhsType->dimensions[0]);
                     llvm::Value* lenK = llvm::ConstantInt::get(lenType, lhsType->dimensions[1]);
@@ -92,9 +91,10 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     return newMatAlloc;
 }
 
-llvm::Value* AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
-                                             const Typing::MatrixType& lhsType, const Typing::MatrixType& rhsType,
-                                             llvm::Instruction* matAlloc, const Typing::MatrixType& resType) {
+llvm::Value* AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal,
+                                                     llvm::Value* rhsVal, const Typing::MatrixType& lhsType,
+                                                     const Typing::MatrixType& rhsType, llvm::Instruction* matAlloc,
+                                                     const Typing::MatrixType& resType) {
     auto Builder = context->Builder;
     llvm::Function* parent = Builder->GetInsertBlock()->getParent();
     std::string opName = AST::BIN_OP_ENUM_STRING[this->op];
@@ -418,7 +418,7 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
  * @param op
  * @return
  */
-bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext * context, AST::BIN_OPERATORS op) const {
+bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext* context, AST::BIN_OPERATORS op) const {
     // Define a lookup table for the operation complexity
     int entropy = 1;
     auto lhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->lhs);

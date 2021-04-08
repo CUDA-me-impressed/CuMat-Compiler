@@ -83,7 +83,7 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
     if (!context->symbolTable->inSymbolTable(this->name, context->symbolTable->getCurrentFunction())) {
         // Something has gone wrong during the parse stage and we have not added the symbol into the table
         // Raising a warning!
-        if(context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+        if (context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
             std::cout << "[Internal Warning] Symbol " << this->name
                       << " was not found within the symbol"
                          " table. Created during codegen"

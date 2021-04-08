@@ -1,6 +1,6 @@
-#include <variant>
-
 #include "DecompNode.hpp"
+
+#include <variant>
 
 llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {
     //    if (auto variableName = std::get_if<std::string>(&rVal)) {

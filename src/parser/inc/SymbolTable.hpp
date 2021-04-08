@@ -73,10 +73,10 @@ class SymbolTable {
         funcTable;
 
     llvm::NamedMDNode* nvvmMetadataNode = nullptr;
+
    public:
     std::map<int, CUDAFunctionPair> binaryFunctions;
     std::map<int, CUDAFunctionPair> unaryFunctions;
-
 
     // Symbol data
     std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName, const std::string& funcName,

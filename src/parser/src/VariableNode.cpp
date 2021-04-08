@@ -2,6 +2,7 @@
 
 #include <numeric>
 #include <valarray>
+
 #include "CodeGenUtils.hpp"
 
 llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
@@ -15,7 +16,7 @@ llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::VariableNode::semanticPass(Utils::IRContext* context) {
-    this->type = context->symbolTable->getValue(this->name,context->symbolTable->getCurrentFunction())->type;
+    this->type = context->symbolTable->getValue(this->name, context->symbolTable->getCurrentFunction())->type;
 
     if (this->variableSlicing) {
         this->variableSlicing->semanticPass(context);

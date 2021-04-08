@@ -48,7 +48,7 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
     auto matAlloc = Utils::createMatrix(context, *this->type);
     auto matRecord = Utils::getMatrixFromPointer(context, matAlloc);
 
-    int trueIndex = 0;      // True index measures the current index plus any of the j's
+    int trueIndex = 0;  // True index measures the current index plus any of the j's
     // Compress literal nodes to matrix representation
     for (int i = 0; i < this->data.size(); i++) {
         auto element = this->data.at(i);
@@ -72,10 +72,10 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
             for (int j = 0; j < numElements; j++) {
                 auto* oldLLVMVal = Utils::getValueFromPointerOffset(context, matElementRecord.dataPtr, j, "matCpyOut");
                 llvm::Type* tyInt = llvm::Type::getInt64Ty(context->module->getContext());
-                auto* trueIndexLLVM = llvm::ConstantInt::get(tyInt, trueIndex+j);
+                auto* trueIndexLLVM = llvm::ConstantInt::get(tyInt, trueIndex + j);
                 Utils::setValueFromMatrixPtr(context, matRecord.dataPtr, trueIndexLLVM, oldLLVMVal);
             }
-            trueIndex+=numElements;
+            trueIndex += numElements;
         }
     }
     return matAlloc;
