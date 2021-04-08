@@ -1,3 +1,10 @@
+#include "elementwise/add.cu"
+#include "elementwise/sub.cu"
+#include "elementwise/logical.cu"
+#include "elementwise/div.cu"
+
+#include "mult/mult.cu"
+#include "utils.cu"
 #include <iostream>
 
 extern void CuMatAddMatrixI(long*,long*,long*,long);
