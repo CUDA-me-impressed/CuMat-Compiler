@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "BinaryExprNode.hpp"
 
 #include "Type.hpp"
 
@@ -18,6 +19,14 @@ struct SymbolTableEntry {
 
 struct FunctionTableEntry {
     llvm::Function* func;
+};
+
+struct CUDAFunctions {
+    llvm::Function* binInt;
+    llvm::Function* binFloat;
+    llvm::Function* unaryInt;
+    llvm::Function* unaryFloat;
+
 };
 
 struct FunctionParamCompare {
@@ -69,6 +78,9 @@ class SymbolTable {
 
     llvm::NamedMDNode* nvvmMetadataNode = nullptr;
 
+    std::map<AST::BIN_OPERATORS, llvm::Function*> binaryCuDAFunctionsInt;
+    std::map<AST::BIN_OPERATORS, llvm::Function*> binaryCuDAFunctionsFloat;
+
    public:
     // Symbol data
     std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName, const std::string& funcName,
@@ -102,6 +114,8 @@ class SymbolTable {
     void createNVVMMetadata(Utils::IRContext* context);
 
     llvm::NamedMDNode* getNVVMMetadata();
+
+    void
 
     // Function stack
     void escapeFunction();
