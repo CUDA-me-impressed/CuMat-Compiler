@@ -11,17 +11,16 @@
 #include <cuda_runtime.h>
 
 // Device function
-__global__ void CuMatLORMatrixDKernel(double* A, double* B, double * res, long i, long j){
-    long N = i * j; // Treat matrix add as vector add (same thing for equal sizes)
+__global__ void CuMatLORMatrixDKernel(double* A, double* B, double * res, long len){
     long index = blockDim.x * blockIdx.x + threadIdx.x;
-    if(index < N){
+    if(index < len){
         res[index] = (double) (A[index] || B[index]);
     }
 }
 
-void CuMatLORMatrixD(double * matA, double * matB, double * matRes, long i, long j){
+void CuMatLORMatrixD(double * matA, double * matB, double * matRes, long len){
     double* d_A; double *d_B; double * d_Res;
-    size_t size = i*j*sizeof(long);
+    size_t size = len*sizeof(long);
     // Allocate memory for CUDA
     cudaMallocManaged(&d_A, size);
     cudaMallocManaged(&d_B, size);
@@ -33,10 +32,10 @@ void CuMatLORMatrixD(double * matA, double * matB, double * matRes, long i, long
 
     // Set the number of threads per block and grid size
     int threadsPerBlock = 256;
-    int blocksPerGrid = ((i*j) + threadsPerBlock -1) / threadsPerBlock;
+    int blocksPerGrid = (len + threadsPerBlock -1) / threadsPerBlock;
 
     // Call the kernel
-    CuMatLORMatrixDKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, i, j);
+    CuMatLORMatrixDKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
 
     // Synchronise before copying
     cudaDeviceSynchronize();
@@ -51,18 +50,17 @@ void CuMatLORMatrixD(double * matA, double * matB, double * matRes, long i, long
 }
 
 // Device function
-__global__ void CuMatLORMatrixIKernel(long* A, long* B, long * res, long i, long j){
-    long N = i * j; // Treat matrix add as vector add (same thing for equal sizes)
+__global__ void CuMatLORMatrixIKernel(long* A, long* B, long * res, long len){
     long index = blockDim.x * blockIdx.x + threadIdx.x;
-    if(index < N){
+    if(index < len){
         res[index] = (long) (A[index] || B[index]);
     }
 }
 
 
-void CuMatLORMatrixI(long * matA, long * matB, long * matRes, long i, long j){
+void CuMatLORMatrixI(long * matA, long * matB, long * matRes, long len){
     long* d_A; long *d_B; long * d_Res;
-    size_t size = i*j*sizeof(long);
+    size_t size = len*sizeof(long);
     // Allocate memory for CUDA
     cudaMallocManaged(&d_A, size);
     cudaMallocManaged(&d_B, size);
@@ -74,10 +72,10 @@ void CuMatLORMatrixI(long * matA, long * matB, long * matRes, long i, long j){
 
     // Set the number of threads per block and grid size
     int threadsPerBlock = 256;
-    int blocksPerGrid = ((i*j) + threadsPerBlock -1) / threadsPerBlock;
+    int blocksPerGrid = (len + threadsPerBlock -1) / threadsPerBlock;
 
     // Call the kernel
-    CuMatLORMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, i, j);
+    CuMatLORMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
 
     // Synchronise before copying
     cudaDeviceSynchronize();
@@ -98,17 +96,16 @@ void CuMatLORMatrixI(long * matA, long * matB, long * matRes, long i, long j){
 
 
 // Device function
-__global__ void CuMatLANDMatrixDKernel(double* A, double* B, double * res, long i, long j){
-    long N = i * j; // Treat matrix add as vector add (same thing for equal sizes)
+__global__ void CuMatLANDMatrixDKernel(double* A, double* B, double * res, long len){
     long index = blockDim.x * blockIdx.x + threadIdx.x;
-    if(index < N){
+    if(index < len){
         res[index] = (double) (A[index] && B[index]);
     }
 }
 
-void CuMatLANDMatrixD(double * matA, double * matB, double * matRes, long i, long j){
+void CuMatLANDMatrixD(double * matA, double * matB, double * matRes, long len){
     double* d_A; double *d_B; double * d_Res;
-    size_t size = i*j*sizeof(long);
+    size_t size = len*sizeof(long);
     // Allocate memory for CUDA
     cudaMallocManaged(&d_A, size);
     cudaMallocManaged(&d_B, size);
@@ -120,10 +117,10 @@ void CuMatLANDMatrixD(double * matA, double * matB, double * matRes, long i, lon
 
     // Set the number of threads per block and grid size
     int threadsPerBlock = 256;
-    int blocksPerGrid = ((i*j) + threadsPerBlock -1) / threadsPerBlock;
+    int blocksPerGrid = (len + threadsPerBlock -1) / threadsPerBlock;
 
     // Call the kernel
-    CuMatLANDMatrixDKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, i, j);
+    CuMatLANDMatrixDKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
 
     // Synchronise before copying
     cudaDeviceSynchronize();
@@ -138,18 +135,17 @@ void CuMatLANDMatrixD(double * matA, double * matB, double * matRes, long i, lon
 }
 
 // Device function
-__global__ void CuMatLANDMatrixIKernel(long* A, long* B, long * res, long i, long j){
-    long N = i * j; // Treat matrix add as vector add (same thing for equal sizes)
+__global__ void CuMatLANDMatrixIKernel(long* A, long* B, long * res, long len){
     long index = blockDim.x * blockIdx.x + threadIdx.x;
-    if(index < N){
+    if(index < len){
         res[index] = (long) (A[index] && B[index]);
     }
 }
 
 
-void CuMatLANDMatrixI(long * matA, long * matB, long * matRes, long i, long j){
+void CuMatLANDMatrixI(long * matA, long * matB, long * matRes, long len){
     long* d_A; long *d_B; long * d_Res;
-    size_t size = i*j*sizeof(long);
+    size_t size = len*sizeof(long);
     // Allocate memory for CUDA
     cudaMallocManaged(&d_A, size);
     cudaMallocManaged(&d_B, size);
@@ -161,10 +157,10 @@ void CuMatLANDMatrixI(long * matA, long * matB, long * matRes, long i, long j){
 
     // Set the number of threads per block and grid size
     int threadsPerBlock = 256;
-    int blocksPerGrid = ((i*j) + threadsPerBlock -1) / threadsPerBlock;
+    int blocksPerGrid = (len + threadsPerBlock -1) / threadsPerBlock;
 
     // Call the kernel
-    CuMatLANDMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, i, j);
+    CuMatLANDMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
 
     // Synchronise before copying
     cudaDeviceSynchronize();

@@ -11,14 +11,14 @@
 #include <cuda_runtime.h>
 
 // Device function
-__global__ void CuMatSubMatrixDKernel(double* A, double* B, double * res, long len){
+__global__ void CuMatMultMatrixDKernel(double* A, double* B, double * res, long len){
     long index = blockDim.x * blockIdx.x + threadIdx.x;
     if(index < len){
-        res[index] = A[index] - B[index];
+        res[index] = A[index] * B[index];
     }
 }
 
-void CuMatSubMatrixD(double * matA, double * matB, double * matRes, long len){
+void CuMatMultMatrixD(double * matA, double * matB, double * matRes, long len){
     double* d_A; double *d_B; double * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -35,7 +35,7 @@ void CuMatSubMatrixD(double * matA, double * matB, double * matRes, long len){
     int blocksPerGrid = (len + threadsPerBlock -1) / threadsPerBlock;
 
     // Call the kernel
-    CuMatSubMatrixDKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
+    CuMatMultMatrixDKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
 
     // Synchronise before copying
     cudaDeviceSynchronize();
@@ -50,15 +50,15 @@ void CuMatSubMatrixD(double * matA, double * matB, double * matRes, long len){
 }
 
 // Device function
-__global__ void CuMatSubMatrixIKernel(long* A, long* B, long * res, long len){
+__global__ void CuMatMultMatrixIKernel(long* A, long* B, long * res, long len){
     long index = blockDim.x * blockIdx.x + threadIdx.x;
     if(index < len){
-        res[index] = A[index] - B[index];
+        res[index] = A[index] * B[index];
     }
 }
 
 
-void CuMatSubMatrixI(long * matA, long * matB, long * matRes, long len){
+void CuMatMultMatrixI(long * matA, long * matB, long * matRes, long len){
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -75,7 +75,7 @@ void CuMatSubMatrixI(long * matA, long * matB, long * matRes, long len){
     int blocksPerGrid = (len + threadsPerBlock -1) / threadsPerBlock;
 
     // Call the kernel
-    CuMatSubMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
+    CuMatMultMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
 
     // Synchronise before copying
     cudaDeviceSynchronize();
