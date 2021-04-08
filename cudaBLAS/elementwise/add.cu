@@ -10,7 +10,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-void CuMatAddMatrixD(double * matA, double * matB, double * matRes, long len){
+extern "C" void CuMatAddMatrixD(double * matA, double * matB, double * matRes, long len){
     // Pointers for the various kernel vars
     double *a, *b, *res;
 
@@ -56,7 +56,7 @@ __global__ void CuMatAddMatrixIKernel(long* A, long* B, long * res, long len){
 }
 
 
-void CuMatAddMatrixI(long * matA, long * matB, long * matRes, long len){
+extern "C" void CuMatAddMatrixI(long* matA, long* matB, long* matRes, long len){
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA

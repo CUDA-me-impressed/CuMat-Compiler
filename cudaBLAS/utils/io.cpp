@@ -1,6 +1,6 @@
 #include <iostream>
 
-void printMatrix(long* m, long len)
+extern "C" void printMatrix(long* m, long len)
 {
 	std::cout << "[";
 	if (len > 0) { std::cout << m[0]; }

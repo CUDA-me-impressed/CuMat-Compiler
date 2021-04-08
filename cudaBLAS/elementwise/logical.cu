@@ -19,7 +19,7 @@ __global__ void CuMatLORMatrixDKernel(double* A, double* B, double * res, long i
     }
 }
 
-void CuMatLORMatrixD(double * matA, double * matB, double * matRes, long i, long j){
+extern "C" void CuMatLORMatrixD(double * matA, double * matB, double * matRes, long i, long j){
     double* d_A; double *d_B; double * d_Res;
     size_t size = i*j*sizeof(long);
     // Allocate memory for CUDA
@@ -60,7 +60,7 @@ __global__ void CuMatLORMatrixIKernel(long* A, long* B, long * res, long i, long
 }
 
 
-void CuMatLORMatrixI(long * matA, long * matB, long * matRes, long i, long j){
+extern "C" void CuMatLORMatrixI(long * matA, long * matB, long * matRes, long i, long j){
     long* d_A; long *d_B; long * d_Res;
     size_t size = i*j*sizeof(long);
     // Allocate memory for CUDA
@@ -106,7 +106,7 @@ __global__ void CuMatLANDMatrixDKernel(double* A, double* B, double * res, long 
     }
 }
 
-void CuMatLANDMatrixD(double * matA, double * matB, double * matRes, long i, long j){
+extern "C" void CuMatLANDMatrixD(double * matA, double * matB, double * matRes, long i, long j){
     double* d_A; double *d_B; double * d_Res;
     size_t size = i*j*sizeof(long);
     // Allocate memory for CUDA
@@ -147,7 +147,7 @@ __global__ void CuMatLANDMatrixIKernel(long* A, long* B, long * res, long i, lon
 }
 
 
-void CuMatLANDMatrixI(long * matA, long * matB, long * matRes, long i, long j){
+extern "C" void CuMatLANDMatrixI(long * matA, long * matB, long * matRes, long i, long j){
     long* d_A; long *d_B; long * d_Res;
     size_t size = i*j*sizeof(long);
     // Allocate memory for CUDA
