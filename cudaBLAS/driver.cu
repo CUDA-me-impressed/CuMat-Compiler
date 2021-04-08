@@ -8,7 +8,7 @@ int main(){
     long B[6] = {4,3,8,2,1,3};
     long C[9];
 
-    CuMatAddMatrixI(A,B,C,3,2);
+    CuMatAddMatrixI(A,B,C,6);
     for(int i = 0; i < 6; i++){
         std::cout << C[i] << std::endl;
     }

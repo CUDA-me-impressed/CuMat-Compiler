@@ -10,13 +10,12 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-void CuMatAddMatrixD(double * matA, double * matB, double * matRes, long i, long j){
+void CuMatAddMatrixD(double * matA, double * matB, double * matRes, long len){
     // Pointers for the various kernel vars
     double *a, *b, *res;
 
     // Length calculations
-    long N = i*j;
-    size_t matSize = N*sizeof(double);
+    size_t matSize = len*sizeof(double);
 
     // Allocate on device
     cudaMallocManaged(&a, matSize);
@@ -24,8 +23,8 @@ void CuMatAddMatrixD(double * matA, double * matB, double * matRes, long i, long
     cudaMallocManaged(&res, matSize);
 
     // Copy from host to device
-    cublasSetVector(N, sizeof(double), matA, 1, a, 1);
-    cublasSetVector(N, sizeof(double), matB, 1, b, 1);
+    cublasSetVector(len, sizeof(double), matA, 1, a, 1);
+    cublasSetVector(len, sizeof(double), matB, 1, b, 1);
 
     // Create cublas handler
     cublasHandle_t h;
@@ -33,9 +32,9 @@ void CuMatAddMatrixD(double * matA, double * matB, double * matRes, long i, long
 
     // Carry out addition
     const double scale = 1;
-    cublasDaxpy(h, N, &scale, a,1, b, 1);
+    cublasDaxpy(h, len, &scale, a,1, b, 1);
     // Copy vector off gpu
-    cublasGetVector(N, sizeof(double), b, 1, res, 1);
+    cublasGetVector(len, sizeof(double), b, 1, res, 1);
 
     // Copy the results out of device memory
     cudaMemcpy(matRes, res, matSize, cudaMemcpyDeviceToHost);
@@ -49,18 +48,17 @@ void CuMatAddMatrixD(double * matA, double * matB, double * matRes, long i, long
 }
 
 // Device function
-__global__ void CuMatAddMatrixIKernel(long* A, long* B, long * res, long i, long j){
-    long N = i * j; // Treat matrix add as vector add (same thing for equal sizes)
+__global__ void CuMatAddMatrixIKernel(long* A, long* B, long * res, long len){
     long index = blockDim.x * blockIdx.x + threadIdx.x;
-    if(index < N){
+    if(index < len){
         res[index] = A[index] + B[index];
     }
 }
 
 
-void CuMatAddMatrixI(long * matA, long * matB, long * matRes, long i, long j){
+void CuMatAddMatrixI(long * matA, long * matB, long * matRes, long len){
     long* d_A; long *d_B; long * d_Res;
-    size_t size = i*j*sizeof(long);
+    size_t size = len*sizeof(long);
     // Allocate memory for CUDA
     cudaMallocManaged(&d_A, size);
     cudaMallocManaged(&d_B, size);
@@ -72,10 +70,10 @@ void CuMatAddMatrixI(long * matA, long * matB, long * matRes, long i, long j){
 
     // Set the number of threads per block and grid size
     int threadsPerBlock = 256;
-    int blocksPerGrid = ((i*j) + threadsPerBlock -1) / threadsPerBlock;
+    int blocksPerGrid = ((len) + threadsPerBlock -1) / threadsPerBlock;
 
     // Call the kernel
-    CuMatAddMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, i, j);
+    CuMatAddMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
 
     // Synchronise before copying
     cudaDeviceSynchronize();
