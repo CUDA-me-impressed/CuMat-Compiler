@@ -6,7 +6,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "BinaryExprNode.hpp"
 
 #include "Type.hpp"
 
@@ -78,9 +77,6 @@ class SymbolTable {
 
     llvm::NamedMDNode* nvvmMetadataNode = nullptr;
 
-    std::map<AST::BIN_OPERATORS, llvm::Function*> binaryCuDAFunctionsInt;
-    std::map<AST::BIN_OPERATORS, llvm::Function*> binaryCuDAFunctionsFloat;
-
    public:
     // Symbol data
     std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName, const std::string& funcName,
@@ -114,8 +110,6 @@ class SymbolTable {
     void createNVVMMetadata(Utils::IRContext* context);
 
     llvm::NamedMDNode* getNVVMMetadata();
-
-    void
 
     // Function stack
     void escapeFunction();

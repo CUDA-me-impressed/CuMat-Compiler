@@ -10,6 +10,6 @@ llvm::Value* AST::ProgramNode::codeGen(Utils::IRContext* context) {
     });
 
     llvm::FunctionType* ft = llvm::FunctionType::get(mtType, argTypes, false);
-    llvm::Function *f = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, "", context->module);
+    llvm::Function *f = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, "CuMatAddMatrixI", context->module);
     return Node::codeGen(context);
 }
