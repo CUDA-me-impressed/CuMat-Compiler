@@ -42,7 +42,7 @@ llvm::Type* Typing::MatrixType::getLLVMPrimitiveType(Utils::IRContext* context) 
             break;
         }
         case Typing::PRIMITIVE::FLOAT: {
-            ty = llvm::Type::getFloatTy(context->module->getContext());
+            ty = llvm::Type::getDoubleTy(context->module->getContext());
             break;
         }
         case Typing::PRIMITIVE::BOOL: {

@@ -170,24 +170,34 @@ void Utils::SymbolTable::enterFunction(const std::string& function, const std::s
 void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) {
     const std::vector<std::string> binFuncNamesInt({"CuMatAddMatrixI", "CuMatSubMatrixI", "mul", "div", "lor", "land", "lt", "gt",
                                                     "lte", "gte", "eq", "neq", "band", "bor", "pow", "matm", "chain"});
+    const std::vector<std::string> binFuncNamesFloat({"CuMatAddMatrixD", "CuMatSubMatrixD", "mul", "div", "lor", "land", "lt", "gt",
+                                                    "lte", "gte", "eq", "neq", "band", "bor", "pow", "matm", "chain"});
     const std::vector<std::string> unaryFuncNames({"neg", "lnot", "bnot"});
 
     // Enum is just fancy int
     for (int i = 0; i < binFuncNamesInt.size(); i++) {
         const std::string& binFuncNameInt = binFuncNamesInt[i];
-        const std::string& binFuncNameFloat = "";
+        const std::string& binFuncNameFloat = binFuncNamesFloat[i];
         const std::string& unFuncNameInt = "";
         const std::string& unFuncNameFloat = "";
 
-        auto* mtType = llvm::Type::getVoidTy(context->module->getContext());
-        std::vector<llvm::Type*> argTypes({llvm::Type::getInt64PtrTy(context->module->getContext()),
+        auto* retType = llvm::Type::getVoidTy(context->module->getContext());
+        std::vector<llvm::Type*> argTypesInt({llvm::Type::getInt64PtrTy(context->module->getContext()),
                                            llvm::Type::getInt64PtrTy(context->module->getContext()),
                                            llvm::Type::getInt64PtrTy(context->module->getContext()),
                                            llvm::Type::getInt64Ty(context->module->getContext())});
+        std::vector<llvm::Type*> argTypesDouble({llvm::Type::getDoublePtrTy(context->module->getContext()),
+                                              llvm::Type::getDoublePtrTy(context->module->getContext()),
+                                              llvm::Type::getDoublePtrTy(context->module->getContext()),
+                                              llvm::Type::getInt64Ty(context->module->getContext())});
 
-        llvm::FunctionType* ft = llvm::FunctionType::get(mtType, argTypes, false);
-        llvm::Function* binFunc =
-            llvm::Function::Create(ft, llvm::Function::ExternalLinkage, binFuncNameInt, context->module);
-        binaryFunctions[i] = {binFunc, nullptr};
+        llvm::FunctionType* ftInt = llvm::FunctionType::get(retType, argTypesInt, false);
+        llvm::FunctionType* ftDouble = llvm::FunctionType::get(retType, argTypesDouble, false);
+
+        llvm::Function* binFuncInt =
+            llvm::Function::Create(ftInt, llvm::Function::ExternalLinkage, binFuncNameInt, context->module);
+        llvm::Function* binFuncFP =
+            llvm::Function::Create(ftDouble, llvm::Function::ExternalLinkage, binFuncNameFloat, context->module);
+        binaryFunctions[i] = {binFuncInt, binFuncFP};
     }
 }
