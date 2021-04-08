@@ -21,7 +21,7 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
     auto* matHeaderType = matType.getLLVMType(context);
 
     // Create a type for the actual data of the matrix + length info
-    llvm::ArrayType* matDataType = llvm::ArrayType::get(ty, matLength);
+    llvm::ArrayType* matDataType = llvm::ArrayType::get(ty, 0);
     llvm::ConstantInt* matSizeLLVM =
         llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matLength, false));
 

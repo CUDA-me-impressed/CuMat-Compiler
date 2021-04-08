@@ -90,7 +90,7 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) {
         return existingStructTypes.at(seed);
     }
 
-    llvm::ArrayType* matDataType = llvm::ArrayType::get(primTy, this->getLength());
+    llvm::ArrayType* matDataType = llvm::ArrayType::get(primTy, 0);
     auto* matDataPtrType = matDataType->getPointerTo();
 
     auto rankConst = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, this->rank));

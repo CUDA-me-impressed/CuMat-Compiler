@@ -76,8 +76,9 @@ class SymbolTable {
         funcTable;
 
     llvm::NamedMDNode* nvvmMetadataNode = nullptr;
-
    public:
+    llvm::Function* tmpFunc;
+
     // Symbol data
     std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName, const std::string& funcName,
                                                const std::string& funcNamespace = "");

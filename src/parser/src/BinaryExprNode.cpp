@@ -19,19 +19,29 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
     auto rhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->rhs);
     llvm::Value* newMatAlloc;
 
-    if (shouldExecuteGPU(context, op) || this->op == BIN_OPERATORS::MATM) {
-        // TODO: Link matt's code with the codegen stage
-    } else {
-        // Execute this operation on CPU
-        if (auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type)) {
-            if (auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type)) {
-                auto lhsDimension = lhsType->getDimensions();
-                auto rhsDimension = rhsType->getDimensions();
+    if (auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type)) {
+        if (auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type)) {
+            auto lhsDimension = lhsType->getDimensions();
+            auto rhsDimension = rhsType->getDimensions();
 
-                auto* resType = std::get_if<Typing::MatrixType>(&*type);
-                resType->dimensions = lhsDimension.size() > rhsDimension.size() ? lhsDimension : rhsDimension;
+            auto* resType = std::get_if<Typing::MatrixType>(&*type);
+            resType->dimensions = lhsDimension.size() > rhsDimension.size() ? lhsDimension : rhsDimension;
 
-                newMatAlloc = Utils::createMatrix(context, *resType);
+            newMatAlloc = Utils::createMatrix(context, *resType);
+
+            if (true || shouldExecuteGPU(context, op) || this->op == BIN_OPERATORS::MATM) {
+                auto lhsRecord = Utils::getMatrixFromPointer(context, lhsVal);
+                auto rhsRecord = Utils::getMatrixFromPointer(context, rhsVal);
+                auto resRecord = Utils::getMatrixFromPointer(context, newMatAlloc);
+                llvm::Type* dataPtrType = llvm::Type::getInt64PtrTy(context->module->getContext());
+
+                // TODO: Link matt's code with the codegen stage
+                llvm::Value* resLenLLVM = llvm::ConstantInt::get(llvm::Type::getInt64Ty(context->module->getContext()), resType->getLength());
+                std::vector<llvm::Value*> argVals({lhsRecord.dataPtr, rhsRecord.dataPtr, resRecord.dataPtr, resLenLLVM});
+                auto callRet = context->Builder->CreateCall(context->symbolTable->tmpFunc, argVals);
+
+            } else {
+                // Execute this operation on CPU
 
                 if (op != BIN_OPERATORS::MATM) {
                     elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, (llvm::Instruction*)newMatAlloc,
