@@ -4,6 +4,8 @@
 
 #include "Utils.hpp"
 
+namespace Tree {
+
 std::string printType(const Typing::Type& type) {
     std::string str =
         std::visit(overloaded{
@@ -64,3 +66,4 @@ std::string printType(const Typing::Type& type) {
                    type);
     return std::move(str);
 }
+}  // namespace Tree

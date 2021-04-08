@@ -9,7 +9,6 @@ bool expandableDimension(const Typing::Type& left, const Typing::Type& right);
 
 void AST::Node::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     for (auto const& child : this->children) child->dimensionPass(nt);
-    for (auto const& child : this->children) child->dimensionPass(nt);
 }
 
 void AST::BinaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {

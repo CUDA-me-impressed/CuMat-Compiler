@@ -118,5 +118,5 @@ void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
     this->type = TypeCheckUtils::makeMatrixType(dimensions, primType);
 }
 std::string AST::MatrixNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
-    return ExprNode::toTree(prefix, childPrefix);
+    return prefix + "Matrix";
 }

@@ -105,6 +105,12 @@ template <>
 std::string AST::LiteralNode<float>::toTree(const std::string& prefix, const std::string& childPrefix) const {
     return prefix + std::to_string(value) + '\n';
 }
+template <class T>
+void AST::LiteralNode<T>::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    if (Typing::MatrixType* mt = std::get_if<Typing::MatrixType>(&*type)) {
+        mt->dimensions = std::vector<uint>{1};
+    }
+}
 template <>
 std::string AST::LiteralNode<int>::toTree(const std::string& prefix, const std::string& childPrefix) const {
     return prefix + std::to_string(value) + '\n';

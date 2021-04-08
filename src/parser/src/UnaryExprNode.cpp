@@ -94,3 +94,12 @@ void AST::UnaryExprNode::semanticPass(Utils::IRContext* context) {
     }
     this->type = std::make_shared<Typing::Type>(operandType);
 }
+
+void AST::UnaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    if (auto* mt = std::get_if<Typing::MatrixType>(&*type)) {
+        operand->dimensionPass(nt);
+        if (auto inner = std::get_if<Typing::MatrixType>(&*operand->type)) {
+            mt->dimensions = inner->dimensions;
+        }
+    }
+}

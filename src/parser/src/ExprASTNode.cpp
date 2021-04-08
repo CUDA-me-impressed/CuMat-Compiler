@@ -1,10 +1,12 @@
 #include "ExprASTNode.hpp"
 
+#include <utility>
+
 #include "TreePrint.hpp"
 
-std::shared_ptr<Typing::Type> Node::getType() const { return this->type; }
+std::shared_ptr<Typing::Type> AST::ExprNode::getType() const { return this->type; }
 
-void Node::setType(std::shared_ptr<Typing::Type> ty) { this->type = ty; }
+void AST::ExprNode::setType(std::shared_ptr<Typing::Type> ty) { this->type = std::move(ty); }
 
 std::string AST::ExprNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
     using namespace Tree;

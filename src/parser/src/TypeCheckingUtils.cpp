@@ -129,7 +129,7 @@ Typing::MatrixType TypeCheckUtils::extractMatrixType(std::shared_ptr<AST::ExprNo
     Typing::MatrixType exprType;
     try {
         exprType = std::get<Typing::MatrixType>(*node->type);
-    } catch (std::bad_cast b) {
+    } catch (std::bad_cast& b) {
         std::cout << "Caught: " << b.what();
     }
     return exprType;
