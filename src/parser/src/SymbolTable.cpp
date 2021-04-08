@@ -1,5 +1,6 @@
 #include "SymbolTable.hpp"
 
+#include <list>
 #include <utility>
 
 #include "CodeGenUtils.hpp"
@@ -165,4 +166,28 @@ llvm::NamedMDNode* Utils::SymbolTable::getNVVMMetadata() { return nvvmMetadataNo
 void Utils::SymbolTable::enterFunction(const std::string& function, const std::string& funcNamespace) {
     const std::string fullFuncName = funcNamespace + "::" + function;
     this->functionStack.emplace_back(fullFuncName);
+}
+void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) {
+    const std::vector<std::string> binFuncNamesInt({"CuMatAddMatrixI", "CuMatSubMatrixI", "mul", "div", "lor", "land", "lt", "gt",
+                                                    "lte", "gte", "eq", "neq", "band", "bor", "pow", "matm", "chain"});
+    const std::vector<std::string> unaryFuncNames({"neg", "lnot", "bnot"});
+
+    // Enum is just fancy int
+    for (int i = 0; i < binFuncNamesInt.size(); i++) {
+        const std::string& binFuncNameInt = binFuncNamesInt[i];
+        const std::string& binFuncNameFloat = "";
+        const std::string& unFuncNameInt = "";
+        const std::string& unFuncNameFloat = "";
+
+        auto* mtType = llvm::Type::getVoidTy(context->module->getContext());
+        std::vector<llvm::Type*> argTypes({llvm::Type::getInt64PtrTy(context->module->getContext()),
+                                           llvm::Type::getInt64PtrTy(context->module->getContext()),
+                                           llvm::Type::getInt64PtrTy(context->module->getContext()),
+                                           llvm::Type::getInt64Ty(context->module->getContext())});
+
+        llvm::FunctionType* ft = llvm::FunctionType::get(mtType, argTypes, false);
+        llvm::Function* binFunc =
+            llvm::Function::Create(ft, llvm::Function::ExternalLinkage, binFuncNameInt, context->module);
+        binaryFunctions[i] = {binFunc, nullptr};
+    }
 }

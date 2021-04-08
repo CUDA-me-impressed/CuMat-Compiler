@@ -38,7 +38,12 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                 // TODO: Link matt's code with the codegen stage
                 llvm::Value* resLenLLVM = llvm::ConstantInt::get(llvm::Type::getInt64Ty(context->module->getContext()), resType->getLength());
                 std::vector<llvm::Value*> argVals({lhsRecord.dataPtr, rhsRecord.dataPtr, resRecord.dataPtr, resLenLLVM});
-                auto callRet = context->Builder->CreateCall(context->symbolTable->tmpFunc, argVals);
+
+                if(lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT){
+                    auto callRet = context->Builder->CreateCall(context->symbolTable->binaryFunctions[this->op].funcInt, argVals);
+                }else if (lhsType->primType == Typing::PRIMITIVE::FLOAT && rhsType->primType == Typing::PRIMITIVE::FLOAT){
+                    auto callRet = context->Builder->CreateCall(context->symbolTable->binaryFunctions[this->op].funcFloat, argVals);
+                }
 
             } else {
                 // Execute this operation on CPU
