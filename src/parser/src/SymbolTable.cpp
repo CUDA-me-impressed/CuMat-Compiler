@@ -168,10 +168,12 @@ void Utils::SymbolTable::enterFunction(const std::string& function, const std::s
     this->functionStack.emplace_back(fullFuncName);
 }
 void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) {
-    const std::vector<std::string> binFuncNamesInt({"CuMatAddMatrixI", "CuMatSubMatrixI", "mul", "div", "lor", "land", "lt", "gt",
-                                                    "lte", "gte", "eq", "neq", "band", "bor", "pow", "matm", "chain"});
-    const std::vector<std::string> binFuncNamesFloat({"CuMatAddMatrixD", "CuMatSubMatrixD", "mul", "div", "lor", "land", "lt", "gt",
-                                                    "lte", "gte", "eq", "neq", "band", "bor", "pow", "matm", "chain"});
+    const std::vector<std::string> binFuncNamesInt({"CuMatAddMatrixI", "CuMatSubMatrixI", "CuMatMultMatrixI",
+                                                    "CuMatDivMatrixI", "CuMatLORMatrixI", "CuMatLANDMatrixI", "lt", "gt", "lte", "gte", "eq",
+                                                    "neq", "band", "bor", "pow", "CuMatMatMultMatrixI", "chain"});
+    const std::vector<std::string> binFuncNamesFloat({"CuMatAddMatrixD", "CuMatSubMatrixD", "CuMatMultMatrixD",
+                                                      "CuMatDivMatrixD", "CuMatLORMatrixD", "CuMatLANDMatrixD", "lt", "gt", "lte", "gte", "eq",
+                                                      "neq", "band", "bor", "pow", "CuMatMatMultMatrixD", "chain"});
     const std::vector<std::string> unaryFuncNames({"neg", "lnot", "bnot"});
 
     // Enum is just fancy int
