@@ -18,7 +18,7 @@ __global__ void CuMatMultMatrixDKernel(double* A, double* B, double * res, long 
     }
 }
 
-void CuMatMultMatrixD(double * matA, double * matB, double * matRes, long len){
+extern "C" void CuMatMultMatrixD(double * matA, double * matB, double * matRes, long len){
     double* d_A; double *d_B; double * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -58,7 +58,7 @@ __global__ void CuMatMultMatrixIKernel(long* A, long* B, long * res, long len){
 }
 
 
-void CuMatMultMatrixI(long * matA, long * matB, long * matRes, long len){
+extern "C" void CuMatMultMatrixI(long * matA, long * matB, long * matRes, long len){
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA

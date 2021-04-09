@@ -168,14 +168,14 @@ void Utils::SymbolTable::enterFunction(const std::string& function, const std::s
     this->functionStack.emplace_back(fullFuncName);
 }
 void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) {
-    const std::vector<std::string> binFuncNamesInt({"CuMatAddMatrixI", "CuMatSubMatrixI", "CuMatMultMatrixI",
-                                                    "CuMatDivMatrixI", "CuMatLORMatrixI", "CuMatLANDMatrixI",
-                                                    "CuMatLTMatrixI", "CuMatGTMatrixI", "lte", "gte", "eq", "neq",
-                                                    "band", "bor", "pow", "CuMatMatMultMatrixI", "chain"});
-    const std::vector<std::string> binFuncNamesFloat({"CuMatAddMatrixD", "CuMatSubMatrixD", "CuMatMultMatrixD",
-                                                      "CuMatDivMatrixD", "CuMatLORMatrixD", "CuMatLANDMatrixD",
-                                                      "CuMatLTMatrixD", "CuMatGTMatrixD", "lte", "gte", "eq", "neq",
-                                                      "band", "bor", "pow", "CuMatMatMultMatrixD", "chain"});
+    const std::vector<std::string> binFuncNamesInt(
+        {"CuMatAddMatrixI", "CuMatSubMatrixI", "CuMatMultMatrixI", "CuMatDivMatrixI", "CuMatLORMatrixI",
+         "CuMatLANDMatrixI", "CuMatLTMatrixI", "CuMatGTMatrixI", "CuMatLTEMatrixI", "CuMatGTEMatrixI", "CuMatEQMatrixI",
+         "CuMatNEQMatrixI", "CuMatBANDMatrixI", "CuMatBORMatrixI", "CuMatPowMatrixI", "CuMatMatMultMatrixI", "chain"});
+    const std::vector<std::string> binFuncNamesFloat(
+        {"CuMatAddMatrixD", "CuMatSubMatrixD", "CuMatMultMatrixD", "CuMatDivMatrixD", "CuMatLORMatrixD",
+         "CuMatLANDMatrixD", "CuMatLTMatrixD", "CuMatGTMatrixD", "CuMatLTEMatrixD", "CuMatGTEMatrixD", "CuMatEQMatrixD",
+         "CuMatNEQMatrixD", "CuMatBANDMatrixD", "CuMatBORMatrixD", "CuMatPowMatrixD", "CuMatMatMultMatrixD", "chain"});
     const std::vector<std::string> unaryFuncNames({"neg", "lnot", "bnot"});
 
     // Enum is just fancy int

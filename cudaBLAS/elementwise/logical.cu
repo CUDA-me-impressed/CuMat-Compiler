@@ -143,7 +143,7 @@ __global__ void CuMatLANDMatrixIKernel(long* A, long* B, long * res, long len){
 }
 
 
-void CuMatLANDMatrixI(long * matA, long * matB, long * matRes, long len){
+extern "C" void CuMatLANDMatrixI(long * matA, long * matB, long * matRes, long len){
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -161,6 +161,177 @@ void CuMatLANDMatrixI(long * matA, long * matB, long * matRes, long len){
 
     // Call the kernel
     CuMatLANDMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
+
+    // Synchronise before copying
+    cudaDeviceSynchronize();
+
+    // Copy the results out of device memory
+    cudaMemcpy(matRes, d_Res, size, cudaMemcpyDeviceToHost);
+
+    // Free up cuda malloc
+    cudaFree(&d_A);
+    cudaFree(&d_B);
+    cudaFree(&d_Res);
+}
+
+
+
+
+
+/*
+ * Bitwise functions
+ */
+// Device function
+__global__ void CuMatBORMatrixDKernel(double* A, double* B, double * res, long len){
+    long index = blockDim.x * blockIdx.x + threadIdx.x;
+    if(index < len){
+        res[index] = (double) (A[index] | B[index]);
+    }
+}
+
+extern "C" void CuMatBORMatrixD(double * matA, double * matB, double * matRes, long len){
+    double* d_A; double *d_B; double * d_Res;
+    size_t size = len*sizeof(long);
+    // Allocate memory for CUDA
+    cudaMallocManaged(&d_A, size);
+    cudaMallocManaged(&d_B, size);
+    cudaMallocManaged(&d_Res, size);
+
+    // Copy over the matricies into device memory
+    cudaMemcpy(d_A, matA, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, matB, size, cudaMemcpyHostToDevice);
+
+    // Set the number of threads per block and grid size
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (len + threadsPerBlock -1) / threadsPerBlock;
+
+    // Call the kernel
+    CuMatBORMatrixDKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
+
+    // Synchronise before copying
+    cudaDeviceSynchronize();
+
+    // Copy the results out of device memory
+    cudaMemcpy(matRes, d_Res, size, cudaMemcpyDeviceToHost);
+
+    // Free up cuda malloc
+    cudaFree(&d_A);
+    cudaFree(&d_B);
+    cudaFree(&d_Res);
+}
+
+// Device function
+__global__ void CuMatBORMatrixIKernel(long* A, long* B, long * res, long len){
+    long index = blockDim.x * blockIdx.x + threadIdx.x;
+    if(index < len){
+        res[index] = (long) (A[index] | B[index]);
+    }
+}
+
+
+extern "C" void CuMatBORMatrixI(long * matA, long * matB, long * matRes, long len){
+    long* d_A; long *d_B; long * d_Res;
+    size_t size = len*sizeof(long);
+    // Allocate memory for CUDA
+    cudaMallocManaged(&d_A, size);
+    cudaMallocManaged(&d_B, size);
+    cudaMallocManaged(&d_Res, size);
+
+    // Copy over the matricies into device memory
+    cudaMemcpy(d_A, matA, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, matB, size, cudaMemcpyHostToDevice);
+
+    // Set the number of threads per block and grid size
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (len + threadsPerBlock -1) / threadsPerBlock;
+
+    // Call the kernel
+    CuMatBORMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
+
+    // Synchronise before copying
+    cudaDeviceSynchronize();
+
+    // Copy the results out of device memory
+    cudaMemcpy(matRes, d_Res, size, cudaMemcpyDeviceToHost);
+
+    // Free up cuda malloc
+    cudaFree(&d_A);
+    cudaFree(&d_B);
+    cudaFree(&d_Res);
+}
+
+
+/*
+ * Logical AND Kernel functions
+ */
+
+
+// Device function
+__global__ void CuMatBANDMatrixDKernel(double* A, double* B, double * res, long len){
+    long index = blockDim.x * blockIdx.x + threadIdx.x;
+    if(index < len){
+        res[index] = (double) (A[index] & B[index]);
+    }
+}
+
+extern "C" void CuMatBANDMatrixD(double * matA, double * matB, double * matRes, long len){
+    double* d_A; double *d_B; double * d_Res;
+    size_t size = len*sizeof(long);
+    // Allocate memory for CUDA
+    cudaMallocManaged(&d_A, size);
+    cudaMallocManaged(&d_B, size);
+    cudaMallocManaged(&d_Res, size);
+
+    // Copy over the matricies into device memory
+    cudaMemcpy(d_A, matA, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, matB, size, cudaMemcpyHostToDevice);
+
+    // Set the number of threads per block and grid size
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (len + threadsPerBlock -1) / threadsPerBlock;
+
+    // Call the kernel
+    CuMatBANDMatrixDKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
+
+    // Synchronise before copying
+    cudaDeviceSynchronize();
+
+    // Copy the results out of device memory
+    cudaMemcpy(matRes, d_Res, size, cudaMemcpyDeviceToHost);
+
+    // Free up cuda malloc
+    cudaFree(&d_A);
+    cudaFree(&d_B);
+    cudaFree(&d_Res);
+}
+
+// Device function
+__global__ void CuMatBANDMatrixIKernel(long* A, long* B, long * res, long len){
+    long index = blockDim.x * blockIdx.x + threadIdx.x;
+    if(index < len){
+        res[index] = (long) (A[index] & B[index]);
+    }
+}
+
+
+extern "C" void CuMatBANDMatrixI(long * matA, long * matB, long * matRes, long len){
+    long* d_A; long *d_B; long * d_Res;
+    size_t size = len*sizeof(long);
+    // Allocate memory for CUDA
+    cudaMallocManaged(&d_A, size);
+    cudaMallocManaged(&d_B, size);
+    cudaMallocManaged(&d_Res, size);
+
+    // Copy over the matricies into device memory
+    cudaMemcpy(d_A, matA, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, matB, size, cudaMemcpyHostToDevice);
+
+    // Set the number of threads per block and grid size
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (len + threadsPerBlock -1) / threadsPerBlock;
+
+    // Call the kernel
+    CuMatBANDMatrixIKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, len);
 
     // Synchronise before copying
     cudaDeviceSynchronize();

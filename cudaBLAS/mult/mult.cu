@@ -27,7 +27,7 @@ __global__ void CuMatMatMultKernelI(const long *matA, const long *matB, long* ma
     }
 }
 
-void CuMatMatMultMatrixI(long * matA, long * matB, long * matRes, long i, long p, long j){
+extern "C" void CuMatMatMultMatrixI(long * matA, long * matB, long * matRes, long i, long p, long j){
     auto matASize = sizeof(long) * i * p;
     auto matBSize = sizeof(long) * p * j;
     auto matResSize = i * j * sizeof(long);
@@ -71,7 +71,7 @@ void CuMatMatMultMatrixI(long * matA, long * matB, long * matRes, long i, long p
 }
 
 // matRes(m,n) = matA(m,k) * matB(k,n)
-void CuMatMatMultMatrixD(const double *matA, const double *matB, double *matRes, const int m, const int k, const int n) {
+extern "C" void CuMatMatMultMatrixD(const double *matA, const double *matB, double *matRes, const int m, const int k, const int n) {
     // Declare matA, matB, matRes on device
     double* d_A;
     double* d_B;
@@ -108,90 +108,4 @@ void CuMatMatMultMatrixD(const double *matA, const double *matB, double *matRes,
 
     // Destroy the handle
     cublasDestroy(handle);
-}
-
-
-/*
- * Multiplication for element wise operations
- */
-
-// Device function
-__global__ void CuMatElementMultMatrixDKernel(double* A, double* B, double * res, long i, long j){
-    long N = i * j; // Treat matrix add as vector add (same thing for equal sizes)
-    long index = blockDim.x * blockIdx.x + threadIdx.x;
-    if(index < N){
-        res[index] = A[index] * B[index];
-    }
-}
-
-void CuMatElementMultMatrixD(double * matA, double * matB, double * matRes, long i, long j){
-    double* d_A; double *d_B; double * d_Res;
-    size_t size = i*j*sizeof(long);
-    // Allocate memory for CUDA
-    cudaMallocManaged(&d_A, size);
-    cudaMallocManaged(&d_B, size);
-    cudaMallocManaged(&d_Res, size);
-
-    // Copy over the matricies into device memory
-    cudaMemcpy(d_A, matA, size, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B, matB, size, cudaMemcpyHostToDevice);
-
-    // Set the number of threads per block and grid size
-    int threadsPerBlock = 256;
-    int blocksPerGrid = ((i*j) + threadsPerBlock -1) / threadsPerBlock;
-
-    // Call the kernel
-    CuMatElementMultMatrixDKernel<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, i, j);
-
-    // Synchronise before copying
-    cudaDeviceSynchronize();
-
-    // Copy the results out of device memory
-    cudaMemcpy(matRes, d_Res, size, cudaMemcpyDeviceToHost);
-
-    // Free up cuda malloc
-    cudaFree(&d_A);
-    cudaFree(&d_B);
-    cudaFree(&d_Res);
-}
-
-// Device function
-__global__ void CuMatElementMultMatrixKernelI(long* A, long* B, long * res, long i, long j){
-    long N = i * j; // Treat matrix add as vector add (same thing for equal sizes)
-    long index = blockDim.x * blockIdx.x + threadIdx.x;
-    if(index < N){
-        res[index] = A[index] * B[index];
-    }
-}
-
-
-void CuMatElementMultMatrixI(long * matA, long * matB, long * matRes, long i, long j){
-    long* d_A; long *d_B; long * d_Res;
-    size_t size = i*j*sizeof(long);
-    // Allocate memory for CUDA
-    cudaMallocManaged(&d_A, size);
-    cudaMallocManaged(&d_B, size);
-    cudaMallocManaged(&d_Res, size);
-
-    // Copy over the matricies into device memory
-    cudaMemcpy(d_A, matA, size, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B, matB, size, cudaMemcpyHostToDevice);
-
-    // Set the number of threads per block and grid size
-    int threadsPerBlock = 256;
-    int blocksPerGrid = ((i*j) + threadsPerBlock -1) / threadsPerBlock;
-
-    // Call the kernel
-    CuMatElementMultMatrixKernelI<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_Res, i, j);
-
-    // Synchronise before copying
-    cudaDeviceSynchronize();
-
-    // Copy the results out of device memory
-    cudaMemcpy(matRes, d_Res, size, cudaMemcpyDeviceToHost);
-
-    // Free up cuda malloc
-    cudaFree(&d_A);
-    cudaFree(&d_B);
-    cudaFree(&d_Res);
 }
