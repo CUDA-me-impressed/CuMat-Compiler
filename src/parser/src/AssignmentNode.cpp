@@ -52,7 +52,7 @@ void AST::AssignmentNode::semanticPass(Utils::IRContext* context) {
         }
         if (isFunction) {
             // store a function type as a variable
-            AST::VariableNode varNode = std::get_if<AST::VariableNode>(&*this->rVal);
+            AST::VariableNode varNode = *dynamic_cast<AST::VariableNode*>(this->rVal.get());
             std::string nameSpace = std::accumulate(varNode.namespacePath.begin(), varNode.namespacePath.end(), std::string(""));
             context->semanticSymbolTable->storeVarType(this->name, nullptr, nameSpace, varNode.name);
         } else {

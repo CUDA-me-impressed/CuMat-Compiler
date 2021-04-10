@@ -56,7 +56,7 @@ void AST::DecompNode::semanticPass(Utils::IRContext* context, Typing::PRIMITIVE 
     if (this->rVal.index() == 1) {
         std::shared_ptr<AST::DecompNode> child = std::get<std::shared_ptr<AST::DecompNode>>(this->rVal);
     } else {
-        auto rValStr = std::get_if<std::string>(this->rVal);
+        std::string rValStr = std::get<std::string>(this->rVal);
         context->semanticSymbolTable->storeVarType(rValStr, TypeCheckUtils::makeMatrixType(std::vector<uint>(), primType));
     }
 }
