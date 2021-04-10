@@ -105,8 +105,13 @@ void TypeCheckUtils::noneError() {
     std::exit(TypeCheckUtils::ErrorCodes::NONE_ERROR);
 }
 
-void TypeCheckUtils::alreadyDefinedError(std::string funcName) {
-    std::cerr << "Function with same name already defined: " << funcName << std::endl;
+void TypeCheckUtils::notDefinedError(std::string name) {
+    std::cerr << "Function with same name already defined: " << name << std::endl;
+    std::exit(TypeCheckUtils::ErrorCodes::NOT_DEFINED_ERROR);
+}
+
+void TypeCheckUtils::alreadyDefinedError(std::string name) {
+    std::cerr << "Function with same name already defined: " << name << std::endl;
     std::exit(TypeCheckUtils::ErrorCodes::ALREADY_DEFINED_ERROR);
 }
 

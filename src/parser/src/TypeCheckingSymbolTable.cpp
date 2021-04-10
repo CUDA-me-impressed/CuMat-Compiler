@@ -1,21 +1,64 @@
 #include "TypeCheckingSymbolTable.hpp"
 #include "TypeCheckingUtils.hpp"
 
-std::shared_ptr<Typing::Type> TypeCheckUtils::TypeCheckingSymbolTable::getType(std::string typeName) {
-    if (this->typeData.contains(typeName)) {
-        return std::make_shared<Typing::Type>();
+std::shared_ptr<Typing::Type> TypeCheckUtils::TypeCheckingSymbolTable::getFuncType(std::string funcName, std::string nameSpace) {
+    if (this->funcTypes.contains(nameSpace)) {
+        if (this->funcTypes[nameSpace].contains(funcName)) {
+            return funcTypes[nameSpace][funcName];
+        }
     }
+    TypeCheckUtils::notDefinedError(funcName);
     return nullptr;
 }
 
-void TypeCheckUtils::TypeCheckingSymbolTable::storeType(std::string typeName, std::shared_ptr<Typing::Type> typePtr) {
-    if (!typeData.contains(typeName)) {
-        this->typeData[typeName] = std::move(typePtr);
-    } else {
-        TypeCheckUtils::alreadyDefinedError(typeName);
+void TypeCheckUtils::TypeCheckingSymbolTable::storeFuncType(std::string funcName, std::string nameSpace, std::shared_ptr<Typing::Type> typePtr) {
+    if (this->inFuncTable(funcName, nameSpace)) {
+        TypeCheckUtils::alreadyDefinedError(funcName);
     }
+    if (!this->funcTypes.contains(nameSpace)) {
+        this->funcTypes[nameSpace] = std::map<std::string, std::shared_ptr<Typing::Type>>();
+    }
+    this->funcTypes[nameSpace][funcName] = std::move(typePtr);
 }
 
-bool TypeCheckUtils::TypeCheckingSymbolTable::inSymbolTable(std::string typeName) {
-    return typeData.contains(typeName);
+std::shared_ptr<Typing::Type> TypeCheckUtils::TypeCheckingSymbolTable::getVarType(std::string varName) {
+    if (this->varTypes.contains(varName)) {
+        TypeCheckUtils::VariableEntry entry = this->varTypes[varName];
+        if (entry.isFunction) {
+            return this->getFuncType(entry.funcName, entry.nameSpace);
+        } else {
+            return entry.varType;
+        }
+    }
+    TypeCheckUtils::notDefinedError(varName);
+    return nullptr;
+}
+
+void TypeCheckUtils::TypeCheckingSymbolTable::storeVarType(std::string typeName, std::shared_ptr<Typing::Type> typePtr, std::string nameSpace, std::string funcName) {
+    if (this->inVarTable(typeName)) {
+        TypeCheckUtils::alreadyDefinedError(typeName);
+    }
+    TypeCheckUtils::VariableEntry entry;
+    entry.funcName = funcName;
+    entry.nameSpace = nameSpace;
+    entry.varType = std::move(typePtr);
+    if (funcName != "") {
+        if (this->inFuncTable(funcName, nameSpace)) {
+            entry.isFunction = true;
+        } else {
+            TypeCheckUtils::notDefinedError(funcName);
+        }
+    } else {
+        entry.isFunction = false;
+    }
+    this->varTypes[typeName] = entry;
+}
+
+bool TypeCheckUtils::TypeCheckingSymbolTable::inVarTable(std::string typeName) {
+    return varTypes.contains(typeName);
+}
+bool TypeCheckUtils::TypeCheckingSymbolTable::inFuncTable(std::string funcName, std::string nameSpace) {
+    if (funcTypes.contains(nameSpace)) {
+        return funcTypes[nameSpace].contains(funcName);
+    }
 }

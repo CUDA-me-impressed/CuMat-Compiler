@@ -1,6 +1,9 @@
 #include "AssignmentNode.hpp"
+#include "TypeCheckingUtils.hpp"
 
 #include <iostream>
+#include <utility>
+#include <numeric>
 
 llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
     // Generate LLVM value for the rval expression
@@ -32,10 +35,29 @@ llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
 
 void AST::AssignmentNode::semanticPass(Utils::IRContext* context) {
     this->rVal->semanticPass(context);
+    auto rValTy = std::get_if<Typing::MatrixType>(this->rVal->type.get());
+    auto rValFty = std::get_if<Typing::FunctionType>(this->rVal->type.get());
+    bool isFunction = rValFty != nullptr;
 
     if (this->lVal != nullptr) {
-        this->lVal->semanticPass(context);
+        if (isFunction) {
+            // Cannot decompose function
+            std::exit(9);
+        } else if (rValTy != nullptr) {
+            this->lVal->semanticPass(context, rValTy->getPrimitiveType());
+        }
     } else {
+        if (context->semanticSymbolTable->inVarTable(this->name)) {
+            TypeCheckUtils::alreadyDefinedError(this->name);
+        }
+        if (isFunction) {
+            // store a function type as a variable
+            AST::VariableNode varNode = std::get_if<AST::VariableNode>(&*this->rVal);
+            std::string nameSpace = std::accumulate(varNode.namespacePath.begin(), varNode.namespacePath.end(), std::string(""));
+            context->semanticSymbolTable->storeVarType(this->name, nullptr, nameSpace, varNode.name);
+        } else {
+            context->semanticSymbolTable->storeVarType(this->name, this->rVal->type);
+        }
         if (context->symbolTable->inSymbolTable(this->name, context->symbolTable->getCurrentFunction())) {
             throw std::runtime_error("Attempting to redefine variable: " + this->name);
         }
@@ -43,6 +65,7 @@ void AST::AssignmentNode::semanticPass(Utils::IRContext* context) {
                                        context->symbolTable->getCurrentFunction());
     }
 }
+
 llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::shared_ptr<DecompNode> decomp,
                                                llvm::Value* matHeader) {
     // Get the type for the original value

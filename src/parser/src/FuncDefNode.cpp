@@ -46,5 +46,5 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
     context->symbolTable->escapeFunction();
 
     auto type = TypeCheckUtils::makeFunctionType(this->returnType, typesRaw);
-    context->semanticSymbolTable->storeType(this->funcName, type);
+    context->semanticSymbolTable->storeFuncType(this->funcName, "", type);
 }

@@ -41,9 +41,8 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
 
 void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
     // Check that function exists in the symbol table
-    if (context->semanticSymbolTable->inSymbolTable(this->funcName)) {
-        std::shared_ptr<Typing::FunctionType> fTy = std::get_if<std::shared_ptr<Typing::FunctionType>>(context->semanticSymbolTable->getType(this->funcName));
-        this->type = fTy->returnType;
+    if (context->semanticSymbolTable->inFuncTable(this->nonAppliedFunction->literalText, "")) {
+
     }
         this->nonAppliedFunction->semanticPass(context);
         // Get the argument types for the function

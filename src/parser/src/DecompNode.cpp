@@ -1,5 +1,10 @@
 #include <variant>
+#include <vector>
+#include <string>
+#include <utility>
+#include <variant>
 
+#include "TypeCheckingUtils.hpp"
 #include "DecompNode.hpp"
 
 llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {
@@ -46,8 +51,12 @@ llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {
     //    }
 }
 
-void AST::DecompNode::semanticPass(Utils::IRContext* context) {
+void AST::DecompNode::semanticPass(Utils::IRContext* context, Typing::PRIMITIVE primType) {
+    context->semanticSymbolTable->storeVarType(this->lVal, TypeCheckUtils::makeMatrixType(std::vector<uint>(), primType));
     if (this->rVal.index() == 1) {
         std::shared_ptr<AST::DecompNode> child = std::get<std::shared_ptr<AST::DecompNode>>(this->rVal);
+    } else {
+        auto rValStr = std::get_if<std::string>(this->rVal);
+        context->semanticSymbolTable->storeVarType(rValStr, TypeCheckUtils::makeMatrixType(std::vector<uint>(), primType));
     }
 }
