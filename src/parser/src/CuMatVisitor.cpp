@@ -573,9 +573,9 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
     if (!ctx->dimensionLiteral().empty()) {
         for (auto dim : ctx->dimensionLiteral()) {
             auto dimension = dim->BSLASH().size();
-            if (dimension > inDimension) {  // New dimension
-                while (dimension < dimensions.size()) {
-                    dimensions.push_back(1);
+            if (dimension > inDimension) {  // Above
+                while (dimension >= dimensions.size()) {
+                    dimensions.push_back(2);
                     inDimension++;
                 }
             } else if (dimension == inDimension) {  // More rows/layers etc.
@@ -584,6 +584,8 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
                 if (dim->rowliteral()->cols.size() != dimensions[dimension - 1]) {
                     throw std::runtime_error("Dimensions do not match up: Dimension:" + (std::to_string(dimension)) +
                                              " inDimension: " + (std::to_string(inDimension)));
+                } else {
+                    inDimension = dimension;
                 }
             }
 
