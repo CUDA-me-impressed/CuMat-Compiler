@@ -5,6 +5,7 @@
 
 #include "mult/mult.cu"
 #include "utils.cu"
+#include "utils/io.cpp"
 #include <iostream>
 
 extern void CuMatAddMatrixI(long*,long*,long*,long);

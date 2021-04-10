@@ -15,6 +15,25 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
 
     // Generate Return statement code
     llvm::Value* returnExprVal = this->returnExpr->codeGen(context);
+
+    if (this->callingFunctionName == "main") {
+        // lmao this is awful code deal with it
+        if (auto retType = std::get_if<Typing::MatrixType>(&*this->returnExpr->type)) {
+            auto mainRecord = Utils::getMatrixFromPointer(context,returnExprVal);
+            llvm::Value* resLenLLVM = llvm::ConstantInt::get(
+                llvm::Type::getInt64Ty(context->module->getContext()), retType->getLength());
+            std::vector<llvm::Value*> argVals({mainRecord.dataPtr, resLenLLVM});
+
+            if (retType->primType == Typing::PRIMITIVE::INT) {
+                auto callRet = context->Builder->CreateCall(context->symbolTable->printFunctions.funcInt, argVals);
+            } else if (retType->primType == Typing::PRIMITIVE::FLOAT) {
+                auto callRet = context->Builder->CreateCall(context->symbolTable->printFunctions.funcFloat, argVals);
+            } else {
+                throw std::runtime_error("Main return type not valid");
+            }
+        }
+    }
+
     llvm::Value* retVal = context->Builder->CreateRet(returnExprVal);
 
     return retVal;

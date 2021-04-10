@@ -18,7 +18,7 @@ __global__ void CuMatSubMatrixDKernel(double* A, double* B, double * res, long l
     }
 }
 
-extern "C" void CuMatSubMatrixD(double * matA, double * matB, double * matRes, long len{
+extern "C" void CuMatSubMatrixD(double * matA, double * matB, double * matRes, long len){
     double* d_A; double *d_B; double * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA

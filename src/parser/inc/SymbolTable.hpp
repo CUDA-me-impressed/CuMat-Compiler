@@ -78,6 +78,9 @@ class SymbolTable {
     std::map<int, CUDAFunctionPair> binaryFunctions;
     std::map<int, CUDAFunctionPair> unaryFunctions;
 
+    CUDAFunctionPair printFunctions;
+
+
     // Symbol data
     std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName, const std::string& funcName,
                                                const std::string& funcNamespace = "");

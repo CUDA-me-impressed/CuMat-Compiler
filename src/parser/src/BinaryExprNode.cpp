@@ -31,7 +31,6 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
             if (!resType) {
                 throw std::runtime_error("Resultant Matrix Type not determined!");
             }
-            resType->dimensions = lhsDimension.size() > rhsDimension.size() ? lhsDimension : rhsDimension;
 
             newMatAlloc = Utils::createMatrix(context, *resType);
 
@@ -208,7 +207,7 @@ llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* cont
                 }
             }
         }
-    } else if (lhs->getType()->isFloatTy() && rhs->getType()->isFloatTy()) {
+    } else if (lhs->getType()->isDoubleTy() && rhs->getType()->isDoubleTy()) {
         // Handle the float-float operations
         switch (op) {
             case PLUS: {

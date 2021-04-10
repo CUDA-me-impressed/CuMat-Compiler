@@ -85,8 +85,8 @@ llvm::Value* AST::LiteralNode<int>::codeGen(Utils::IRContext* context) {
 template <>
 llvm::Value* AST::LiteralNode<float>::codeGen(Utils::IRContext* context) {
     if (std::get<Typing::MatrixType>(*type).primType != Typing::PRIMITIVE::FLOAT) return nullptr;
-    auto ty = llvm::Type::getFloatTy(context->module->getContext());
-    return llvm::ConstantFP::get(ty, llvm::APFloat(value));
+    auto ty = llvm::Type::getDoubleTy(context->module->getContext());
+    return llvm::ConstantFP::get(ty, (double) value);
 }
 
 template <>

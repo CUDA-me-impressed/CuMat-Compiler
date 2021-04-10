@@ -20,8 +20,6 @@ void AST::VariableNode::semanticPass(Utils::IRContext* context) {
 
     if (this->variableSlicing) {
         this->variableSlicing->semanticPass(context);
-    } else {
-        throw std::runtime_error("[Internal Error] Variable slicing not generated correctly!");
     }
 }
 
@@ -46,7 +44,7 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
         if (slicesVec.size() <= i || std::get_if<bool>(&slicesVec.at(i))) {
             slices.emplace_back(0, matType->dimensions.at(i));
         } else {
-            // We should get the element to be sliced and we can check if we have 1 or 2 indicies filled in
+            // We should get the element to be sliced and we can check if we have 1 or 2 indices filled in
             // If one, this means from the index to the dim end
             // If two, nice and simple, just insert
             auto sliceElement = *std::get_if<std::vector<int>>(&slicesVec.at(i));
@@ -58,7 +56,7 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
         }
     }
 
-    // Lloyd's algorithm to calculate indicies from slices
+    // Lloyd's algorithm to calculate indices from slices
     std::vector<int> firstSlices;
     std::vector<uint> slicedMatrixDimensions;
 

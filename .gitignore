@@ -43,3 +43,5 @@ cmake-build*
 
 _local_*.*
 *.ll
+
+cudaBLAS/CuMat-testBasic.cm

@@ -133,7 +133,7 @@ llvm::Type* Utils::convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE 
             break;
         }
         case Typing::PRIMITIVE::FLOAT: {
-            ty = llvm::Type::getFloatTy(context->module->getContext());
+            ty = llvm::Type::getDoubleTy(context->module->getContext());
             break;
         }
         case Typing::PRIMITIVE::BOOL: {

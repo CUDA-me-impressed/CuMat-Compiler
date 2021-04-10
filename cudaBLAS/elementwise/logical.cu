@@ -185,7 +185,7 @@ extern "C" void CuMatLANDMatrixI(long * matA, long * matB, long * matRes, long l
 __global__ void CuMatBORMatrixDKernel(double* A, double* B, double * res, long len){
     long index = blockDim.x * blockIdx.x + threadIdx.x;
     if(index < len){
-        res[index] = (double) (A[index] | B[index]);
+        res[index] = (double) (((long)A[index]) | ((long)B[index]));
     }
 }
 
@@ -270,7 +270,7 @@ extern "C" void CuMatBORMatrixI(long * matA, long * matB, long * matRes, long le
 __global__ void CuMatBANDMatrixDKernel(double* A, double* B, double * res, long len){
     long index = blockDim.x * blockIdx.x + threadIdx.x;
     if(index < len){
-        res[index] = (double) (A[index] & B[index]);
+        res[index] = (double) (((long)A[index]) & ((long)B[index]));
     }
 }
 
