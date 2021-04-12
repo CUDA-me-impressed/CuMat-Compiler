@@ -3,6 +3,7 @@
 #include <numeric>
 #include <valarray>
 #include "CodeGenUtils.hpp"
+#include "TypeCheckingUtils.hpp"
 
 llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
     llvm::Value* storeVal =
@@ -15,12 +16,32 @@ llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::VariableNode::semanticPass(Utils::IRContext* context) {
+    // Alfie's symbol table stuff, left here to fill in his symbol table when needed
     this->type = context->symbolTable->getValue(this->name,context->symbolTable->getCurrentFunction())->type;
+    std::string nameSpace;
+
+    if (!this->namespacePath.empty()) {
+        // If there's a namespace path, concatenate it to a single string
+        nameSpace = std::accumulate(this->namespacePath.begin(), this->namespacePath.end(), std::string(""));
+    }
+
+    if (context->semanticSymbolTable->inVarTable(this->name)) {
+        // Get type if in Variable table
+        this->type = context->semanticSymbolTable->getVarType(this->name);
+    } else if (context->semanticSymbolTable->inFuncTable(this->name, nameSpace)) {
+        // Next, check if it's in the function table
+        if (this->variableSlicing) {
+            // Cannot decompose a function
+            TypeCheckUtils::decompError();
+        }
+        this->type = context->semanticSymbolTable->getFuncType(this->name, nameSpace);
+    } else {
+        // Finally, give up and throw a `notDefined` error
+        TypeCheckUtils::notDefinedError(this->name);
+    }
 
     if (this->variableSlicing) {
         this->variableSlicing->semanticPass(context);
-    } else {
-        throw std::runtime_error("[Internal Error] Variable slicing not generated correctly!");
     }
 }
 
@@ -57,7 +78,7 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
         }
     }
 
-    // Lloyd's algorithm to calculate indicies from slices
+    // Lloyd's algorithm to calculate indices from slices
     std::vector<int> firstSlices;
     std::vector<uint> slicedMatrixDimensions;
 

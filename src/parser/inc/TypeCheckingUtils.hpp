@@ -6,7 +6,7 @@
 namespace TypeCheckUtils {
 
     enum ErrorCodes {
-        WRONG_TYPE = 2, MISMATCH_CODE = 3, CASTING_ERROR = 4, NONE_ERROR = 5, ALREADY_DEFINED_ERROR = 6, NOT_DEFINED_ERROR = 7,
+        WRONG_TYPE = 2, MISMATCH_CODE = 3, CASTING_ERROR = 4, NONE_ERROR = 5, ALREADY_DEFINED_ERROR = 6, NOT_DEFINED_ERROR = 7, DECOMP_ERROR = 8
     };
 
     std::shared_ptr<Typing::Type> makeMatrixType(const std::vector<uint> dimensions, Typing::PRIMITIVE primType);
@@ -32,6 +32,7 @@ namespace TypeCheckUtils {
     void noneError();
     void notDefinedError(std::string name);
     void alreadyDefinedError(std::string name);
+    void decompError();
 
     std::string primToString(Typing::PRIMITIVE ty);
 

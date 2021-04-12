@@ -40,24 +40,30 @@ void AST::AssignmentNode::semanticPass(Utils::IRContext* context) {
     bool isFunction = rValFty != nullptr;
 
     if (this->lVal != nullptr) {
+        // Check if decomposition is taking place
         if (isFunction) {
             // Cannot decompose function
-            std::exit(9);
+            TypeCheckUtils::decompError();
         } else if (rValTy != nullptr) {
+            // Else, call semantic pass on rVal passing through the primitive type
             this->lVal->semanticPass(context, rValTy->getPrimitiveType());
         }
     } else {
+        // In this branch, only the `name` attribute is defined, signalling simple assignment
         if (context->semanticSymbolTable->inVarTable(this->name)) {
+            // Error if the variable name is already in use
             TypeCheckUtils::alreadyDefinedError(this->name);
         }
         if (isFunction) {
-            // store a function type as a variable
+            // Store a function type as a variable
             AST::VariableNode varNode = *dynamic_cast<AST::VariableNode*>(this->rVal.get());
+            // Concatenate the namespace into a single string
             std::string nameSpace = std::accumulate(varNode.namespacePath.begin(), varNode.namespacePath.end(), std::string(""));
             context->semanticSymbolTable->storeVarType(this->name, nullptr, nameSpace, varNode.name);
         } else {
             context->semanticSymbolTable->storeVarType(this->name, this->rVal->type);
         }
+
         if (context->symbolTable->inSymbolTable(this->name, context->symbolTable->getCurrentFunction())) {
             throw std::runtime_error("Attempting to redefine variable: " + this->name);
         }

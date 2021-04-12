@@ -115,6 +115,11 @@ void TypeCheckUtils::alreadyDefinedError(std::string name) {
     std::exit(TypeCheckUtils::ErrorCodes::ALREADY_DEFINED_ERROR);
 }
 
+void TypeCheckUtils::decompError() {
+    std::cerr << "Cannot decompose a function" << std::endl;
+    std::exit(TypeCheckUtils::ErrorCodes::DECOMP_ERROR);
+}
+
 void TypeCheckUtils::assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
     if (not(lhs == rhs)) {
         std::cerr << "Mismatched types: " << primToString(lhs) << ", " << primToString(rhs) << std::endl;
