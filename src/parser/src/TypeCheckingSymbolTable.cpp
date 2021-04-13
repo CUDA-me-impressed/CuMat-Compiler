@@ -55,10 +55,12 @@ void TypeCheckUtils::TypeCheckingSymbolTable::storeVarType(std::string typeName,
 }
 
 bool TypeCheckUtils::TypeCheckingSymbolTable::inVarTable(std::string typeName) {
-    return varTypes.contains(typeName);
+    return this->varTypes.contains(typeName);
 }
 bool TypeCheckUtils::TypeCheckingSymbolTable::inFuncTable(std::string funcName, std::string nameSpace) {
-    if (funcTypes.contains(nameSpace)) {
-        return funcTypes[nameSpace].contains(funcName);
+    if (this->funcTypes.contains(nameSpace)) {
+        return this->funcTypes[nameSpace].contains(funcName);
+    } else {
+        return false;
     }
 }
