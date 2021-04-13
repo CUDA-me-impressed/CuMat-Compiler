@@ -566,6 +566,12 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
     std::vector<uint> dimensions;
     std::vector<std::shared_ptr<AST::ExprNode>> values;
     int inDimension = 0;
+    if(ctx->rowliteral() == nullptr) //Empty matrix literal
+    {
+        t.rank = 0;
+        mN->type = std::make_shared<Typing::Type>(t);
+        return std::move(pConv<AST::ExprNode>(mN));
+    }
     dimensions.push_back(ctx->rowliteral()->cols.size());  // First size
     for (auto exp : ctx->rowliteral()->cols) {
         values.emplace_back(std::move(visit(exp)));
