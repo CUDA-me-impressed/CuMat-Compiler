@@ -141,7 +141,7 @@ int main(int argc, char* argv[], char* envp[]) {
         Analysis::DimensionSymbolTable dst;
 
         // Context containing the module and IR Builder AND SYMBOL TABLE
-        Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable, &co};
+        Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable, &co, &semanticSymbolTable};
         std::get<1>(tree)->semanticPass(&treeContext);
         std::cout << "Done Semantic pass" << std::endl;
         std::get<1>(tree)->dimensionPass(&dst);
