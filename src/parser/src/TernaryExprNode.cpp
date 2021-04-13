@@ -30,21 +30,21 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
 
     // Handle the code of the body at the correct position
     context->Builder->SetInsertPoint(truthyBB);
-    llvm::Value* truthyVal = this->truthy->codeGen(context);
+    llvm::Value* returnVal = this->truthy->codeGen(context);
     context->Builder->CreateBr(mergeBB);
-    truthyBB = context->Builder->GetInsertBlock();
+    returnVal = context->Builder->GetInsertBlock();
 
     func->getBasicBlockList().push_back(falseyBB);
     // Insert at the correct position
     context->Builder->SetInsertPoint(falseyBB);
-    llvm::Value* falseyVal = this->falsey->codeGen(context);
+    returnVal = this->falsey->codeGen(context);
 
     // Merge the lines of execution together
     context->Builder->CreateBr(mergeBB);
     func->getBasicBlockList().push_back(mergeBB);
     context->Builder->SetInsertPoint(mergeBB);
 
-    return truthyVal;
+    return returnVal;
 }
 
 void AST::TernaryExprNode::semanticPass(Utils::IRContext* context) {

@@ -45,3 +45,5 @@ _local_*.*
 *.ll
 
 cudaBLAS/CuMat-testBasic.cm
+
+cudaBLAS/CuMat-testBasic.cmProgram
