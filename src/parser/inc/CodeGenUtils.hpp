@@ -67,4 +67,6 @@ llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::M
 
 int getRealIndexOffset(const std::vector<uint>& dimensions, const std::vector<int>& index);
 
+llvm::Value* upcastLiteralToMatrix(Utils::IRContext* context, const Typing::Type  &type, llvm::Value* literalVal);
+
 }  // namespace Utils

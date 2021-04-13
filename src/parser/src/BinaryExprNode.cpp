@@ -24,6 +24,15 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
 
     if (auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type)) {
         if (auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type)) {
+
+            // Upcasting literal to matrix type
+            if(lhsType->rank == 0){
+                lhsVal = Utils::upcastLiteralToMatrix(context, *lhsType, lhsVal);
+            }
+            if(rhsType->rank == 0){
+                rhsVal = Utils::upcastLiteralToMatrix(context, *rhsType, rhsVal);
+            }
+
             auto lhsDimension = lhsType->getDimensions();
             auto rhsDimension = rhsType->getDimensions();
 
