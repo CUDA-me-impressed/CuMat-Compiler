@@ -564,15 +564,19 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
     mN->literalText = ctx->getText();
     Typing::MatrixType t;
     std::vector<uint> dimensions;
+    std::vector<uint> seps;
     std::vector<std::shared_ptr<AST::ExprNode>> values;
     int inDimension = 0;
     dimensions.push_back(ctx->rowliteral()->cols.size());  // First size
     for (auto exp : ctx->rowliteral()->cols) {
         values.emplace_back(std::move(visit(exp)));
+        seps.emplace_back(1);
     }
+    seps.pop_back();  // Fix fencepost error
     if (!ctx->dimensionLiteral().empty()) {
         for (auto dim : ctx->dimensionLiteral()) {
             auto dimension = dim->BSLASH().size();
+            seps.emplace_back(dimension + 1);
             if (dimension > inDimension) {  // Above
                 while (dimension >= dimensions.size()) {
                     dimensions.push_back(2);
@@ -591,11 +595,14 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
 
             for (auto exp : dim->rowliteral()->cols) {
                 values.emplace_back(std::move(visit(exp)));
+                seps.emplace_back(1);
             }
+            seps.pop_back();  // Fix fencepost error
         }
     }
 
     mN->data = std::move(values);
+    mN->separators = std::move(seps);
     t.dimensions = std::vector<uint>(dimensions);
     t.rank = dimensions.size();
     mN->type = std::make_shared<Typing::Type>(t);

@@ -8,6 +8,7 @@
 #include <llvm/IR/Type.h>
 
 #include <iostream>
+#include <numeric>
 
 #include "CodeGenUtils.hpp"
 #include "TypeCheckingUtils.hpp"
@@ -133,6 +134,105 @@ void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
 
     this->type = TypeCheckUtils::makeMatrixType(dimensions, primType);
 }
+
+void dimension_error(const std::string& message, AST::Node* node) {
+    std::cerr << "Dimension Error" << std::endl;
+    std::cerr << node->literalText << std::endl;
+    std::cerr << message << std::endl;
+    throw std::runtime_error{message};
+};
+
+void AST::MatrixNode::dim_subpass(std::vector<uint>& apparent_dim, std::vector<uint>& size,
+                                  const std::vector<uint>& nodedims, int sep) {
+    if (nodedims.size() > sep) {
+        dimension_error("Expression rank larger than separator", this);
+    }
+    while (size.size() < nodedims.size() || size.size() < sep) {
+        size.emplace_back(0);
+    }
+    for (int i = 0; i < nodedims.size(); i++) {
+        size[i] += nodedims[i];
+    }
+    for (int i = 0; i < sep - 1; i++) {
+        if (i + 1 > apparent_dim.size()) {
+            apparent_dim.emplace_back(size[i]);
+        }
+        if (size[i] != apparent_dim[i]) {
+            dimension_error(std::string{"Dimension value mismatched. Expected: "} + std::to_string(apparent_dim[i]) +
+                                ", got: " + std::to_string(size[i]),
+                            this);
+        }
+        size[i] = 0;
+        if (i + 1 >= nodedims.size()) {
+            size[i + 1] += 1;
+        }
+    }
+}
+
+void AST::MatrixNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    for (auto& elem : this->data) {
+        elem->dimensionPass(nt);
+    }
+    std::vector<uint> apparent_dim{};
+    std::vector<uint> size{};
+
+    {
+        auto sep = this->separators.begin();
+        for (int i = 0; i < this->data.size() - 1; i++) {
+            const auto& elem = data[i];
+            const auto* type = std::get_if<Typing::MatrixType>(&*elem->type);
+            if (type) {
+                const auto& dims = type->dimensions;
+                dim_subpass(apparent_dim, size, dims, *(sep++));
+            }
+        }
+    }
+    {
+        // have to do this separately as sep is one element shorter than data
+        const auto& elem = data[data.size() - 1];
+        const auto* type = std::get_if<Typing::MatrixType>(&*elem->type);
+        if (type) {
+            const auto& dims = type->dimensions;
+            dim_subpass(apparent_dim, size, dims, size.size());
+        }
+        apparent_dim.emplace_back(size.back());
+    }
+
+    auto* type = std::get_if<Typing::MatrixType>(&*this->type);
+    if (type) {
+        type->dimensions = apparent_dim;
+    }
+
+    std::vector<std::shared_ptr<ExprNode>> new_vector{};
+
+    for (auto& elem : this->data) {
+        if (elem->isConst()) {
+            for (auto& inner_elem : elem->constData(elem)) {
+                new_vector.emplace_back(std::move(inner_elem));
+            }
+        } else {
+            new_vector.emplace_back(std::move(elem));
+        }
+    }
+    this->data = std::move(new_vector);
+}
+
 std::string AST::MatrixNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
     return prefix + "Matrix";
+}
+
+bool AST::MatrixNode::isConst() const noexcept {
+    auto acc = true;
+    // I could use std::transform_reduce, but CBA...
+    for (auto& a : this->data) {
+        acc &= a->isConst();
+    }
+    return acc;
+}
+
+std::vector<std::shared_ptr<AST::ExprNode>> AST::MatrixNode::constData(std::shared_ptr<AST::ExprNode>& me) const {
+    if (!this->isConst()) {
+        throw std::runtime_error("attempt to access constData on non-const node");
+    }
+    return this->data;
 }

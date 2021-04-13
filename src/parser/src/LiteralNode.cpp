@@ -112,6 +112,9 @@ template <class T>
 void AST::LiteralNode<T>::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     if (Typing::MatrixType* mt = std::get_if<Typing::MatrixType>(&*type)) {
         mt->dimensions = std::vector<uint>{1};
+        mt->rank = 1;
+    } else {
+        throw std::runtime_error{"Invalid TypeClass for LiteralNode"};
     }
 }
 template <>
