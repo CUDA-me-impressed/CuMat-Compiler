@@ -14,7 +14,7 @@ struct IRContext;
 
 namespace Typing {
 
-enum class PRIMITIVE { STRING, INT, FLOAT, BOOL, FUNCTION, NONE };
+enum class PRIMITIVE { STRING, INT, FLOAT, BOOL, NONE };
 
 class MatrixType;
 

@@ -52,10 +52,14 @@ llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::DecompNode::semanticPass(Utils::IRContext* context, Typing::PRIMITIVE primType) {
+    // Store a variable entry for the left hand string
     context->semanticSymbolTable->storeVarType(this->lVal, TypeCheckUtils::makeMatrixType(std::vector<uint>(), primType));
     if (this->rVal.index() == 1) {
+        // If a child decomp node exists, run semantic pass on it as well
         std::shared_ptr<AST::DecompNode> child = std::get<std::shared_ptr<AST::DecompNode>>(this->rVal);
+        child->semanticPass(context, primType);
     } else {
+        // Else, store the rVal name as a variable
         std::string rValStr = std::get<std::string>(this->rVal);
         context->semanticSymbolTable->storeVarType(rValStr, TypeCheckUtils::makeMatrixType(std::vector<uint>(), primType));
     }

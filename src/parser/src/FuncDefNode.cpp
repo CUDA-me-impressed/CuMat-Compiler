@@ -45,6 +45,11 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
     // Pop the function as we leave the definition of the code
     context->symbolTable->escapeFunction();
 
+    // Check if the function name is already in use
+    if (context->semanticSymbolTable->inFuncTable(this->funcName, "")) {
+        TypeCheckUtils::alreadyDefinedError(this->funcName);
+    }
+    // Construct the function type and store it
     auto type = TypeCheckUtils::makeFunctionType(this->returnType, typesRaw);
     context->semanticSymbolTable->storeFuncType(this->funcName, "", type);
 }

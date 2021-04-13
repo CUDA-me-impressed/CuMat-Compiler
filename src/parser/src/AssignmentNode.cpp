@@ -2,7 +2,6 @@
 #include "TypeCheckingUtils.hpp"
 
 #include <iostream>
-#include <utility>
 #include <numeric>
 
 llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {

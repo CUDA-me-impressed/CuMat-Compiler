@@ -2,7 +2,6 @@
 
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
-#include <TypeException.hpp>
 
 #include "TypeCheckingUtils.hpp"
 #include "CompilerOptions.hpp"
