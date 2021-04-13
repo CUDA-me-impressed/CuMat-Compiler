@@ -18,6 +18,7 @@
 #include "CuMatASTGenerator.hpp"
 #include "Preprocessor.hpp"
 #include "TypeCheckingSymbolTable.hpp"
+#include "DimensionsSymbolTable.hpp"
 
 void printArgumentError(std::string message, std::string arg) {
     const std::string helpText =
@@ -137,12 +138,17 @@ int main(int argc, char* argv[], char* envp[]) {
         llvm::IRBuilder<> Builder(TheContext);
         Utils::SymbolTable symbolTable;
         TypeCheckUtils::TypeCheckingSymbolTable semanticSymbolTable;
+        Analysis::DimensionSymbolTable dst;
 
         // Context containing the module and IR Builder AND SYMBOL TABLE
-        Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable, &co, &semanticSymbolTable};
+        Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable, &co};
         std::get<1>(tree)->semanticPass(&treeContext);
+        std::cout << "Done Semantic pass" << std::endl;
+        std::get<1>(tree)->dimensionPass(&dst);
+        std::cout << "Done Dimension pass" << std::endl;
         treeContext.symbolTable->createNVVMMetadata(&treeContext);  // TODO: Replace when program node codegen done
         std::get<1>(tree)->codeGen(&treeContext);
+        std::cout << "Done Codegen pass" << std::endl;
 
         std::error_code EC;
         llvm::raw_fd_ostream dest("CuMat-" + std::get<0>(tree) + ".ll", EC, llvm::sys::fs::F_None);

@@ -100,8 +100,8 @@ void AST::UnaryExprNode::semanticPass(Utils::IRContext* context) {
  * @param op
  * @return
  */
-bool AST::UnaryExprNode::shouldExecuteGPU(Utils::IRContext * context, AST::UNA_OPERATORS op) {
-    if(context->compilerOptions->optimisationLevel == OPTIMISATION::EXPERIMENTAL) {
+bool AST::UnaryExprNode::shouldExecuteGPU(Utils::IRContext* context, AST::UNA_OPERATORS op) {
+    if (context->compilerOptions->optimisationLevel == OPTIMISATION::EXPERIMENTAL) {
         // Define a lookup table for the operation complexity
         auto operandMatrix = std::dynamic_pointer_cast<AST::ExprNode>(this->operand);
         auto* operandMatrixType = std::get_if<Typing::MatrixType>(&*operandMatrix->type);
@@ -110,4 +110,13 @@ bool AST::UnaryExprNode::shouldExecuteGPU(Utils::IRContext * context, AST::UNA_O
         return entropy >= maxCPUEntropy;
     }
     return true;
+}
+
+void AST::UnaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    if (auto* mt = std::get_if<Typing::MatrixType>(&*type)) {
+        operand->dimensionPass(nt);
+        if (auto inner = std::get_if<Typing::MatrixType>(&*operand->type)) {
+            mt->dimensions = inner->dimensions;
+        }
+    }
 }

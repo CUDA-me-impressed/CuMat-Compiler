@@ -15,7 +15,8 @@ std::shared_ptr<Typing::Type> TypeCheckUtils::makeMatrixType(const std::vector<u
     return type;
 }
 
-std::shared_ptr<Typing::Type> TypeCheckUtils::makeCustomType(std::string name, const std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> attrs) {
+std::shared_ptr<Typing::Type> TypeCheckUtils::makeCustomType(
+    std::string name, const std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> attrs) {
     auto ty = Typing::CustomType();
     ty.name = name;
     ty.attributes = attrs;
@@ -35,21 +36,13 @@ bool TypeCheckUtils::isBool(Typing::PRIMITIVE ty) {
     return ty == Typing::PRIMITIVE::BOOL;
 }
 
-bool TypeCheckUtils::isInt(Typing::PRIMITIVE ty) {
-    return ty == Typing::PRIMITIVE::INT;
-}
+bool TypeCheckUtils::isInt(Typing::PRIMITIVE ty) { return ty == Typing::PRIMITIVE::INT; }
 
-bool TypeCheckUtils::isFloat(Typing::PRIMITIVE ty) {
-    return ty == Typing::PRIMITIVE::FLOAT;
-}
+bool TypeCheckUtils::isFloat(Typing::PRIMITIVE ty) { return ty == Typing::PRIMITIVE::FLOAT; }
 
-bool TypeCheckUtils::isString(Typing::PRIMITIVE ty) {
-    return ty == Typing::PRIMITIVE::STRING;
-}
+bool TypeCheckUtils::isString(Typing::PRIMITIVE ty) { return ty == Typing::PRIMITIVE::STRING; }
 
-bool TypeCheckUtils::isNone(Typing::PRIMITIVE ty) {
-    return ty == Typing::PRIMITIVE::NONE;
-}
+bool TypeCheckUtils::isNone(Typing::PRIMITIVE ty) { return ty == Typing::PRIMITIVE::NONE; }
 
 void TypeCheckUtils::assertLogicalType(Typing::PRIMITIVE ty) {
     if (not(ty == Typing::PRIMITIVE::BOOL or ty == Typing::PRIMITIVE::INT)) {
@@ -154,7 +147,7 @@ Typing::MatrixType TypeCheckUtils::extractMatrixType(std::shared_ptr<AST::ExprNo
     Typing::MatrixType exprType;
     try {
         exprType = std::get<Typing::MatrixType>(*node->type);
-    } catch (std::bad_cast b) {
+    } catch (std::bad_cast& b) {
         std::cout << "Caught: " << b.what();
     }
     return exprType;
@@ -178,7 +171,7 @@ Typing::PRIMITIVE TypeCheckUtils::getHighestType(Typing::PRIMITIVE lhs, Typing::
             }
 
         case Typing::PRIMITIVE::FLOAT:
-            if (not (rhs == Typing::PRIMITIVE::INT or rhs == Typing::PRIMITIVE::FLOAT)) {
+            if (not(rhs == Typing::PRIMITIVE::INT or rhs == Typing::PRIMITIVE::FLOAT)) {
                 TypeCheckUtils::castingError();
             }
             return Typing::PRIMITIVE::FLOAT;
@@ -195,6 +188,5 @@ Typing::PRIMITIVE TypeCheckUtils::getHighestType(Typing::PRIMITIVE lhs, Typing::
 
         case Typing::PRIMITIVE::NONE:
             TypeCheckUtils::noneError();
-
     }
 }

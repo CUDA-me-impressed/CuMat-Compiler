@@ -4,6 +4,8 @@
 
 #include "ASTNode.hpp"
 
+#include "TreePrint.hpp"
+
 namespace AST {
 Node::Node(std::string textRep) { this->literalText = std::move(textRep); }
 
@@ -20,6 +22,18 @@ llvm::Value* Node::codeGen(Utils::IRContext* context) {
         child->codeGen(context);
     }
     return nullptr;
+}
+
+std::string Node::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    using namespace Tree;
+    std::string str{prefix + std::string{"Node\n"}};
+    for (auto const& node : this->children) {
+        if (&node != &this->children.back()) {
+            str += node->toTree(childPrefix + T, childPrefix + I);
+        } else
+            str += node->toTree(childPrefix + L, childPrefix + B);
+    }
+    return str;
 }
 
 }  // namespace AST

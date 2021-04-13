@@ -8,6 +8,7 @@
 #include "CodeGenUtils.hpp"
 #include "VariableNode.hpp"
 #include "TypeCheckingUtils.hpp"
+#include "TreePrint.hpp"
 
 llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
     // We will attempt to retrieve the function object from symbol table via reference to name + arg type
@@ -84,4 +85,19 @@ void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
     // TODO: Check that types align with the argument types specified in the symbol table
     // Finally, set the type of this node to equal the return type of the function
     this->type = funcType->returnType;
+}
+
+std::string AST::FunctionExprNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    using namespace Tree;
+    std::string str{prefix + std::string{"Function Application"}};
+    if (!funcName.empty()) {
+        str += ": " + funcName;
+    }
+    for (auto const& node : this->args) {
+        if (&node != &this->args.back()) {
+            str += node->toTree(childPrefix + T, childPrefix + I);
+        } else
+            str += node->toTree(childPrefix + L, childPrefix + B);
+    }
+    return str;
 }

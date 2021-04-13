@@ -3,10 +3,16 @@
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
 
-#include "TypeCheckingUtils.hpp"
 #include "CompilerOptions.hpp"
+#include "TreePrint.hpp"
+#include "TypeCheckingUtils.hpp"
+
+namespace AST {
 
 llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
+    // We need to determine whenever or not we apply the CPU code, ultimately this is determined by the complexity of
+    // the operation (i.e. if it would be simpler to just execute on the CPU, and complexity of the operation for us
+    // i.e. not MAT-MAT mult)
     // Assumption is that our types are two evaluated matricies of compatible
     // dimensions. We first generate code for each of the l and r matricies
     llvm::Value* lhsVal = lhs->codeGen(context);
@@ -21,27 +27,72 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
             auto rhsDimension = rhsType->getDimensions();
 
             auto* resType = std::get_if<Typing::MatrixType>(&*type);
-            resType->dimensions = lhsDimension.size() > rhsDimension.size() ? lhsDimension : rhsDimension;
+            if (!resType) {
+                throw std::runtime_error("Resultant Matrix Type not determined!");
+            }
 
             newMatAlloc = Utils::createMatrix(context, *resType);
 
-            if (op != BIN_OPERATORS::MATM) {
-                elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, (llvm::Instruction*)newMatAlloc,
-                                   *resType);
-            } else {
-                throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) +
-                                         "]");
-            }
+            if (true || shouldExecuteGPU(context, op) || this->op == BIN_OPERATORS::MATM) {
+                auto lhsRecord = Utils::getMatrixFromPointer(context, lhsVal);
+                auto rhsRecord = Utils::getMatrixFromPointer(context, rhsVal);
+                auto resRecord = Utils::getMatrixFromPointer(context, newMatAlloc);
+                llvm::Type* dataPtrType = llvm::Type::getInt64PtrTy(context->module->getContext());
 
+                if (this->op != BIN_OPERATORS::MATM) {
+                    llvm::Value* resLenLLVM = llvm::ConstantInt::get(
+                        llvm::Type::getInt64Ty(context->module->getContext()), resType->getLength());
+                    std::vector<llvm::Value*> argVals(
+                        {lhsRecord.dataPtr, rhsRecord.dataPtr, resRecord.dataPtr, resLenLLVM});
+
+                    if (lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT) {
+                        auto callRet = context->Builder->CreateCall(
+                            context->symbolTable->binaryFunctions[this->op].funcInt, argVals);
+                    } else if (lhsType->primType == Typing::PRIMITIVE::FLOAT &&
+                               rhsType->primType == Typing::PRIMITIVE::FLOAT) {
+                        auto callRet = context->Builder->CreateCall(
+                            context->symbolTable->binaryFunctions[this->op].funcFloat, argVals);
+                    }
+                } else {
+                    auto* lenType = llvm::Type::getInt64Ty(context->module->getContext());
+                    llvm::Value* lenI = llvm::ConstantInt::get(lenType, lhsType->dimensions[0]);
+                    llvm::Value* lenK = llvm::ConstantInt::get(lenType, lhsType->dimensions[1]);
+                    llvm::Value* lenJ = llvm::ConstantInt::get(lenType, lhsType->dimensions[1]);
+
+                    std::vector<llvm::Value*> argVals(
+                        {lhsRecord.dataPtr, rhsRecord.dataPtr, resRecord.dataPtr, lenI, lenK, lenJ});
+
+                    if (lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT) {
+                        auto callRet = context->Builder->CreateCall(
+                            context->symbolTable->binaryFunctions[this->op].funcInt, argVals);
+                    } else if (lhsType->primType == Typing::PRIMITIVE::FLOAT &&
+                               rhsType->primType == Typing::PRIMITIVE::FLOAT) {
+                        auto callRet = context->Builder->CreateCall(
+                            context->symbolTable->binaryFunctions[this->op].funcFloat, argVals);
+                    }
+                }
+
+            } else {
+                // Execute this operation on CPU
+
+                if (op != BIN_OPERATORS::MATM) {
+                    elementWiseCodeGen(context, lhsVal, rhsVal, *lhsType, *rhsType, (llvm::Instruction*)newMatAlloc,
+                                       *resType);
+                } else {
+                    throw std::runtime_error("Unimplemented binary expression [" + std::string(BIN_OP_ENUM_STRING[op]) +
+                                             "]");
+                }
+            }
         }
     }
 
     return newMatAlloc;
 }
 
-llvm::Value* AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
-                                             const Typing::MatrixType& lhsType, const Typing::MatrixType& rhsType,
-                                             llvm::Instruction* matAlloc, const Typing::MatrixType& resType) {
+llvm::Value* AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal,
+                                                     llvm::Value* rhsVal, const Typing::MatrixType& lhsType,
+                                                     const Typing::MatrixType& rhsType, llvm::Instruction* matAlloc,
+                                                     const Typing::MatrixType& resType) {
     auto Builder = context->Builder;
     llvm::Function* parent = Builder->GetInsertBlock()->getParent();
     std::string opName = AST::BIN_OP_ENUM_STRING[this->op];
@@ -155,7 +206,7 @@ llvm::Value* AST::BinaryExprNode::applyOperatorToOperands(Utils::IRContext* cont
                 }
             }
         }
-    } else if (lhs->getType()->isFloatTy() && rhs->getType()->isFloatTy()) {
+    } else if (lhs->getType()->isDoubleTy() && rhs->getType()->isDoubleTy()) {
         // Handle the float-float operations
         switch (op) {
             case PLUS: {
@@ -207,7 +258,7 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
     if (lhsMat->rank != rhsMat->rank)
         throw std::runtime_error("Cannot compute matrix multiplication on matricies with different ranks!");
     // TODO: Sort out rank 1 multiplication (vector)
-    if (!lhsMat->rank == 2 || !rhsMat->rank == 2)
+    if (lhsMat->rank != 2 || rhsMat->rank != 2)
         throw std::runtime_error("Matrix rank too high to compute matrix multiplication! Must be sliced first.");
     if (lhsMat->primType != rhsMat->primType) throw std::runtime_error("Matrix primitive types do not match");
 
@@ -393,32 +444,27 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
  * @param op
  * @return
  */
-bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext * context, AST::BIN_OPERATORS op) {
+bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext* context, AST::BIN_OPERATORS op) const {
     // Define a lookup table for the operation complexity
-    if(context->compilerOptions->optimisationLevel == OPTIMISATION::EXPERIMENTAL) {
-        int entropy = 1;
-        auto lhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->lhs);
-        auto rhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->rhs);
-        auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type);
-        auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type);
-        if (op == MATM) {
-            // This is the only complex operation
-            if (lhsType) {
-                entropy = lhsType->dimensions[1];
-            } else {
-                if(context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
-                    std::cout
-                        << "[Warning] - Matrix Multiplication entropy calculation failed - Using element wise entropy"
-                        << std::endl;
-                }
+    int entropy = 1;
+    auto lhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->lhs);
+    auto rhsMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->rhs);
+    auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type);
+    auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type);
+    if (op == MATM) {
+        // This is the only complex operation
+        if (lhsType) {
+            entropy = lhsType->dimensions[1];
+        } else {
+            if (context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+                std::cout << "[Warning] - Matrix Multiplication entropy calculation failed - Using element wise entropy"
+                          << std::endl;
             }
         }
-        entropy *= rhsType->getLength() * lhsType->getLength();
-        int maxCPUEntropy = 400;  // 400 corresponds to 20x20 matrix
-        return entropy >= maxCPUEntropy;
     }
-
-    return true;
+    entropy *= rhsType->getLength() * lhsType->getLength();
+    int maxCPUEntropy = 400;  // 400 corresponds to 20x20 matrix
+    return entropy >= maxCPUEntropy;
 }
 
 /**
@@ -561,3 +607,14 @@ llvm::Value* AST::BinaryExprNode::applyPowerToOperands(Utils::IRContext* context
         throw std::runtime_error("Unsupported exponent or base: Supported operations: Integer^Integer, Float^Integer");
     }
 }
+
+const char* op_name(BIN_OPERATORS i) { return BIN_OP_ENUM_STRING[(int)i]; }
+
+std::string AST::BinaryExprNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    using namespace Tree;
+    std::string str{prefix + std::string{"Binary Expression: "} + op_name(this->op) + "\n"};
+    str += lhs->toTree(childPrefix + T, childPrefix + I);
+    str += rhs->toTree(childPrefix + L, childPrefix + B);
+    return str;
+}
+}  // namespace AST

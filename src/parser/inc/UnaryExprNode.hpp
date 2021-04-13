@@ -2,6 +2,10 @@
 
 #include "ExprASTNode.hpp"
 
+namespace Analysis {
+class DimensionSymbolTable;
+}
+
 namespace AST {
 
 enum UNA_OPERATORS { NEG, LNOT, BNOT };
@@ -14,6 +18,8 @@ class UnaryExprNode : public ExprNode {
     void semanticPass(Utils::IRContext* context) override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
 
-    bool shouldExecuteGPU(Utils::IRContext * context, UNA_OPERATORS op);
+    bool shouldExecuteGPU(Utils::IRContext* context, UNA_OPERATORS op);
+    [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override{};
+    void dimensionPass(Analysis::DimensionSymbolTable* nt) override;
 };
 }  // namespace AST

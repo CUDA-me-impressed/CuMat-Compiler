@@ -48,20 +48,36 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
     auto matAlloc = Utils::createMatrix(context, *this->type);
     auto matRecord = Utils::getMatrixFromPointer(context, matAlloc);
 
+    int trueIndex = 0;  // True index measures the current index plus any of the j's
     // Compress literal nodes to matrix representation
     for (int i = 0; i < this->data.size(); i++) {
-        auto literal = this->data.at(i);
-        llvm::Value* literalLLVMMat = literal->codeGen(context);
-        auto literalRecord = Utils::getMatrixFromPointer(context, literalLLVMMat);
-        // Get the value at the pointer
-        llvm::Value* literalLLVVal = Utils::getValueFromPointerOffset(context, literalRecord.dataPtr, 0, "literalVal");
-        Utils::insertValueAtPointerOffset(context, matRecord.dataPtr, 0, literalLLVVal, false);
+        auto element = this->data.at(i);
+        auto* dataPtr = Utils::getValueFromPointerOffset(context, matRecord.dataPtr, i, "matArrPtr");
 
-        // Clean up the allocation for the literal, else memory leak big time!
-        auto* freeMat = llvm::CallInst::CreateFree(literalLLVMMat, context->Builder->GetInsertBlock());
-        context->Builder->Insert(freeMat, "");
+        // Check if we can naively do this without causing recursive check -> Yes its not technically a matrix
+        // Yes this violates our idea of every type being a matrix but its equivalent fuck it
+        auto* literal = std::get_if<Typing::MatrixType>(&*element->type);
+        if (literal->rank == 0) {
+            // Let's just generate code for the literal itself -> This returns a single value
+            llvm::Value* elementLLVMMat = element->codeGen(context);
+            Utils::insertValueAtPointerOffset(context, matRecord.dataPtr, i, elementLLVMMat, false);
+            trueIndex++;
+        } else if (literal != nullptr) {
+            // We have encountered a non-literal value -> This when evaluated WILL return a matrix
+            // Because it returns a matrix, we want to copy all of its data into our new matrix
+            llvm::Value* matLLVMVal = element->codeGen(context);
+            auto matElementRecord = Utils::getMatrixFromPointer(context, matLLVMVal);
+            // All other types are 64-bit
+            int numElements = literal->getLength();
+            for (int j = 0; j < numElements; j++) {
+                auto* oldLLVMVal = Utils::getValueFromPointerOffset(context, matElementRecord.dataPtr, j, "matCpyOut");
+                llvm::Type* tyInt = llvm::Type::getInt64Ty(context->module->getContext());
+                auto* trueIndexLLVM = llvm::ConstantInt::get(tyInt, trueIndex + j);
+                Utils::setValueFromMatrixPtr(context, matRecord.dataPtr, trueIndexLLVM, oldLLVMVal);
+            }
+            trueIndex += numElements;
+        }
     }
-
     return matAlloc;
 }
 
@@ -116,4 +132,7 @@ void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
     std::vector<uint> dimensions = this->getDimensions(); // Maybe use dimensions of inner matrix?
 
     this->type = TypeCheckUtils::makeMatrixType(dimensions, primType);
+}
+std::string AST::MatrixNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    return prefix + "Matrix";
 }

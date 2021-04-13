@@ -6,6 +6,10 @@
 
 #include "ExprASTNode.hpp"
 
+namespace Analysis {
+class DimensionSymbolTable;
+}
+
 namespace AST {
 enum BIN_OPERATORS { PLUS, MINUS, MUL, DIV, LOR, LAND, LT, GT, LTE, GTE, EQ, NEQ, BAND, BOR, POW, MATM, CHAIN };
 static const char* BIN_OP_ENUM_STRING[] = {"plus", "minus", "mul", "div",  "lor", "land", "lt",   "gt",   "lte",
@@ -21,6 +25,7 @@ class BinaryExprNode : public ExprNode {
     llvm::Value* applyPowerToOperands(Utils::IRContext* context, llvm::Value* lhs, llvm::Value* rhs, const bool isFloat,
                                       const std::string& name);
     void semanticPass(Utils::IRContext* context) override;
+    void dimensionPass(Analysis::DimensionSymbolTable* nt) override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
     // Operation specific codegen
     llvm::Value* elementWiseCodeGen(Utils::IRContext* context, llvm::Value* lhsVal, llvm::Value* rhsVal,
@@ -30,6 +35,8 @@ class BinaryExprNode : public ExprNode {
     llvm::Value* matrixMultiply(Utils::IRContext* context, std::shared_ptr<Typing::MatrixType> lhsMat,
                                 std::shared_ptr<Typing::MatrixType> rhsMat, llvm::Value* lhsVal, llvm::Value* rhsVal);
 
-    bool shouldExecuteGPU(Utils::IRContext* context, BIN_OPERATORS op);
+    bool shouldExecuteGPU(Utils::IRContext* context, BIN_OPERATORS op) const;
+
+    [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override;
 };
 }  // namespace AST

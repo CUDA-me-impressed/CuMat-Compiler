@@ -20,6 +20,11 @@ struct FunctionTableEntry {
     llvm::Function* func;
 };
 
+struct CUDAFunctionPair {
+    llvm::Function* funcInt;
+    llvm::Function* funcFloat;
+};
+
 struct FunctionParamCompare {
     [[nodiscard]] bool equalType(const std::shared_ptr<Typing::Type>& l, const std::shared_ptr<Typing::Type>& r) const {
         bool retVal = false;
@@ -70,6 +75,12 @@ class SymbolTable {
     llvm::NamedMDNode* nvvmMetadataNode = nullptr;
 
    public:
+    std::map<int, CUDAFunctionPair> binaryFunctions;
+    std::map<int, CUDAFunctionPair> unaryFunctions;
+
+    CUDAFunctionPair printFunctions;
+
+
     // Symbol data
     std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName, const std::string& funcName,
                                                const std::string& funcNamespace = "");
@@ -102,6 +113,8 @@ class SymbolTable {
     void createNVVMMetadata(Utils::IRContext* context);
 
     llvm::NamedMDNode* getNVVMMetadata();
+
+    void generateCUDAExternFunctions(Utils::IRContext* context);
 
     // Function stack
     void escapeFunction();

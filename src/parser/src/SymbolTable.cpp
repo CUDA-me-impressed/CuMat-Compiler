@@ -1,5 +1,6 @@
 #include "SymbolTable.hpp"
 
+#include <list>
 #include <utility>
 
 #include "CodeGenUtils.hpp"
@@ -165,4 +166,71 @@ llvm::NamedMDNode* Utils::SymbolTable::getNVVMMetadata() { return nvvmMetadataNo
 void Utils::SymbolTable::enterFunction(const std::string& function, const std::string& funcNamespace) {
     const std::string fullFuncName = funcNamespace + "::" + function;
     this->functionStack.emplace_back(fullFuncName);
+}
+void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) {
+    const std::vector<std::string> binFuncNamesInt(
+        {"CuMatAddMatrixI", "CuMatSubMatrixI", "CuMatMultMatrixI", "CuMatDivMatrixI", "CuMatLORMatrixI",
+         "CuMatLANDMatrixI", "CuMatLTMatrixI", "CuMatGTMatrixI", "CuMatLTEMatrixI", "CuMatGTEMatrixI", "CuMatEQMatrixI",
+         "CuMatNEQMatrixI", "CuMatBANDMatrixI", "CuMatBORMatrixI", "CuMatPowMatrixI", "CuMatMatMultMatrixI", "chain"});
+    const std::vector<std::string> binFuncNamesFloat(
+        {"CuMatAddMatrixD", "CuMatSubMatrixD", "CuMatMultMatrixD", "CuMatDivMatrixD", "CuMatLORMatrixD",
+         "CuMatLANDMatrixD", "CuMatLTMatrixD", "CuMatGTMatrixD", "CuMatLTEMatrixD", "CuMatGTEMatrixD", "CuMatEQMatrixD",
+         "CuMatNEQMatrixD", "CuMatBANDMatrixD", "CuMatBORMatrixD", "CuMatPowMatrixD", "CuMatMatMultMatrixD", "chain"});
+    const std::vector<std::string> unaryFuncNames({"neg", "lnot", "bnot"});
+
+    auto* pascalArrInt = llvm::ArrayType::get(llvm::IntegerType::get(context->module->getContext(), 64), 0)->getPointerTo();
+    auto* pascalArrDouble = llvm::ArrayType::get(llvm::Type::getDoubleTy(context->module->getContext()), 0)->getPointerTo();
+    auto* retType = llvm::Type::getVoidTy(context->module->getContext());
+
+    // Enum is just fancy int
+    for (int i = 0; i < binFuncNamesInt.size(); i++) {
+        const std::string& binFuncNameInt = binFuncNamesInt[i];
+        const std::string& binFuncNameFloat = binFuncNamesFloat[i];
+        const std::string& unFuncNameInt = "";
+        const std::string& unFuncNameFloat = "";
+
+        std::vector<llvm::Type*> argTypesInt;
+        std::vector<llvm::Type*> argTypesDouble;
+
+        if (i == 15) {  // If MATM
+            argTypesInt = std::vector<llvm::Type*>({pascalArrInt, pascalArrInt, pascalArrInt,
+                                                    llvm::Type::getInt64Ty(context->module->getContext()),
+                                                    llvm::Type::getInt64Ty(context->module->getContext()),
+                                                    llvm::Type::getInt64Ty(context->module->getContext())});
+            argTypesDouble = std::vector<llvm::Type*>({pascalArrDouble, pascalArrDouble, pascalArrDouble,
+                                                       llvm::Type::getInt64Ty(context->module->getContext()),
+                                                       llvm::Type::getInt64Ty(context->module->getContext()),
+                                                       llvm::Type::getInt64Ty(context->module->getContext())});
+        } else {
+            argTypesInt = std::vector<llvm::Type*>({pascalArrInt, pascalArrInt, pascalArrInt,
+                                                    llvm::Type::getInt64Ty(context->module->getContext())});
+            argTypesDouble = std::vector<llvm::Type*>({pascalArrDouble, pascalArrDouble, pascalArrDouble,
+                                                       llvm::Type::getInt64Ty(context->module->getContext())});
+        }
+
+        llvm::FunctionType* ftInt = llvm::FunctionType::get(retType, argTypesInt, false);
+        llvm::FunctionType* ftDouble = llvm::FunctionType::get(retType, argTypesDouble, false);
+
+        llvm::Function* binFuncInt =
+            llvm::Function::Create(ftInt, llvm::Function::ExternalLinkage, binFuncNameInt, context->module);
+        llvm::Function* binFuncFP =
+            llvm::Function::Create(ftDouble, llvm::Function::ExternalLinkage, binFuncNameFloat, context->module);
+        binaryFunctions[i] = {binFuncInt, binFuncFP};
+    }
+
+    // Create the print functions
+
+    auto argTypesInt =
+        std::vector<llvm::Type*>({pascalArrInt, llvm::Type::getInt64Ty(context->module->getContext())});
+    auto argTypesDouble =
+        std::vector<llvm::Type*>({pascalArrDouble, llvm::Type::getInt64Ty(context->module->getContext())});
+    llvm::FunctionType* ftInt = llvm::FunctionType::get(retType, argTypesInt, false);
+    llvm::FunctionType* ftDouble = llvm::FunctionType::get(retType, argTypesDouble, false);
+
+    llvm::Function* printFuncInt =
+        llvm::Function::Create(ftInt, llvm::Function::ExternalLinkage, "printMatrixI", context->module);
+    llvm::Function* printFuncFP =
+        llvm::Function::Create(ftDouble, llvm::Function::ExternalLinkage, "printMatrixD", context->module);
+
+    printFunctions = {printFuncInt, printFuncFP};
 }

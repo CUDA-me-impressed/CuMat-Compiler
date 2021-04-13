@@ -42,3 +42,8 @@ CMakeSettings.*
 cmake-build*
 
 _local_*.*
+*.ll
+
+cudaBLAS/CuMat-testBasic.cm
+
+cudaBLAS/CuMat-testBasic.cmProgram

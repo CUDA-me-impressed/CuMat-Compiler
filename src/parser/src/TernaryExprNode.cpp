@@ -29,31 +29,39 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
 
     // Handle the code of the body at the correct position
     context->Builder->SetInsertPoint(truthyBB);
-    llvm::Value* truthyVal = this->truthy->codeGen(context);
+    llvm::Value* returnVal = this->truthy->codeGen(context);
     context->Builder->CreateBr(mergeBB);
-    truthyBB = context->Builder->GetInsertBlock();
+    returnVal = context->Builder->GetInsertBlock();
 
     func->getBasicBlockList().push_back(falseyBB);
     // Insert at the correct position
     context->Builder->SetInsertPoint(falseyBB);
-    llvm::Value* falseyVal = this->falsey->codeGen(context);
+    returnVal = this->falsey->codeGen(context);
 
     // Merge the lines of execution together
     context->Builder->CreateBr(mergeBB);
     func->getBasicBlockList().push_back(mergeBB);
     context->Builder->SetInsertPoint(mergeBB);
 
-    return truthyVal;
+    return returnVal;
 }
 
 void AST::TernaryExprNode::semanticPass(Utils::IRContext* context) {
     this->condition->semanticPass(context);
     this->truthy->semanticPass(context);
     this->falsey->semanticPass(context);
-
     Typing::MatrixType tTy = TypeCheckUtils::extractMatrixType(this->truthy);
     Typing::MatrixType fTy = TypeCheckUtils::extractMatrixType(this->falsey);
     TypeCheckUtils::assertMatchingTypes(tTy.getPrimitiveType(), fTy.getPrimitiveType());
 
     this->type = TypeCheckUtils::makeMatrixType(std::vector<uint>(), tTy.getPrimitiveType());
+}
+void AST::TernaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    condition->dimensionPass(nt);
+    truthy->dimensionPass(nt);
+    falsey->dimensionPass(nt);
+    auto* true_mt = std::get_if<Typing::MatrixType>(&*truthy->type);
+    auto* false_mt = std::get_if<Typing::MatrixType>(&*falsey->type);
+    if (true_mt && false_mt) {
+    }
 }

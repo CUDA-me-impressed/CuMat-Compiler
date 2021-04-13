@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "ASTNode.hpp"
-#include "TypeDefAttributeNode.hpp"
 #include "Type.hpp"
+#include "TypeDefAttributeNode.hpp"
 
 namespace AST {
 class CustomTypeDefNode : public Node {

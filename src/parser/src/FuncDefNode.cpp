@@ -1,6 +1,8 @@
 #include "FuncDefNode.hpp"
 #include "TypeCheckingUtils.hpp"
 
+#include "TreePrint.hpp"
+
 llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     // Let us generate a new function -> We will first generate the function argument types
     std::vector<llvm::Type*> argTypes;
@@ -44,7 +46,7 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
 
     // Pop the function as we leave the definition of the code
     context->symbolTable->escapeFunction();
-
+    
     // Check if the function name is already in use
     if (context->semanticSymbolTable->inFuncTable(this->funcName, "")) {
         TypeCheckUtils::alreadyDefinedError(this->funcName);
@@ -52,4 +54,18 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
     // Construct the function type and store it
     auto type = TypeCheckUtils::makeFunctionType(this->returnType, typesRaw);
     context->semanticSymbolTable->storeFuncType(this->funcName, "", type);
+}
+
+std::string AST::FuncDefNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    using namespace Tree;
+    std::string str{prefix + std::string{"Function Definition: "} + funcName + " ("};
+    for (auto const& node : this->parameters) {
+        str += printType(*std::get<1>(node)) + " " + std::get<0>(node);
+        if (&node != &this->parameters.back()) {
+            str += ", ";
+        }
+    }
+    str += ")->" + printType(*returnType) + "\n";
+    str += block->toTree(childPrefix + L, childPrefix + B);
+    return str;
 }

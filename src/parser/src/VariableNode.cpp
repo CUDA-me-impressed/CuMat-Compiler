@@ -2,6 +2,7 @@
 
 #include <numeric>
 #include <valarray>
+
 #include "CodeGenUtils.hpp"
 #include "TypeCheckingUtils.hpp"
 
@@ -66,7 +67,7 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
         if (slicesVec.size() <= i || std::get_if<bool>(&slicesVec.at(i))) {
             slices.emplace_back(0, matType->dimensions.at(i));
         } else {
-            // We should get the element to be sliced and we can check if we have 1 or 2 indicies filled in
+            // We should get the element to be sliced and we can check if we have 1 or 2 indices filled in
             // If one, this means from the index to the dim end
             // If two, nice and simple, just insert
             auto sliceElement = *std::get_if<std::vector<int>>(&slicesVec.at(i));

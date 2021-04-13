@@ -4,6 +4,8 @@
 #include <iostream>
 #include <numeric>
 
+#include "TreePrint.hpp"
+
 llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
     // Generate LLVM value for the rval expression
     llvm::Value* rValLLVM = this->rVal->codeGen(context);
@@ -109,7 +111,7 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
     if (!context->symbolTable->inSymbolTable(this->name, context->symbolTable->getCurrentFunction())) {
         // Something has gone wrong during the parse stage and we have not added the symbol into the table
         // Raising a warning!
-        if(context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+        if (context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
             std::cout << "[Internal Warning] Symbol " << this->name
                       << " was not found within the symbol"
                          " table. Created during codegen"
@@ -128,4 +130,12 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
         decompAssign(context, nestedDecomp, lValMatAlloc);
     }
     return lValMatAlloc;  // Dunno, seems to be what I would want, maybe change?
+}
+
+std::string AST::AssignmentNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    using namespace Tree;
+    std::string str{prefix + std::string{"Assignment\n"}};
+    str += lVal->toTree(childPrefix + T, childPrefix + I);
+    str += rVal->toTree(childPrefix + L, childPrefix + B);
+    return str;
 }
