@@ -6,6 +6,7 @@
 llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
     // Generate the return value for the evaluate condition
     llvm::Value* conditionEval = this->condition->codeGen(context);
+
     if (!conditionEval) return nullptr;  // TODO: Handle errors gracefully
 
     auto matRecord = Utils::getMatrixFromPointer(context, conditionEval);
