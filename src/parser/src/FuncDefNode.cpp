@@ -1,6 +1,8 @@
 #include "FuncDefNode.hpp"
 #include "TypeCheckingUtils.hpp"
 
+#include <iostream>
+
 #include "TreePrint.hpp"
 
 llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
@@ -38,6 +40,10 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
     // TODO: Put the args into symbol table temporarily for the block semantic pass - remove before end of function
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
     for (const auto& typeNamePair : this->parameters) {
+        if ((typeNamePair.second.get())->index() == 0) {
+            std::cerr << "Cannot have functions as arguments" << std::endl;
+            std::exit(TypeCheckUtils::ErrorCodes::FUNCTION_ERROR);
+        }
         context->semanticSymbolTable->storeVarType(typeNamePair.first, typeNamePair.second);
         typesRaw.push_back(typeNamePair.second);
     }
@@ -57,6 +63,9 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
     // Construct the function type and store it
     auto type = TypeCheckUtils::makeFunctionType(this->returnType, typesRaw);
     context->semanticSymbolTable->storeFuncType(this->funcName, "", type);
+    for (const auto& typeNamePair : this->parameters) {
+        context->semanticSymbolTable->removeVarEntry(typeNamePair.first);
+    }
 }
 
 std::string AST::FuncDefNode::toTree(const std::string& prefix, const std::string& childPrefix) const {

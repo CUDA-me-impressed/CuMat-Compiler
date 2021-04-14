@@ -27,6 +27,7 @@ namespace TypeCheckUtils {
 
         std::shared_ptr<Typing::Type> getVarType(std::string varName);
         void storeVarType(std::string typeName, std::shared_ptr<Typing::Type> typePtr, std::string nameSpace="", std::string funcName="");
+        void removeVarEntry(std::string typeName);
 
         bool inVarTable(std::string typeName);
         bool inFuncTable(std::string funcName, std::string nameSpace);

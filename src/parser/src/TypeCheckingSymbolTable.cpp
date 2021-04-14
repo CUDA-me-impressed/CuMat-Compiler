@@ -54,6 +54,14 @@ void TypeCheckUtils::TypeCheckingSymbolTable::storeVarType(std::string typeName,
     this->varTypes[typeName] = entry;
 }
 
+void TypeCheckUtils::TypeCheckingSymbolTable::removeVarEntry(std::string typeName) {
+    if (this->inVarTable(typeName)) {
+        this->varTypes.erase(typeName);
+    } else {
+        TypeCheckUtils::notDefinedError(typeName);
+    }
+}
+
 bool TypeCheckUtils::TypeCheckingSymbolTable::inVarTable(std::string typeName) {
     return this->varTypes.contains(typeName);
 }
