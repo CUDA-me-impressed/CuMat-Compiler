@@ -306,3 +306,10 @@ llvm::Value* Utils::getPointerAddressFromOffset(IRContext* context, llvm::Value*
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
     return context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, offset});
 }
+
+llvm::Value* Utils::upcastLiteralToMatrix(Utils::IRContext* context, const Typing::Type  &type, llvm::Value* literalVal){
+    auto* retMatrix = Utils::createMatrix(context, type);
+    auto retRecord = Utils::getMatrixFromPointer(context, retMatrix);
+    Utils::insertValueAtPointerOffset(context, retRecord.dataPtr, 0, literalVal, false);
+    return retMatrix;
+}

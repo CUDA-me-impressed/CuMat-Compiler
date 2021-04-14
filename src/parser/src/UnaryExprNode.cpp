@@ -18,6 +18,13 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
     // the matrix
     llvm::Value* operand = this->operand->codeGen(context);
 
+    // Ensure that matrix literals are upcast
+    if(auto* opType = std::get_if<Typing::MatrixType>(&*this->operand->type)){
+        if(opType->rank == 0){
+            operand = Utils::upcastLiteralToMatrix(context, *opType, operand);
+        }
+    }
+
     auto operandMatNode = std::dynamic_pointer_cast<AST::ExprNode>(this->operand);
     llvm::Value* matAlloc = {};
     if (auto* operandType = std::get_if<Typing::MatrixType>(&*operandMatNode->type)) {

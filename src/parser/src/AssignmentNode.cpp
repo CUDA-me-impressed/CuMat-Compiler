@@ -10,6 +10,13 @@ llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
     // Generate LLVM value for the rval expression
     llvm::Value* rValLLVM = this->rVal->codeGen(context);
 
+    // Ensure that matrix literals are upcast
+    if(auto* rValType = std::get_if<Typing::MatrixType>(&*rVal->type)){
+        if(rValType->rank == 0){
+            rValLLVM = Utils::upcastLiteralToMatrix(context, *rValType, rValLLVM);
+        }
+    }
+
     // Handle decomposition
     if (this->lVal) {
         return decompAssign(context, this->lVal, rValLLVM);
