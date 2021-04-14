@@ -18,7 +18,14 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
 
     // Generate actual array with offset for dimension information
     llvm::Type* ty = matType.getLLVMPrimitiveType(context);
-    auto* matHeaderType = matType.getLLVMType(context);
+    llvm::Type* matHeaderType;
+    if(!context->symbolTable->headerTypeGenerated){
+        matHeaderType = matType.getLLVMType(context);
+        context->symbolTable->matHeaderType = matHeaderType;
+        context->symbolTable->headerTypeGenerated = true;
+    }else{
+        matHeaderType = context->symbolTable->matHeaderType;
+    }
 
     // Create a type for the actual data of the matrix + length info
     llvm::ArrayType* matDataType = llvm::ArrayType::get(ty, 0);
@@ -59,12 +66,23 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
     insertValueAtPointerOffset(context, matHeaderAlloc, 2, numBytes, false);
 
     // For the matrix dimensionality
+    llvm::ArrayType* matDimensionType = llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0);
+    // Allocation of the matrix data
+    llvm::Constant* matDimAllocaSize = llvm::ConstantExpr::getSizeOf(matDimensionType);
+    // This will by default be i64, need to cast to i32 (I think its safe)
+    matDimAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(matDimAllocaSize, intPtrType);
+    auto* matDimAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), intPtrType, matDimensionType,
+                                                     matDimAllocaSize, nullptr, nullptr, "bitcast");
+    context->Builder->Insert(matDimAlloc, "matArrData");
+
     for (int i = 0; i < matType.rank; i++) {
         auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.dimensions.at(i)));
 
         // Offset of 3 from before
-        insertValueAtPointerOffset(context, matHeaderAlloc, i + 3, val, false);
+        insertValueAtPointerOffset(context, matDimAlloc, i, val, false);
     }
+
+    insertValueAtPointerOffset(context, matHeaderAlloc, 3, matDimAlloc, false);
 
     return matHeaderAlloc;
 }
@@ -122,7 +140,8 @@ Utils::LLVMMatrixRecord Utils::getMatrixFromPointer(IRContext* context, llvm::Va
     llvm::Value* dataPtr = Utils::getValueFromPointerOffset(context, basePtr, 0, "dataPtr");
     llvm::Value* rank = Utils::getValueFromPointerOffset(context, basePtr, 1, "rankVal");
     llvm::Value* numBytes = Utils::getValueFromPointerOffset(context, basePtr, 2, "numBytesVal");
-    return {dataPtr, rank, numBytes};
+    llvm::Value* dimensions = Utils::getValueFromPointerOffset(context, basePtr, 3, "dimensionsPtr");
+    return {dataPtr, rank, numBytes, dimensions};
 }
 
 llvm::Type* Utils::convertCuMatTypeToLLVM(IRContext* context, Typing::PRIMITIVE typePrim) {
