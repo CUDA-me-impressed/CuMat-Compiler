@@ -79,6 +79,8 @@ class SymbolTable {
     std::map<int, CUDAFunctionPair> unaryFunctions;
 
     CUDAFunctionPair printFunctions;
+    llvm::Type* matHeaderType;
+    bool headerTypeGenerated = false;
 
 
     // Symbol data

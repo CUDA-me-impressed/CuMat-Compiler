@@ -28,6 +28,7 @@ struct LLVMMatrixRecord {
     llvm::Value* dataPtr;
     llvm::Value* rank;      // Signed
     llvm::Value* numBytes;  // Signed
+    llvm::Value* dimensionPtr;
 };
 
 enum FunctionCUDAType { Host, Device };

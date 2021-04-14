@@ -101,11 +101,15 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) {
     headerTypes.push_back(matDataPtrType);
     headerTypes.push_back(rankConst->getType());  // Rank
     headerTypes.push_back(numBytes->getType());   // # of bytes
-    // TODO: Tidy up
-    for (int i = 0; i < this->rank; i++) {  // Dimensions
-        auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, this->dimensions.at(i)));
-        headerTypes.push_back(val->getType());
-    }
+
+    llvm::ArrayType* matDimensionArr = llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0);
+    auto* matDimensionPtrType = matDimensionArr->getPointerTo();
+    headerTypes.push_back(matDataPtrType);
+//    // TODO: Tidy up
+//    for (int i = 0; i < this->rank; i++) {  // Dimensions
+//        auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, this->dimensions.at(i)));
+//        headerTypes.push_back(val->getType());
+//    }
 
     auto matHeaderType = llvm::StructType::create(headerTypes);
     matHeaderType->setName("matHeader");
