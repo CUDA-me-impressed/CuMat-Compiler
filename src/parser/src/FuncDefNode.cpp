@@ -34,8 +34,11 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
+
+    // TODO: Put the args into symbol table temporarily for the block semantic pass - remove before end of function
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
     for (const auto& typeNamePair : this->parameters) {
+        context->semanticSymbolTable->storeVarType(typeNamePair.first, typeNamePair.second);
         typesRaw.push_back(typeNamePair.second);
     }
 
