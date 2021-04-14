@@ -1,36 +1,43 @@
 #include <span>
 
 #include "DimensionsSymbolTable.hpp"
-std::vector<std::string_view> Split(std::string_view str, char delim = '.');
+std::vector<std::string_view> $tb_split(std::string_view str, char delim = '.');
 
 namespace Analysis {
 
-AST::Node* DimensionSymbolTable::search_impl(const std::string_view name) noexcept {
-    AST::Node* ret{};
+std::shared_ptr<Typing::Type> DimensionSymbolTable::search_impl(const std::string_view name) noexcept {
+    std::shared_ptr<Typing::Type> ret{};
     // try searching root namespace if it exists
-    if (this->namespaces.contains("")) {
-        ret = this->namespaces.at("")->search_impl(name);
-    }
-    auto names = Split(name);
-    if (ret == nullptr) {
-        if (names.size() >= 2) {
-            auto ns = this->namespaces.find(names[0]);
-            if (ns != this->namespaces.end()) {
-                ret = ns->second->search_impl(name.substr(1));
-            }
-        } else if (names.size() == 1) {
-            auto ns = this->values.find(name);
-            if (ns != this->values.end()) {
-                ret = ns->second;
-            }
+
+    auto names = $tb_split(name);
+    if (names.size() >= 2) {
+        auto ns = this->namespaces.find(names[0]);
+        if (ns != this->namespaces.end()) {
+            ret = ns->second->search_impl(name.substr(1));
+        }
+    } else if (names.size() == 1) {
+        auto ns = this->values.find(name);
+        if (ns != this->values.end()) {
+            ret = ns->second;
         }
     }
-    return ret;
+    if (ret == nullptr) {
+        if (this->namespaces.contains("")) {
+            ret = this->namespaces.at("")->search_impl(name);
+        }
+    }
+    return std::move(ret);
+}
+
+void DimensionSymbolTable::add_node(std::string name, std::shared_ptr<Typing::Type> type) noexcept {
+    this->values.emplace(std::move(name), std::move(type));
 }
 
 }  // namespace Analysis
 
-std::vector<std::string_view> Split(const std::string_view str, const char delim) {
+// cribbed from stackoverflow
+// retrieved from https://stackoverflow.com/a/58048821 fetched 2021-04-10
+std::vector<std::string_view> $tb_split(const std::string_view str, const char delim) {
     std::vector<std::string_view> result;
 
     int indexCommaToLeftOfColumn = 0;
@@ -42,17 +49,6 @@ std::vector<std::string_view> Split(const std::string_view str, const char delim
             indexCommaToRightOfColumn = i;
             int index = indexCommaToLeftOfColumn + 1;
             int length = indexCommaToRightOfColumn - index;
-
-            // Bounds checking can be omitted as logically, this code can never be invoked
-            // Try it: put a breakpoint here and run the unit tests.
-            /*if (index + length >= static_cast<int>(str.size()))
-            {
-                length--;
-            }
-            if (length < 0)
-            {
-                length = 0;
-            }*/
 
             std::string_view column(str.data() + index, length);
             result.push_back(column);

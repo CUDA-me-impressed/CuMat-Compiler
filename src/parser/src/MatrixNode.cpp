@@ -201,6 +201,7 @@ void AST::MatrixNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     auto* type = std::get_if<Typing::MatrixType>(&*this->type);
     if (type) {
         type->dimensions = apparent_dim;
+        type->rank = apparent_dim.size();
     }
 
     std::vector<std::shared_ptr<ExprNode>> new_vector{};

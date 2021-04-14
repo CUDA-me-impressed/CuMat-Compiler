@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "DimensionsSymbolTable.hpp"
 #include "TreePrint.hpp"
 
 llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
@@ -110,4 +111,14 @@ std::string AST::AssignmentNode::toTree(const std::string& prefix, const std::st
     str += lVal->toTree(childPrefix + T, childPrefix + I);
     str += rVal->toTree(childPrefix + L, childPrefix + B);
     return str;
+}
+void AST::AssignmentNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    rVal->dimensionPass(nt);
+    if (!this->name.empty()) {
+        nt->add_node(this->name, rVal->type.get());
+    } else {
+        if (auto* t = std::get_if<Typing::MatrixType>(rVal->type.get())) {
+            lVal->dimensionPass(nt, t);
+        }
+    }
 }

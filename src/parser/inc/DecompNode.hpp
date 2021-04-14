@@ -13,5 +13,6 @@ class DecompNode : public Node {
     llvm::Value* codeGen(Utils::IRContext* context) override;
 
     void semanticPass(Utils::IRContext* context) override;
+    void dimensionPass(Analysis::DimensionSymbolTable* nt, Typing::MatrixType& type);
 };
 }  // namespace AST
