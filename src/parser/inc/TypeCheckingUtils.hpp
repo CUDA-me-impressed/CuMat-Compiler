@@ -31,7 +31,7 @@ std::string primToString(Typing::PRIMITIVE ty);
     void castingError();
     void noneError();
     void notDefinedError(std::string name);
-    void alreadyDefinedError(std::string name);
+    void alreadyDefinedError(std::string name, bool var);
     void decompError();
 
 std::string primToString(Typing::PRIMITIVE ty);

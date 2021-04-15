@@ -60,7 +60,7 @@ void AST::AssignmentNode::semanticPass(Utils::IRContext* context) {
         // In this branch, only the `name` attribute is defined, signalling simple assignment
         if (context->semanticSymbolTable->inVarTable(this->name)) {
             // Error if the variable name is already in use
-            TypeCheckUtils::alreadyDefinedError(this->name);
+            TypeCheckUtils::alreadyDefinedError(this->name, true);
         }
         if (isFunction) {
             // Store a function type as a variable

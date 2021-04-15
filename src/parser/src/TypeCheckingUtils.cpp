@@ -101,8 +101,12 @@ void TypeCheckUtils::notDefinedError(std::string name) {
     std::exit(TypeCheckUtils::ErrorCodes::NOT_DEFINED_ERROR);
 }
 
-void TypeCheckUtils::alreadyDefinedError(std::string name) {
-    std::cerr << "Function with same name already defined: " << name << std::endl;
+void TypeCheckUtils::alreadyDefinedError(std::string name, bool var) {
+    if (var) {
+        std::cerr << "Variable with same name already defined: " << name << std::endl;
+    } else {
+        std::cerr << "Function with same name already defined: " << name << std::endl;
+    }
     std::exit(TypeCheckUtils::ErrorCodes::ALREADY_DEFINED_ERROR);
 }
 

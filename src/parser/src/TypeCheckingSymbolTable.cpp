@@ -13,7 +13,7 @@ std::shared_ptr<Typing::Type> TypeCheckUtils::TypeCheckingSymbolTable::getFuncTy
 
 void TypeCheckUtils::TypeCheckingSymbolTable::storeFuncType(std::string funcName, std::string nameSpace, std::shared_ptr<Typing::Type> typePtr) {
     if (this->inFuncTable(funcName, nameSpace)) {
-        TypeCheckUtils::alreadyDefinedError(funcName);
+        TypeCheckUtils::alreadyDefinedError(funcName, false);
     }
     if (!this->funcTypes.contains(nameSpace)) {
         this->funcTypes[nameSpace] = std::map<std::string, std::shared_ptr<Typing::Type>>();
@@ -36,7 +36,7 @@ std::shared_ptr<Typing::Type> TypeCheckUtils::TypeCheckingSymbolTable::getVarTyp
 
 void TypeCheckUtils::TypeCheckingSymbolTable::storeVarType(std::string typeName, std::shared_ptr<Typing::Type> typePtr, std::string nameSpace, std::string funcName) {
     if (this->inVarTable(typeName)) {
-        TypeCheckUtils::alreadyDefinedError(typeName);
+        TypeCheckUtils::alreadyDefinedError(typeName, true);
     }
     TypeCheckUtils::VariableEntry entry;
     entry.funcName = funcName;
