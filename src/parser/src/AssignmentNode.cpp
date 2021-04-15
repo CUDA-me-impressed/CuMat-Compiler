@@ -100,6 +100,8 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
     lValMatType->dimensions = std::vector<uint>(matType->dimensions.begin(), matType->dimensions.end() - 1);
     rValMatType->dimensions = matType->dimensions;
     rValMatType->dimensions.insert(rValMatType->dimensions.begin(), rValMatType->dimensions.front() - 1);
+    lValMatType->primType = matType->getPrimitiveType();
+    rValMatType->primType = matType->getPrimitiveType();
     // Create the matricies in LLVM to store these l/r vals
     auto* lValMatAlloc = Utils::createMatrix(context, *lValMatType);
     auto* rValMatAlloc = Utils::createMatrix(context, *rValMatType);
