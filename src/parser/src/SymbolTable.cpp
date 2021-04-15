@@ -24,13 +24,14 @@ void Utils::SymbolTable::setValue(std::shared_ptr<Typing::Type> type, llvm::Valu
                                   const std::string& symbolName, const std::string& funcName,
                                   const std::string& funcNamespace) {
     const std::string fullSymbolName = funcNamespace + "::" + symbolName;
-    if (!data.contains(funcName)) {
+    const std::string fullFuncName = funcNamespace + "::" + funcName;
+    if (!data.contains(fullFuncName)) {
         // let us add an empty map
-        this->data[funcName] = std::map<std::string, SymbolTableEntry>();
+        this->data[fullFuncName] = std::map<std::string, SymbolTableEntry>();
     }
 
     // Symbol table does not check if previously added, will override
-    this->data[funcName][fullSymbolName] = {std::move(type), storeVal};
+    this->data[fullFuncName][fullSymbolName] = {std::move(type), storeVal};
 }
 
 void Utils::SymbolTable::escapeFunction() {
@@ -90,12 +91,13 @@ void Utils::SymbolTable::setFunctionData(const std::string& funcName,
         throw std::runtime_error("Function [" + funcName + "] not defined!");
     }
     const std::string fullFuncName = funcNamespace + "::" + funcName;
-    if (!this->funcTable[fullFuncName].contains(params)) {
+    auto trueParam = getFunctionTrueType(funcName, params, funcNamespace);
+    if (!isFunctionDefinedParam(funcName, params, funcNamespace)) {
         // TODO: Either done in typing or made to actually report type issues
         throw std::runtime_error("Function [" + fullFuncName + "] expected different parameters");
     }
 
-    this->funcTable[fullFuncName][params] = {func};
+    (this->funcTable[fullFuncName][trueParam]) = {func};
 }
 
 /**
@@ -111,8 +113,7 @@ bool Utils::SymbolTable::isFunctionDefinedParam(const std::string& funcName,
     if (!isFunctionDefined(funcName)) {
         throw std::runtime_error("Function [" + funcName + "] not defined!");
     }
-
-    return this->funcTable[fullFuncName].contains(params);
+    return !getFunctionTrueType(funcName, params, funcNamespace).empty() || params.empty();
 }
 
 /**
@@ -125,10 +126,11 @@ Utils::FunctionTableEntry Utils::SymbolTable::getFunction(const std::string& fun
                                                           const std::vector<std::shared_ptr<Typing::Type>>& params,
                                                           const std::string& funcNamespace) {
     const std::string fullFuncName = funcNamespace + "::" + funcName;
-    if (!isFunctionDefinedParam(funcName, params, funcNamespace)) {
+    if (!this->funcTable[fullFuncName].contains(params)) {
         throw std::runtime_error("[Internal Error] Cannot retrieve function, not defined");
     }
-    return this->funcTable[fullFuncName][params];
+    auto trueParams = getFunctionTrueType(funcName, params, funcNamespace);
+    return this->funcTable[fullFuncName][trueParams];
 }
 
 /**
@@ -233,4 +235,43 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
         llvm::Function::Create(ftDouble, llvm::Function::ExternalLinkage, "printMatrixD", context->module);
 
     printFunctions = {printFuncInt, printFuncFP};
+}
+
+std::vector<std::shared_ptr<Typing::Type>> Utils::SymbolTable::getFunctionTrueType(
+    const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
+    const std::string& funcNamespace) {
+    const std::string fullFuncName = funcNamespace + "::" + funcName;
+
+    bool foundFunc = true;
+    std::vector<std::shared_ptr<Typing::Type>> trueParam;
+    for (auto possibleFunc : this->funcTable[fullFuncName]) {
+        int i = 0;
+        foundFunc = true;
+        // ahahahahahah god help us this code is fucking awful but im in a rush
+        for (auto type : possibleFunc.first) {
+            if (auto* matTypeTable = std::get_if<Typing::MatrixType>(&*type)) {
+                if (auto* matTypeParam = std::get_if<Typing::MatrixType>(&*params[i])) {
+                    if (matTypeParam->primType != matTypeTable->primType && matTypeTable->rank != matTypeParam->rank) {
+                        foundFunc = false;
+                        break;
+                    }
+                }
+            } else if (auto* funcTypeTable = std::get_if<Typing::FunctionType>(&*type)) {
+                if (auto* funcTypeParam = std::get_if<Typing::FunctionType>(&*params[i])) {
+                    if (funcTypeTable->returnType != funcTypeParam->returnType) {
+                        foundFunc = false;
+                        break;
+                    }
+                }
+            } else {
+                break;
+            }
+            i++;
+        }
+        if (foundFunc) {
+            trueParam = possibleFunc.first;
+            break;
+        }
+    }
+    return trueParam;
 }

@@ -21,6 +21,12 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     llvm::FunctionType* ft = llvm::FunctionType::get(mtType, argTypes, false);
     llvm::Function* func = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, this->funcName, context->module);
 
+    // Add paramaters to the symbol table
+    int i = 0;
+    for(auto funcitt = func->arg_begin(); funcitt != func->arg_end(); funcitt++, i++){
+        context->symbolTable->setValue(this->parameters[i].second, (llvm::Value*) funcitt, this->parameters[i].first, funcName, "");
+    }
+
     context->symbolTable->setFunctionData(funcName, typesRaw, func);
     context->function = func;
 

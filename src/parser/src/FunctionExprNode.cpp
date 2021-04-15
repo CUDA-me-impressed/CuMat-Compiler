@@ -29,7 +29,14 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
     // Generate return values for each of the evaluations of the function
     std::vector<llvm::Value*> argVals;
     for (const auto& arg : args) {
-        argVals.push_back(arg->codeGen(context));
+        llvm::Value* argVal = arg->codeGen(context);
+        // Ensure that matrix literals are upcast
+        if(auto* argType = std::get_if<Typing::MatrixType>(&*arg->type)){
+            if(argType->rank == 0){
+                argVal = Utils::upcastLiteralToMatrix(context, *argType, argVal);
+            }
+        }
+        argVals.push_back(argVal);
     }
     // Call the function with values
     auto callRet = context->Builder->CreateCall(func, argVals, "calltmp");
@@ -37,7 +44,7 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
-    this->nonAppliedFunction->semanticPass(context);
+//    this->nonAppliedFunction->semanticPass(context);
     for (auto const& arg : this->args) arg->semanticPass(context);
     // TODO: Check that types align with the argument types specified in the symbol table
 }

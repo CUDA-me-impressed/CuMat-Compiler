@@ -32,7 +32,7 @@ struct FunctionParamCompare {
             // Matrix type checking
             retVal =
                 std::get_if<Typing::MatrixType>(r.get()) != nullptr &&
-                std::get_if<Typing::MatrixType>(l.get())->primType < std::get_if<Typing::MatrixType>(r.get())->primType;
+                std::get_if<Typing::MatrixType>(l.get())->primType == std::get_if<Typing::MatrixType>(r.get())->primType;
         } else if (std::get_if<Typing::FunctionType>(l.get()) != nullptr) {
             // Function type checks (for functions supplied as arguments)
             retVal = std::get_if<Typing::FunctionType>(r.get()) != nullptr &&
@@ -106,6 +106,10 @@ class SymbolTable {
     FunctionTableEntry getFunction(const std::string& funcName,
                                    const std::vector<std::shared_ptr<Typing::Type>>& params,
                                    const std::string& funcNamespace = "");
+
+    std::vector<std::shared_ptr<Typing::Type>> getFunctionTrueType(
+        const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
+        const std::string& funcNamespace = "");
 
     bool isFunctionDefined(const std::string& funcName, const std::string& funcNamespace = "");
 

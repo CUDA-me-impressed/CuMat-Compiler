@@ -16,7 +16,7 @@ llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::VariableNode::semanticPass(Utils::IRContext* context) {
-    this->type = context->symbolTable->getValue(this->name, context->symbolTable->getCurrentFunction())->type;
+//    this->type = context->symbolTable->getValue(this->name, context->symbolTable->getCurrentFunction())->type;
 
     if (this->variableSlicing) {
         this->variableSlicing->semanticPass(context);
