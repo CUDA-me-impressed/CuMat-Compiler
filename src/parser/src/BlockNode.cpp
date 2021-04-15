@@ -31,6 +31,7 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::BlockNode::semanticPass(Utils::IRContext* context) {
+    // Run semantic pass on all related nodes - block is not an Expr node, so does not have a type to assign
     for (auto const& assignment : this->assignments) assignment->semanticPass(context);
     this->returnExpr->semanticPass(context);
 }

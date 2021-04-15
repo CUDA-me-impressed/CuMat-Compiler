@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "ASTNode.hpp"
+#include "Type.hpp"
 
 namespace AST {
 class DecompNode : public Node {
@@ -12,6 +13,6 @@ class DecompNode : public Node {
     std::variant<std::string, std::shared_ptr<DecompNode>> rVal;
     llvm::Value* codeGen(Utils::IRContext* context) override;
 
-    void semanticPass(Utils::IRContext* context) override;
+    void semanticPass(Utils::IRContext* context, Typing::PRIMITIVE primType);
 };
 }  // namespace AST

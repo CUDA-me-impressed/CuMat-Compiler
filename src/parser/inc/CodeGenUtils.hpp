@@ -12,6 +12,7 @@
 #include "CompilerOptions.hpp"
 #include "SymbolTable.hpp"
 #include "Type.hpp"
+#include "TypeCheckingSymbolTable.hpp"
 
 namespace Utils {
 struct IRContext {
@@ -20,6 +21,7 @@ struct IRContext {
     llvm::Function* function;
     SymbolTable* symbolTable;
     CompilerOptions* compilerOptions;
+    TypeCheckUtils::TypeCheckingSymbolTable* semanticSymbolTable;
 };
 
 struct LLVMMatrixRecord {

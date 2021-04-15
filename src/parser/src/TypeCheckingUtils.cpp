@@ -24,7 +24,17 @@ std::shared_ptr<Typing::Type> TypeCheckUtils::makeCustomType(
     return type;
 }
 
-bool TypeCheckUtils::isBool(Typing::PRIMITIVE ty) { return ty == Typing::PRIMITIVE::BOOL; }
+std::shared_ptr<Typing::Type> TypeCheckUtils::makeFunctionType(std::shared_ptr<Typing::Type> returnType, const std::vector<std::shared_ptr<Typing::Type>> params) {
+    auto ty = Typing::FunctionType();
+    ty.returnType = returnType;
+    ty.parameters = params;
+    std::shared_ptr<Typing::Type> type = std::make_shared<Typing::Type>(ty);
+    return type;
+}
+
+bool TypeCheckUtils::isBool(Typing::PRIMITIVE ty) {
+    return ty == Typing::PRIMITIVE::BOOL;
+}
 
 bool TypeCheckUtils::isInt(Typing::PRIMITIVE ty) { return ty == Typing::PRIMITIVE::INT; }
 
@@ -86,6 +96,25 @@ void TypeCheckUtils::noneError() {
     std::exit(TypeCheckUtils::ErrorCodes::NONE_ERROR);
 }
 
+void TypeCheckUtils::notDefinedError(std::string name) {
+    std::cerr << "Function with same name already defined: " << name << std::endl;
+    std::exit(TypeCheckUtils::ErrorCodes::NOT_DEFINED_ERROR);
+}
+
+void TypeCheckUtils::alreadyDefinedError(std::string name, bool var) {
+    if (var) {
+        std::cerr << "Variable with same name already defined: " << name << std::endl;
+    } else {
+        std::cerr << "Function with same name already defined: " << name << std::endl;
+    }
+    std::exit(TypeCheckUtils::ErrorCodes::ALREADY_DEFINED_ERROR);
+}
+
+void TypeCheckUtils::decompError() {
+    std::cerr << "Cannot decompose a function" << std::endl;
+    std::exit(TypeCheckUtils::ErrorCodes::DECOMP_ERROR);
+}
+
 void TypeCheckUtils::assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
     if (not(lhs == rhs)) {
         std::cerr << "Mismatched types: " << primToString(lhs) << ", " << primToString(rhs) << std::endl;
@@ -100,6 +129,8 @@ void TypeCheckUtils::assertCompatibleTypes(Typing::PRIMITIVE lhs, Typing::PRIMIT
             compatible = rhs == Typing::PRIMITIVE::STRING;
             break;
         case Typing::PRIMITIVE::INT:
+            compatible = (rhs == Typing::PRIMITIVE::INT or rhs == Typing::PRIMITIVE::FLOAT or rhs == Typing::PRIMITIVE::BOOL);
+            break;
         case Typing::PRIMITIVE::FLOAT:
             compatible = (rhs == Typing::PRIMITIVE::INT or rhs == Typing::PRIMITIVE::FLOAT);
             break;

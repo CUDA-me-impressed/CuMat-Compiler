@@ -1,4 +1,7 @@
 #include "FuncDefNode.hpp"
+#include "TypeCheckingUtils.hpp"
+
+#include <iostream>
 
 #include "TreePrint.hpp"
 
@@ -39,12 +42,18 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
+
+    // TODO: Put the args into symbol table temporarily for the block semantic pass - remove before end of function
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
     for (const auto& typeNamePair : this->parameters) {
+        if ((typeNamePair.second.get())->index() == 0) {
+            std::cerr << "Cannot have functions as arguments" << std::endl;
+            std::exit(TypeCheckUtils::ErrorCodes::FUNCTION_ERROR);
+        }
+        context->semanticSymbolTable->storeVarType(typeNamePair.first, typeNamePair.second);
         typesRaw.push_back(typeNamePair.second);
     }
 
-    // TODO: Update to use new semantic symbol table when it is made
     // Store within the symbol table
     context->symbolTable->addNewFunction(funcName, typesRaw);
 
@@ -52,6 +61,17 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
 
     // Pop the function as we leave the definition of the code
     context->symbolTable->escapeFunction();
+    
+    // Check if the function name is already in use
+    if (context->semanticSymbolTable->inFuncTable(this->funcName, "")) {
+        TypeCheckUtils::alreadyDefinedError(this->funcName, false);
+    }
+    // Construct the function type and store it
+    auto type = TypeCheckUtils::makeFunctionType(this->returnType, typesRaw);
+    context->semanticSymbolTable->storeFuncType(this->funcName, "", type);
+    for (const auto& typeNamePair : this->parameters) {
+        context->semanticSymbolTable->removeVarEntry(typeNamePair.first);
+    }
 }
 
 std::string AST::FuncDefNode::toTree(const std::string& prefix, const std::string& childPrefix) const {

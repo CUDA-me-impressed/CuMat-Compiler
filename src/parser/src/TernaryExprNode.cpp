@@ -1,7 +1,7 @@
 #include "TernaryExprNode.hpp"
 
 #include "CodeGenUtils.hpp"
-#include "TypeException.hpp"
+#include "TypeCheckingUtils.hpp"
 
 llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
     // Generate the return value for the evaluate condition
@@ -16,7 +16,6 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
 
     if (!dataVal->getType()->isIntegerTy(1)) {
         llvm::Type* boolType = static_cast<llvm::Type*>(llvm::Type::getInt1Ty(context->module->getContext()));
-        Typing::wrongTypeException("Type error in Ternary Expression", boolType, dataVal->getType());
         std::exit(2);
     }  // TODO: Handle errors gracefully
     conditionEval = context->Builder->CreateICmpNE(
@@ -52,7 +51,11 @@ void AST::TernaryExprNode::semanticPass(Utils::IRContext* context) {
     this->condition->semanticPass(context);
     this->truthy->semanticPass(context);
     this->falsey->semanticPass(context);
-    // TODO Doesn't this need to check that the type is the same for both paths?
+    Typing::MatrixType tTy = TypeCheckUtils::extractMatrixType(this->truthy);
+    Typing::MatrixType fTy = TypeCheckUtils::extractMatrixType(this->falsey);
+    TypeCheckUtils::assertMatchingTypes(tTy.getPrimitiveType(), fTy.getPrimitiveType());
+
+    this->type = TypeCheckUtils::makeMatrixType(std::vector<uint>(), tTy.getPrimitiveType());
 }
 void AST::TernaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     condition->dimensionPass(nt);
