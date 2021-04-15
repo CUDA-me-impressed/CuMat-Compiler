@@ -9,9 +9,10 @@ std::shared_ptr<Utils::SymbolTableEntry> Utils::SymbolTable::getValue(const std:
                                                                       const std::string& funcName,
                                                                       const std::string& funcNamespace) {
     const std::string fullSymbolName = funcNamespace + "::" + symbolName;
-    if (data.contains(funcName)) {
-        if (data[funcName].contains(fullSymbolName)) {
-            return std::make_shared<SymbolTableEntry>(data[funcName][fullSymbolName]);
+    const std::string fullFuncName = funcNamespace + "::" + funcName;
+    if (data.contains(fullFuncName)) {
+        if (data[fullFuncName].contains(fullSymbolName)) {
+            return std::make_shared<SymbolTableEntry>(data[fullFuncName][fullSymbolName]);
         } else {
             throw std::runtime_error("Symbol [" + fullSymbolName + "] out of scope");
         }
@@ -40,7 +41,13 @@ void Utils::SymbolTable::escapeFunction() {
     this->functionStack.erase(this->functionStack.end());
 }
 
-std::string Utils::SymbolTable::getCurrentFunction() { return this->functionStack.at(this->functionStack.size() - 1); }
+std::string Utils::SymbolTable::getCurrentFunction() {
+    std::string funcNameTmp = this->functionStack.at(this->functionStack.size() - 1);
+    if (funcNameTmp.starts_with("::")) {
+        funcNameTmp = funcNameTmp.substr(2);
+    }
+    return funcNameTmp;
+}
 
 bool Utils::SymbolTable::inSymbolTable(const std::string& symbolName, const std::string& funcName,
                                        const std::string& funcNamespace) {

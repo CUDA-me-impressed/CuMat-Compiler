@@ -8,7 +8,7 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
     for (const auto& typeNamePair : this->parameters) {
         typesRaw.push_back(typeNamePair.second);
-        argTypes.push_back(std::get<Typing::MatrixType>(*typeNamePair.second).getLLVMType(context));
+        argTypes.push_back(std::get<Typing::MatrixType>(*typeNamePair.second).getLLVMType(context)->getPointerTo());
     }
 
     context->symbolTable->enterFunction(funcName);
