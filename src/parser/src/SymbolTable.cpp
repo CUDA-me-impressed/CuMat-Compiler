@@ -176,6 +176,14 @@ void Utils::SymbolTable::enterFunction(const std::string& function, const std::s
     const std::string fullFuncName = funcNamespace + "::" + function;
     this->functionStack.emplace_back(fullFuncName);
 }
+
+template <class T>
+inline void hash_combine(std::size_t& seed, const T& v) {
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+
 void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) {
     const std::vector<std::string> binFuncNamesInt(
         {"CuMatAddMatrixI", "CuMatSubMatrixI", "CuMatMultMatrixI", "CuMatDivMatrixI", "CuMatLORMatrixI",
@@ -227,12 +235,22 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
         binaryFunctions[i] = {binFuncInt, binFuncFP};
     }
 
+
+
     // Create the print functions
+    Typing::MatrixType matTypeInt;
+    matTypeInt.primType = Typing::PRIMITIVE::INT;
+
+    Typing::MatrixType matTypeFloat;
+    matTypeFloat.primType = Typing::PRIMITIVE::FLOAT;
+
+    auto matHeaderIntType = matTypeInt.getLLVMType(context);
+    auto matHeaderFloatType = matTypeFloat.getLLVMType(context);
 
     auto argTypesInt =
-        std::vector<llvm::Type*>({pascalArrInt, llvm::Type::getInt64Ty(context->module->getContext())});
+        std::vector<llvm::Type*>({matHeaderIntType->getPointerTo()});
     auto argTypesDouble =
-        std::vector<llvm::Type*>({pascalArrDouble, llvm::Type::getInt64Ty(context->module->getContext())});
+        std::vector<llvm::Type*>({matHeaderFloatType->getPointerTo()});
     llvm::FunctionType* ftInt = llvm::FunctionType::get(retType, argTypesInt, false);
     llvm::FunctionType* ftDouble = llvm::FunctionType::get(retType, argTypesDouble, false);
 

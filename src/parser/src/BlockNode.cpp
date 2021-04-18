@@ -50,14 +50,11 @@ std::string AST::BlockNode::toTree(const std::string& prefix, const std::string&
  * @param context
  * @param returnExprVal
  */
-void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value* returnExprVal){
+void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value* returnExprVal) {
     if (this->callingFunctionName == "main") {
         // lmao this is awful code deal with it
         if (auto retType = std::get_if<Typing::MatrixType>(&*this->returnExpr->type)) {
-            auto mainRecord = Utils::getMatrixFromPointer(context,returnExprVal);
-            llvm::Value* resLenLLVM = llvm::ConstantInt::get(
-                llvm::Type::getInt64Ty(context->module->getContext()), retType->getLength());
-            std::vector<llvm::Value*> argVals({mainRecord.dataPtr, resLenLLVM});
+            std::vector<llvm::Value*> argVals({returnExprVal});
 
             if (retType->primType == Typing::PRIMITIVE::INT) {
                 context->Builder->CreateCall(context->symbolTable->printFunctions.funcInt, argVals);
@@ -66,13 +63,11 @@ void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value*
             } else {
                 throw std::runtime_error("Main return type not valid");
             }
-        }else if(auto retTypeFunc = std::get_if<Typing::FunctionType>(&*this->returnExpr->type)){
-            if(auto retType = std::get_if<Typing::MatrixType>(&*retTypeFunc->returnType)){
+        } else if(auto retTypeFunc = std::get_if<Typing::FunctionType>(&*this->returnExpr->type)){
+            if(auto retType = std::get_if<Typing::MatrixType>(&*retTypeFunc->returnType)) {
                 // Functions still return a matrix
-                auto mainRecord = Utils::getMatrixFromPointer(context,returnExprVal);
-                llvm::Value* resLenLLVM = llvm::ConstantInt::get(
-                    llvm::Type::getInt64Ty(context->module->getContext()), retType->getLength());
-                std::vector<llvm::Value*> argVals({mainRecord.dataPtr, resLenLLVM});
+
+                std::vector<llvm::Value*> argVals({returnExprVal});
 
                 if (retType->primType == Typing::PRIMITIVE::INT) {
                     context->Builder->CreateCall(context->symbolTable->printFunctions.funcInt, argVals);
@@ -85,3 +80,4 @@ void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value*
         }
     }
 }
+

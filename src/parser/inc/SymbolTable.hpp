@@ -25,6 +25,11 @@ struct CUDAFunctionPair {
     llvm::Function* funcFloat;
 };
 
+struct MatHeaderTypes {
+    llvm::Type* intHeader;
+    llvm::Type* floatHeader;
+};
+
 struct FunctionParamCompare {
     [[nodiscard]] bool equalType(const std::shared_ptr<Typing::Type>& l, const std::shared_ptr<Typing::Type>& r) const {
         bool retVal = false;
@@ -80,7 +85,6 @@ class SymbolTable {
 
     CUDAFunctionPair printFunctions;
     llvm::Type* matHeaderType;
-    bool headerTypeGenerated = false;
 
 
     // Symbol data

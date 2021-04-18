@@ -18,14 +18,7 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
 
     // Generate actual array with offset for dimension information
     llvm::Type* ty = matType.getLLVMPrimitiveType(context);
-    llvm::Type* matHeaderType;
-    if(!context->symbolTable->headerTypeGenerated){
-        matHeaderType = matType.getLLVMType(context);
-        context->symbolTable->matHeaderType = matHeaderType;
-        context->symbolTable->headerTypeGenerated = true;
-    }else{
-        matHeaderType = context->symbolTable->matHeaderType;
-    }
+    llvm::Type* matHeaderType = matType.getLLVMType(context);
 
     // Create a type for the actual data of the matrix + length info
     llvm::ArrayType* matDataType = llvm::ArrayType::get(ty, 0);

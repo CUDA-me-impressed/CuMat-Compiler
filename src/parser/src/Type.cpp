@@ -68,6 +68,9 @@ llvm::Type* Typing::MatrixType::getLLVMPrimitiveType(Utils::IRContext* context) 
     return ty;
 }
 
+
+
+
 template <class T>
 inline void hash_combine(std::size_t& seed, const T& v) {
     std::hash<T> hasher;
@@ -78,24 +81,33 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) {
     llvm::Type* primTy = this->getLLVMPrimitiveType(context);
     auto rank = this->rank;
     auto length = this->getLength();
+    auto offset = this->offset();
 
     // generate a signature for a matrix
     std::size_t seed = 0;
-    hash_combine(seed, rank);
-    hash_combine(seed, length);
     hash_combine(seed, primTy);
     // static function members persist through calls, cursed I know
-    static std::unordered_map<std::size_t, llvm::Type*> existingStructTypes;
     if (existingStructTypes.contains(seed)) {
         return existingStructTypes.at(seed);
     }
 
+    auto matHeaderType = getMatHeaderType(context, primTy, rank, length, offset);
+
+    existingStructTypes.try_emplace(seed, matHeaderType);
+
+    return matHeaderType;
+}
+
+Typing::PRIMITIVE Typing::MatrixType::getPrimitiveType() const { return this->primType; }
+
+llvm::Type* Typing::MatrixType::getMatHeaderType(Utils::IRContext* context, llvm::Type* primTy, uint rank, int length, int offset) {
+
     llvm::ArrayType* matDataType = llvm::ArrayType::get(primTy, 0);
     auto* matDataPtrType = matDataType->getPointerTo();
 
-    auto rankConst = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, this->rank));
+    auto rankConst = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, rank));
     auto numBytes = llvm::ConstantInt::get(context->module->getContext(),
-                                           llvm::APInt(64, (this->getLength() * this->offset()) / 8));
+                                           llvm::APInt(64, (length* offset) / 8));
 
     std::vector<llvm::Type*> headerTypes;
     headerTypes.push_back(matDataPtrType);
@@ -112,11 +124,15 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) {
 //    }
 
     auto matHeaderType = llvm::StructType::create(headerTypes);
-    matHeaderType->setName("matHeader");
-
-    existingStructTypes.try_emplace(seed, matHeaderType);
-
+    switch (this->primType) {
+        case Typing::PRIMITIVE::INT: {
+            matHeaderType->setName("matHeaderI");
+            break;
+        }
+        case Typing::PRIMITIVE::FLOAT: {
+            matHeaderType->setName("matHeaderF");
+            break;
+        }
+    }
     return matHeaderType;
 }
-
-Typing::PRIMITIVE Typing::MatrixType::getPrimitiveType() const { return this->primType; }
