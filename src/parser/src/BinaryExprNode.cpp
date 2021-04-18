@@ -43,16 +43,11 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
             newMatAlloc = Utils::createMatrix(context, *resType);
 
             if (true || shouldExecuteGPU(context, op) || this->op == BIN_OPERATORS::MATM) {
-                auto lhsRecord = Utils::getMatrixFromPointer(context, lhsVal);
-                auto rhsRecord = Utils::getMatrixFromPointer(context, rhsVal);
-                auto resRecord = Utils::getMatrixFromPointer(context, newMatAlloc);
-                llvm::Type* dataPtrType = llvm::Type::getInt64PtrTy(context->module->getContext());
-
                 if (this->op != BIN_OPERATORS::MATM) {
                     llvm::Value* resLenLLVM = llvm::ConstantInt::get(
                         llvm::Type::getInt64Ty(context->module->getContext()), resType->getLength());
                     std::vector<llvm::Value*> argVals(
-                        {lhsRecord.dataPtr, rhsRecord.dataPtr, resRecord.dataPtr, resLenLLVM});
+                        {lhsVal, rhsVal,newMatAlloc, resLenLLVM});
 
                     if (lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT) {
                         auto callRet = context->Builder->CreateCall(
@@ -69,7 +64,7 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                     llvm::Value* lenJ = llvm::ConstantInt::get(lenType, lhsType->dimensions[1]);
 
                     std::vector<llvm::Value*> argVals(
-                        {lhsRecord.dataPtr, rhsRecord.dataPtr, resRecord.dataPtr, lenI, lenK, lenJ});
+                        {lhsVal, rhsVal,newMatAlloc, lenI, lenK, lenJ});
 
                     if (lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT) {
                         auto callRet = context->Builder->CreateCall(

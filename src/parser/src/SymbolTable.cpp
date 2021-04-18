@@ -199,6 +199,17 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
     auto* pascalArrDouble = llvm::ArrayType::get(llvm::Type::getDoubleTy(context->module->getContext()), 0)->getPointerTo();
     auto* retType = llvm::Type::getVoidTy(context->module->getContext());
 
+    // Basic header types
+    Typing::MatrixType matTypeInt;
+    matTypeInt.primType = Typing::PRIMITIVE::INT;
+
+    Typing::MatrixType matTypeFloat;
+    matTypeFloat.primType = Typing::PRIMITIVE::FLOAT;
+
+    auto matHeaderIntType = matTypeInt.getLLVMType(context)->getPointerTo();
+    auto matHeaderFloatType = matTypeFloat.getLLVMType(context)->getPointerTo();
+
+
     // Enum is just fancy int
     for (int i = 0; i < binFuncNamesInt.size(); i++) {
         const std::string& binFuncNameInt = binFuncNamesInt[i];
@@ -210,18 +221,18 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
         std::vector<llvm::Type*> argTypesDouble;
 
         if (i == 15) {  // If MATM
-            argTypesInt = std::vector<llvm::Type*>({pascalArrInt, pascalArrInt, pascalArrInt,
+            argTypesInt = std::vector<llvm::Type*>({matHeaderIntType, matHeaderIntType, matHeaderIntType,
                                                     llvm::Type::getInt64Ty(context->module->getContext()),
                                                     llvm::Type::getInt64Ty(context->module->getContext()),
                                                     llvm::Type::getInt64Ty(context->module->getContext())});
-            argTypesDouble = std::vector<llvm::Type*>({pascalArrDouble, pascalArrDouble, pascalArrDouble,
+            argTypesDouble = std::vector<llvm::Type*>({matHeaderFloatType, matHeaderFloatType, matHeaderFloatType,
                                                        llvm::Type::getInt64Ty(context->module->getContext()),
                                                        llvm::Type::getInt64Ty(context->module->getContext()),
                                                        llvm::Type::getInt64Ty(context->module->getContext())});
         } else {
-            argTypesInt = std::vector<llvm::Type*>({pascalArrInt, pascalArrInt, pascalArrInt,
+            argTypesInt = std::vector<llvm::Type*>({matHeaderIntType, matHeaderIntType, matHeaderIntType,
                                                     llvm::Type::getInt64Ty(context->module->getContext())});
-            argTypesDouble = std::vector<llvm::Type*>({pascalArrDouble, pascalArrDouble, pascalArrDouble,
+            argTypesDouble = std::vector<llvm::Type*>({matHeaderFloatType, matHeaderFloatType, matHeaderFloatType,
                                                        llvm::Type::getInt64Ty(context->module->getContext())});
         }
 
@@ -238,19 +249,10 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
 
 
     // Create the print functions
-    Typing::MatrixType matTypeInt;
-    matTypeInt.primType = Typing::PRIMITIVE::INT;
-
-    Typing::MatrixType matTypeFloat;
-    matTypeFloat.primType = Typing::PRIMITIVE::FLOAT;
-
-    auto matHeaderIntType = matTypeInt.getLLVMType(context);
-    auto matHeaderFloatType = matTypeFloat.getLLVMType(context);
-
     auto argTypesInt =
-        std::vector<llvm::Type*>({matHeaderIntType->getPointerTo()});
+        std::vector<llvm::Type*>({matHeaderIntType});
     auto argTypesDouble =
-        std::vector<llvm::Type*>({matHeaderFloatType->getPointerTo()});
+        std::vector<llvm::Type*>({matHeaderFloatType});
     llvm::FunctionType* ftInt = llvm::FunctionType::get(retType, argTypesInt, false);
     llvm::FunctionType* ftDouble = llvm::FunctionType::get(retType, argTypesDouble, false);
 
