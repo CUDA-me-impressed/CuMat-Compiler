@@ -9,7 +9,7 @@
 #include <cublas_v2.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
-
+#include <stdio.h>
 #define BLOCK_SIZE 32 // nvidia GPUs typically have 1024 threads per block, 32*32
 
 __global__ void CuMatMatMultKernelI(const long *matA, const long *matB, long* matRes, int width, int i, int j)
@@ -82,9 +82,9 @@ extern "C" void CuMatMatMultMatrixD(const double *matA, const double *matB, doub
     size_t matResSize = m * n * sizeof(double);
 
     // Allocate memory for device
-    cudaMalloc(&d_A, matASize);
-    cudaMalloc(&d_B, matBSize);
-    cudaMalloc(&d_Res, matResSize);
+    cudaMallocManaged(&d_A, matASize);
+    cudaMallocManaged(&d_B, matBSize);
+    cudaMallocManaged(&d_Res, matResSize);
 
     // Copy over matA & matB to device
     cudaMemcpy(d_A, matA, matASize, cudaMemcpyHostToDevice);

@@ -42,7 +42,7 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
 
     // Allocation of the matrix data
     auto* intPtrType = llvm::Type::getInt32Ty(context->module->getContext());
-    llvm::Constant* matAllocaSize = llvm::ConstantExpr::getSizeOf(matDataType);
+    llvm::Constant* matAllocaSize = llvm::ConstantInt::get(intPtrType, matLength);
     // This will by default be i64, need to cast to i32 (I think its safe)
     matAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(matAllocaSize, intPtrType);
     auto* matAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), intPtrType, matDataType,
@@ -53,8 +53,8 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
     auto matAllocPtr = context->Builder->CreateGEP(matAlloc, zeroOffset, "matArrPtr");
 
     // We need an integer pointer type for the address
-    intPtrType = llvm::Type::getInt32Ty(context->module->getContext());
-    llvm::Constant* matHeaderAllocaSize = llvm::ConstantExpr::getSizeOf(matHeaderType);
+    intPtrType = llvm::Type::getInt64Ty(context->module->getContext());
+    llvm::Constant* matHeaderAllocaSize = llvm::ConstantInt::get(intPtrType, 4);
     matHeaderAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(matHeaderAllocaSize, intPtrType);
     auto* matHeaderAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), intPtrType, matHeaderType,
                                                         matHeaderAllocaSize, nullptr, nullptr, "bitcast");
