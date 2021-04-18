@@ -31,18 +31,20 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
             } else {
                 throw std::runtime_error("Main return type not valid");
             }
-    // Ensure that matrix literals are upcast
-    if(auto* rValType = std::get_if<Typing::MatrixType>(&*returnExpr->type)){
-        if(rValType->rank == 0){
-            returnExprVal = Utils::upcastLiteralToMatrix(context, *rValType, returnExprVal);
+            // Ensure that matrix literals are upcast
+            if (auto* rValType = std::get_if<Typing::MatrixType>(&*returnExpr->type)) {
+                if (rValType->rank == 0) {
+                    returnExprVal = Utils::upcastLiteralToMatrix(context, *rValType, returnExprVal);
+                }
+            }
+
+            printIfMainFunction(context, returnExprVal);
+
+            llvm::Value* retVal = context->Builder->CreateRet(returnExprVal);
+
+            return retVal;
         }
     }
-
-    printIfMainFunction(context, returnExprVal);
-
-    llvm::Value* retVal = context->Builder->CreateRet(returnExprVal);
-
-    return retVal;
 }
 
 void AST::BlockNode::semanticPass(Utils::IRContext* context) {
@@ -79,8 +81,8 @@ void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value*
             } else {
                 throw std::runtime_error("Main return type not valid");
             }
-        } else if(auto retTypeFunc = std::get_if<Typing::FunctionType>(&*this->returnExpr->type)){
-            if(auto retType = std::get_if<Typing::MatrixType>(&*retTypeFunc->returnType)) {
+        } else if (auto retTypeFunc = std::get_if<Typing::FunctionType>(&*this->returnExpr->type)) {
+            if (auto retType = std::get_if<Typing::MatrixType>(&*retTypeFunc->returnType)) {
                 // Functions still return a matrix
 
                 std::vector<llvm::Value*> argVals({returnExprVal});
@@ -96,7 +98,6 @@ void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value*
         }
     }
 }
-
 
 void AST::BlockNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     for (auto& a : this->assignments) {
