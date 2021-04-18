@@ -19,9 +19,9 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
     if (this->callingFunctionName == "main") {
         // lmao this is awful code deal with it
         if (auto retType = std::get_if<Typing::MatrixType>(&*this->returnExpr->type)) {
-            auto mainRecord = Utils::getMatrixFromPointer(context,returnExprVal);
-            llvm::Value* resLenLLVM = llvm::ConstantInt::get(
-                llvm::Type::getInt64Ty(context->module->getContext()), retType->getLength());
+            auto mainRecord = Utils::getMatrixFromPointer(context, returnExprVal);
+            llvm::Value* resLenLLVM =
+                llvm::ConstantInt::get(llvm::Type::getInt64Ty(context->module->getContext()), retType->getLength());
             std::vector<llvm::Value*> argVals({mainRecord.dataPtr, resLenLLVM});
 
             if (retType->primType == Typing::PRIMITIVE::INT) {
@@ -43,6 +43,7 @@ void AST::BlockNode::semanticPass(Utils::IRContext* context) {
     for (auto const& assignment : this->assignments) assignment->semanticPass(context);
     this->returnExpr->semanticPass(context);
 }
+
 std::string AST::BlockNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
     using namespace Tree;
     std::string str{prefix + std::string{"Block\n"}};
@@ -51,4 +52,11 @@ std::string AST::BlockNode::toTree(const std::string& prefix, const std::string&
     }
     str += returnExpr->toTree(childPrefix + L, childPrefix + B);
     return str;
+}
+
+void AST::BlockNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    for (auto& a : this->assignments) {
+        a->dimensionPass(nt);
+    }
+    returnExpr->dimensionPass(nt);
 }

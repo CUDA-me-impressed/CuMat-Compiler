@@ -1,5 +1,7 @@
 #include "TernaryExprNode.hpp"
 
+#include <DimensionPass.hpp>
+
 #include "CodeGenUtils.hpp"
 #include "TypeException.hpp"
 
@@ -60,5 +62,8 @@ void AST::TernaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     auto* true_mt = std::get_if<Typing::MatrixType>(&*truthy->type);
     auto* false_mt = std::get_if<Typing::MatrixType>(&*falsey->type);
     if (true_mt && false_mt) {
+        if (true_mt->dimensions != false_mt->dimensions) {
+            dimension_error("If else block branches yield miss-matched dimension", this);
+        }
     }
 }

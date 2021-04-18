@@ -11,6 +11,7 @@
 #include <numeric>
 
 #include "CodeGenUtils.hpp"
+#include "DimensionPass.hpp"
 #include "TypeCheckingUtils.hpp"
 
 llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
@@ -134,13 +135,6 @@ void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
 
     this->type = TypeCheckUtils::makeMatrixType(dimensions, primType);
 }
-
-void dimension_error(const std::string& message, AST::Node* node) {
-    std::cerr << "Dimension Error" << std::endl;
-    std::cerr << node->literalText << std::endl;
-    std::cerr << message << std::endl;
-    throw std::runtime_error{message};
-};
 
 void AST::MatrixNode::dim_subpass(std::vector<uint>& apparent_dim, std::vector<uint>& size,
                                   const std::vector<uint>& nodedims, int sep) {

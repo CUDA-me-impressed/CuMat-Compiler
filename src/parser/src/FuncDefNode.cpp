@@ -1,5 +1,8 @@
 #include "FuncDefNode.hpp"
 
+#include <DimensionPass.hpp>
+
+#include "DimensionsSymbolTable.hpp"
 #include "TreePrint.hpp"
 
 llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
@@ -60,4 +63,24 @@ std::string AST::FuncDefNode::toTree(const std::string& prefix, const std::strin
     str += ")->" + printType(*returnType) + "\n";
     str += block->toTree(childPrefix + L, childPrefix + B);
     return str;
+}
+
+void AST::FuncDefNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    auto inner_nt = std::move(nt->push_scope());
+    for (auto& [name, type] : this->parameters) {
+        inner_nt->add_node(name, type);
+    }
+    this->block->dimensionPass(inner_nt.get());
+
+    auto* rettype = std::get_if<Typing::MatrixType>(this->returnType.get());
+    auto* blocktype = std::get_if<Typing::MatrixType>(this->block->returnExpr->type.get());
+
+    if (rettype && blocktype) {
+        if (rettype->dimensions == blocktype->dimensions) {
+            dimension_error("Return expression doesn't match declared signature", this);
+        }
+    }
+}
+void AST::FuncDefNode::dimensionNamePass(Analysis::DimensionSymbolTable* nt) {
+    nt->add_node(this->funcName, this->returnType);
 }

@@ -14,5 +14,6 @@ class CustomTypeDefNode : public Node {
     std::vector<std::shared_ptr<AST::TypeDefAttributeNode>> attributes;
 
     void semanticPass(Utils::IRContext* context) override;
+    void dimensionPass(Analysis::DimensionSymbolTable* nt) override;
 };
 }  // namespace AST

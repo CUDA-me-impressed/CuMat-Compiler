@@ -13,6 +13,7 @@ class BlockNode : public Node {
     std::vector<std::shared_ptr<AssignmentNode>> assignments;
     std::shared_ptr<ExprNode> returnExpr;
     void semanticPass(Utils::IRContext* context) override;
+    void dimensionPass(Analysis::DimensionSymbolTable* nt) override;
     llvm::Value* codeGen(Utils::IRContext* context) override;
 
     [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override;
