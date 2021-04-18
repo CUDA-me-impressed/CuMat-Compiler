@@ -1,20 +1,5 @@
 #include <iostream>
-
-struct HeaderI
-{
-	long* data;
-	long rank;
-	long bytes;
-	long* dimensions;
-};
-
-struct HeaderD
-{
-	double* data;
-	long rank;
-	long bytes;
-	long* dimensions;
-};
+#include "headers.hpp"
 
 extern "C" void printMatrixI(HeaderI* h)
 {
