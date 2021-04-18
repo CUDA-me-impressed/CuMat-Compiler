@@ -9,6 +9,7 @@
 #include <cublas_v2.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <stdio.h>
 
 extern "C" void CuMatAddMatrixD(double * matA, double * matB, double * matRes, long len){
     // Pointers for the various kernel vars
@@ -79,7 +80,11 @@ extern "C" void CuMatAddMatrixI(long* matA, long* matB, long* matRes, long len){
     cudaDeviceSynchronize();
 
     // Copy the results out of device memory
-    cudaMemcpy(matRes, d_Res, size, cudaMemcpyDeviceToHost);
+    auto result = cudaMemcpy(matRes, d_Res, size, cudaMemcpyDeviceToHost);
+
+    if(result != cudaSuccess){
+        printf("GPUassert: %s\n", cudaGetErrorString(result));
+    }
 
     // Free up cuda malloc
     cudaFree(&d_A);

@@ -9,9 +9,10 @@ std::shared_ptr<Utils::SymbolTableEntry> Utils::SymbolTable::getValue(const std:
                                                                       const std::string& funcName,
                                                                       const std::string& funcNamespace) {
     const std::string fullSymbolName = funcNamespace + "::" + symbolName;
-    if (data.contains(funcName)) {
-        if (data[funcName].contains(fullSymbolName)) {
-            return std::make_shared<SymbolTableEntry>(data[funcName][fullSymbolName]);
+    const std::string fullFuncName = funcNamespace + "::" + funcName;
+    if (data.contains(fullFuncName)) {
+        if (data[fullFuncName].contains(fullSymbolName)) {
+            return std::make_shared<SymbolTableEntry>(data[fullFuncName][fullSymbolName]);
         } else {
             throw std::runtime_error("Symbol [" + fullSymbolName + "] out of scope");
         }
@@ -24,13 +25,14 @@ void Utils::SymbolTable::setValue(std::shared_ptr<Typing::Type> type, llvm::Valu
                                   const std::string& symbolName, const std::string& funcName,
                                   const std::string& funcNamespace) {
     const std::string fullSymbolName = funcNamespace + "::" + symbolName;
-    if (!data.contains(funcName)) {
+    const std::string fullFuncName = funcNamespace + "::" + funcName;
+    if (!data.contains(fullFuncName)) {
         // let us add an empty map
-        this->data[funcName] = std::map<std::string, SymbolTableEntry>();
+        this->data[fullFuncName] = std::map<std::string, SymbolTableEntry>();
     }
 
     // Symbol table does not check if previously added, will override
-    this->data[funcName][fullSymbolName] = {std::move(type), storeVal};
+    this->data[fullFuncName][fullSymbolName] = {std::move(type), storeVal};
 }
 
 void Utils::SymbolTable::escapeFunction() {
@@ -39,7 +41,13 @@ void Utils::SymbolTable::escapeFunction() {
     this->functionStack.erase(this->functionStack.end());
 }
 
-std::string Utils::SymbolTable::getCurrentFunction() { return this->functionStack.at(this->functionStack.size() - 1); }
+std::string Utils::SymbolTable::getCurrentFunction() {
+    std::string funcNameTmp = this->functionStack.at(this->functionStack.size() - 1);
+    if (funcNameTmp.starts_with("::")) {
+        funcNameTmp = funcNameTmp.substr(2);
+    }
+    return funcNameTmp;
+}
 
 bool Utils::SymbolTable::inSymbolTable(const std::string& symbolName, const std::string& funcName,
                                        const std::string& funcNamespace) {
@@ -90,12 +98,13 @@ void Utils::SymbolTable::setFunctionData(const std::string& funcName,
         throw std::runtime_error("Function [" + funcName + "] not defined!");
     }
     const std::string fullFuncName = funcNamespace + "::" + funcName;
-    if (!this->funcTable[fullFuncName].contains(params)) {
+    auto trueParam = getFunctionTrueType(funcName, params, funcNamespace);
+    if (!isFunctionDefinedParam(funcName, params, funcNamespace)) {
         // TODO: Either done in typing or made to actually report type issues
         throw std::runtime_error("Function [" + fullFuncName + "] expected different parameters");
     }
 
-    this->funcTable[fullFuncName][params] = {func};
+    (this->funcTable[fullFuncName][trueParam]) = {func};
 }
 
 /**
@@ -111,8 +120,7 @@ bool Utils::SymbolTable::isFunctionDefinedParam(const std::string& funcName,
     if (!isFunctionDefined(funcName)) {
         throw std::runtime_error("Function [" + funcName + "] not defined!");
     }
-
-    return this->funcTable[fullFuncName].contains(params);
+    return !getFunctionTrueType(funcName, params, funcNamespace).empty() || params.empty();
 }
 
 /**
@@ -125,10 +133,11 @@ Utils::FunctionTableEntry Utils::SymbolTable::getFunction(const std::string& fun
                                                           const std::vector<std::shared_ptr<Typing::Type>>& params,
                                                           const std::string& funcNamespace) {
     const std::string fullFuncName = funcNamespace + "::" + funcName;
-    if (!isFunctionDefinedParam(funcName, params, funcNamespace)) {
+    if (!this->funcTable[fullFuncName].contains(params)) {
         throw std::runtime_error("[Internal Error] Cannot retrieve function, not defined");
     }
-    return this->funcTable[fullFuncName][params];
+    auto trueParams = getFunctionTrueType(funcName, params, funcNamespace);
+    return this->funcTable[fullFuncName][trueParams];
 }
 
 /**
@@ -167,6 +176,14 @@ void Utils::SymbolTable::enterFunction(const std::string& function, const std::s
     const std::string fullFuncName = funcNamespace + "::" + function;
     this->functionStack.emplace_back(fullFuncName);
 }
+
+template <class T>
+inline void hash_combine(std::size_t& seed, const T& v) {
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+
 void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) {
     const std::vector<std::string> binFuncNamesInt(
         {"CuMatAddMatrixI", "CuMatSubMatrixI", "CuMatMultMatrixI", "CuMatDivMatrixI", "CuMatLORMatrixI",
@@ -182,6 +199,17 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
     auto* pascalArrDouble = llvm::ArrayType::get(llvm::Type::getDoubleTy(context->module->getContext()), 0)->getPointerTo();
     auto* retType = llvm::Type::getVoidTy(context->module->getContext());
 
+    // Basic header types
+    Typing::MatrixType matTypeInt;
+    matTypeInt.primType = Typing::PRIMITIVE::INT;
+
+    Typing::MatrixType matTypeFloat;
+    matTypeFloat.primType = Typing::PRIMITIVE::FLOAT;
+
+    auto matHeaderIntType = matTypeInt.getLLVMType(context)->getPointerTo();
+    auto matHeaderFloatType = matTypeFloat.getLLVMType(context)->getPointerTo();
+
+
     // Enum is just fancy int
     for (int i = 0; i < binFuncNamesInt.size(); i++) {
         const std::string& binFuncNameInt = binFuncNamesInt[i];
@@ -193,18 +221,18 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
         std::vector<llvm::Type*> argTypesDouble;
 
         if (i == 15) {  // If MATM
-            argTypesInt = std::vector<llvm::Type*>({pascalArrInt, pascalArrInt, pascalArrInt,
+            argTypesInt = std::vector<llvm::Type*>({matHeaderIntType, matHeaderIntType, matHeaderIntType,
                                                     llvm::Type::getInt64Ty(context->module->getContext()),
                                                     llvm::Type::getInt64Ty(context->module->getContext()),
                                                     llvm::Type::getInt64Ty(context->module->getContext())});
-            argTypesDouble = std::vector<llvm::Type*>({pascalArrDouble, pascalArrDouble, pascalArrDouble,
+            argTypesDouble = std::vector<llvm::Type*>({matHeaderFloatType, matHeaderFloatType, matHeaderFloatType,
                                                        llvm::Type::getInt64Ty(context->module->getContext()),
                                                        llvm::Type::getInt64Ty(context->module->getContext()),
                                                        llvm::Type::getInt64Ty(context->module->getContext())});
         } else {
-            argTypesInt = std::vector<llvm::Type*>({pascalArrInt, pascalArrInt, pascalArrInt,
+            argTypesInt = std::vector<llvm::Type*>({matHeaderIntType, matHeaderIntType, matHeaderIntType,
                                                     llvm::Type::getInt64Ty(context->module->getContext())});
-            argTypesDouble = std::vector<llvm::Type*>({pascalArrDouble, pascalArrDouble, pascalArrDouble,
+            argTypesDouble = std::vector<llvm::Type*>({matHeaderFloatType, matHeaderFloatType, matHeaderFloatType,
                                                        llvm::Type::getInt64Ty(context->module->getContext())});
         }
 
@@ -218,12 +246,13 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
         binaryFunctions[i] = {binFuncInt, binFuncFP};
     }
 
-    // Create the print functions
 
+
+    // Create the print functions
     auto argTypesInt =
-        std::vector<llvm::Type*>({pascalArrInt, llvm::Type::getInt64Ty(context->module->getContext())});
+        std::vector<llvm::Type*>({matHeaderIntType});
     auto argTypesDouble =
-        std::vector<llvm::Type*>({pascalArrDouble, llvm::Type::getInt64Ty(context->module->getContext())});
+        std::vector<llvm::Type*>({matHeaderFloatType});
     llvm::FunctionType* ftInt = llvm::FunctionType::get(retType, argTypesInt, false);
     llvm::FunctionType* ftDouble = llvm::FunctionType::get(retType, argTypesDouble, false);
 
@@ -233,4 +262,43 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
         llvm::Function::Create(ftDouble, llvm::Function::ExternalLinkage, "printMatrixD", context->module);
 
     printFunctions = {printFuncInt, printFuncFP};
+}
+
+std::vector<std::shared_ptr<Typing::Type>> Utils::SymbolTable::getFunctionTrueType(
+    const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
+    const std::string& funcNamespace) {
+    const std::string fullFuncName = funcNamespace + "::" + funcName;
+
+    bool foundFunc = true;
+    std::vector<std::shared_ptr<Typing::Type>> trueParam;
+    for (auto possibleFunc : this->funcTable[fullFuncName]) {
+        int i = 0;
+        foundFunc = true;
+        // ahahahahahah god help us this code is fucking awful but im in a rush
+        for (auto type : possibleFunc.first) {
+            if (auto* matTypeTable = std::get_if<Typing::MatrixType>(&*type)) {
+                if (auto* matTypeParam = std::get_if<Typing::MatrixType>(&*params[i])) {
+                    if (matTypeParam->primType != matTypeTable->primType && matTypeTable->rank != matTypeParam->rank) {
+                        foundFunc = false;
+                        break;
+                    }
+                }
+            } else if (auto* funcTypeTable = std::get_if<Typing::FunctionType>(&*type)) {
+                if (auto* funcTypeParam = std::get_if<Typing::FunctionType>(&*params[i])) {
+                    if (funcTypeTable->returnType != funcTypeParam->returnType) {
+                        foundFunc = false;
+                        break;
+                    }
+                }
+            } else {
+                break;
+            }
+            i++;
+        }
+        if (foundFunc) {
+            trueParam = possibleFunc.first;
+            break;
+        }
+    }
+    return trueParam;
 }

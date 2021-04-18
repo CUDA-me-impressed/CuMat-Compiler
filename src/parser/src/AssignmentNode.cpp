@@ -1,6 +1,8 @@
 #include "AssignmentNode.hpp"
+#include "TypeCheckingUtils.hpp"
 
 #include <iostream>
+#include <numeric>
 
 #include "DimensionsSymbolTable.hpp"
 #include "TreePrint.hpp"
@@ -8,6 +10,13 @@
 llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
     // Generate LLVM value for the rval expression
     llvm::Value* rValLLVM = this->rVal->codeGen(context);
+
+    // Ensure that matrix literals are upcast
+    if(auto* rValType = std::get_if<Typing::MatrixType>(&*rVal->type)){
+        if(rValType->rank == 0){
+            rValLLVM = Utils::upcastLiteralToMatrix(context, *rValType, rValLLVM);
+        }
+    }
 
     // Handle decomposition
     if (this->lVal) {
@@ -35,10 +44,35 @@ llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
 
 void AST::AssignmentNode::semanticPass(Utils::IRContext* context) {
     this->rVal->semanticPass(context);
+    auto rValTy = std::get_if<Typing::MatrixType>(this->rVal->type.get());
+    auto rValFty = std::get_if<Typing::FunctionType>(this->rVal->type.get());
+    bool isFunction = rValFty != nullptr;
 
     if (this->lVal != nullptr) {
-        this->lVal->semanticPass(context);
+        // Check if decomposition is taking place
+        if (isFunction) {
+            // Cannot decompose function
+            TypeCheckUtils::decompError();
+        } else if (rValTy != nullptr) {
+            // Else, call semantic pass on rVal passing through the primitive type
+            this->lVal->semanticPass(context, rValTy->getPrimitiveType());
+        }
     } else {
+        // In this branch, only the `name` attribute is defined, signalling simple assignment
+        if (context->semanticSymbolTable->inVarTable(this->name)) {
+            // Error if the variable name is already in use
+            TypeCheckUtils::alreadyDefinedError(this->name, true);
+        }
+        if (isFunction) {
+            // Store a function type as a variable
+            AST::VariableNode varNode = *dynamic_cast<AST::VariableNode*>(this->rVal.get());
+            // Concatenate the namespace into a single string
+            std::string nameSpace = std::accumulate(varNode.namespacePath.begin(), varNode.namespacePath.end(), std::string(""));
+            context->semanticSymbolTable->storeVarType(this->name, nullptr, nameSpace, varNode.name);
+        } else {
+            context->semanticSymbolTable->storeVarType(this->name, this->rVal->type);
+        }
+
         if (context->symbolTable->inSymbolTable(this->name, context->symbolTable->getCurrentFunction())) {
             throw std::runtime_error("Attempting to redefine variable: " + this->name);
         }
@@ -46,6 +80,7 @@ void AST::AssignmentNode::semanticPass(Utils::IRContext* context) {
                                        context->symbolTable->getCurrentFunction());
     }
 }
+
 llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::shared_ptr<DecompNode> decomp,
                                                llvm::Value* matHeader) {
     // Get the type for the original value
@@ -66,6 +101,8 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
     lValMatType->dimensions = std::vector<uint>(matType->dimensions.begin(), matType->dimensions.end() - 1);
     rValMatType->dimensions = matType->dimensions;
     rValMatType->dimensions.insert(rValMatType->dimensions.begin(), rValMatType->dimensions.front() - 1);
+    lValMatType->primType = matType->getPrimitiveType();
+    rValMatType->primType = matType->getPrimitiveType();
     // Create the matricies in LLVM to store these l/r vals
     auto* lValMatAlloc = Utils::createMatrix(context, *lValMatType);
     auto* rValMatAlloc = Utils::createMatrix(context, *rValMatType);

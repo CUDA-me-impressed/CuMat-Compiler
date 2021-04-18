@@ -55,23 +55,20 @@ llvm::Value* AST::LiteralNode<T>::codeGen(Utils::IRContext* context) {
 
 template <>
 void AST::LiteralNode<int>::semanticPass(Utils::IRContext* context) {
-    for (auto const& child : this->children) child->semanticPass(context);
-    // std::shared_ptr<Typing::Type> type = makeGenericType("int");
-    // this->setType(type);
+    std::vector<uint> dim{ 1 };
+    this->type = TypeCheckUtils::makeMatrixType(dim, Typing::PRIMITIVE::INT);
 }
 
 template <>
 void AST::LiteralNode<float>::semanticPass(Utils::IRContext* context) {
-    for (auto const& child : this->children) child->semanticPass(context);
-    // std::shared_ptr<Typing::Type> type = makeGenericType("float");
-    // this->setType(type);
+    std::vector<uint> dim{ 1 };
+    this->type = TypeCheckUtils::makeMatrixType(dim, Typing::PRIMITIVE::FLOAT);
 }
 
 template <>
 void AST::LiteralNode<std::string>::semanticPass(Utils::IRContext* context) {
-    for (auto const& child : this->children) child->semanticPass(context);
-    // std::shared_ptr<Typing::Type> type = makeGenericType("string");
-    // this->setType(type);
+    std::vector<uint> dim{ 1 };
+    this->type = TypeCheckUtils::makeMatrixType(dim, Typing::PRIMITIVE::STRING);
 }
 
 template <>

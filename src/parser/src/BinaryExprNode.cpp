@@ -2,7 +2,6 @@
 
 #include <CodeGenUtils.hpp>
 #include <MatrixNode.hpp>
-#include <TypeException.hpp>
 
 #include "CompilerOptions.hpp"
 #include "TreePrint.hpp"
@@ -24,6 +23,15 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
 
     if (auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type)) {
         if (auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type)) {
+
+            // Upcasting literal to matrix type
+            if(lhsType->rank == 0){
+                lhsVal = Utils::upcastLiteralToMatrix(context, *lhsType, lhsVal);
+            }
+            if(rhsType->rank == 0){
+                rhsVal = Utils::upcastLiteralToMatrix(context, *rhsType, rhsVal);
+            }
+
             auto lhsDimension = lhsType->getDimensions();
             auto rhsDimension = rhsType->getDimensions();
 
@@ -35,16 +43,11 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
             newMatAlloc = Utils::createMatrix(context, *resType);
 
             if (true || shouldExecuteGPU(context, op) || this->op == BIN_OPERATORS::MATM) {
-                auto lhsRecord = Utils::getMatrixFromPointer(context, lhsVal);
-                auto rhsRecord = Utils::getMatrixFromPointer(context, rhsVal);
-                auto resRecord = Utils::getMatrixFromPointer(context, newMatAlloc);
-                llvm::Type* dataPtrType = llvm::Type::getInt64PtrTy(context->module->getContext());
-
                 if (this->op != BIN_OPERATORS::MATM) {
                     llvm::Value* resLenLLVM = llvm::ConstantInt::get(
                         llvm::Type::getInt64Ty(context->module->getContext()), resType->getLength());
                     std::vector<llvm::Value*> argVals(
-                        {lhsRecord.dataPtr, rhsRecord.dataPtr, resRecord.dataPtr, resLenLLVM});
+                        {lhsVal, rhsVal,newMatAlloc, resLenLLVM});
 
                     if (lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT) {
                         auto callRet = context->Builder->CreateCall(
@@ -61,7 +64,7 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                     llvm::Value* lenJ = llvm::ConstantInt::get(lenType, lhsType->dimensions[1]);
 
                     std::vector<llvm::Value*> argVals(
-                        {lhsRecord.dataPtr, rhsRecord.dataPtr, resRecord.dataPtr, lenI, lenK, lenJ});
+                        {lhsVal, rhsVal,newMatAlloc, lenI, lenK, lenJ});
 
                     if (lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT) {
                         auto callRet = context->Builder->CreateCall(
@@ -346,7 +349,7 @@ llvm::Value* AST::BinaryExprNode::matrixMultiply(Utils::IRContext* context, std:
 
     return nullptr;
 }
-// op = MATM, CHAIN
+// Still to do - op = CHAIN , Needs function types sorted
 void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
     this->lhs->semanticPass(context);
     this->rhs->semanticPass(context);
@@ -368,14 +371,42 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
             this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), lhsPrim);
             break;
         case AST::BIN_OPERATORS::PLUS:
+            if ((not TypeCheckUtils::isString(lhsPrim)) and (not TypeCheckUtils::isNone(lhsPrim))) {
+                if ((not TypeCheckUtils::isString(rhsPrim)) and (not TypeCheckUtils::isNone(rhsPrim))) {
+                    if (TypeCheckUtils::isBool(lhsPrim)) {
+                        TypeCheckUtils::assertMatchingTypes(lhsPrim, rhsPrim);
+                        this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), Typing::PRIMITIVE::BOOL);
+                    } else {
+                        TypeCheckUtils::assertNumericType(lhsPrim);
+                        TypeCheckUtils::assertNumericType(rhsPrim);
+                        primType = TypeCheckUtils::getHighestType(lhsPrim, rhsPrim);
+                        this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), primType);
+                        break;
+                    }
+                } else {
+                    TypeCheckUtils::wrongTypeError("Expected: int, float, bool", rhsPrim);
+                }
+            } else {
+                TypeCheckUtils::wrongTypeError("Expected: int, float, bool", lhsPrim);
+            }
+            break;
         case AST::BIN_OPERATORS::MINUS:
         case AST::BIN_OPERATORS::MUL:
         case AST::BIN_OPERATORS::DIV:
-        case AST::BIN_OPERATORS::POW:
+        case AST::BIN_OPERATORS::MATM: // Dimensions sorted by Thomas later
             TypeCheckUtils::assertNumericType(lhsPrim);
             TypeCheckUtils::assertNumericType(rhsPrim);
             primType = TypeCheckUtils::getHighestType(lhsPrim, rhsPrim);
             this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), primType);
+            break;
+        case AST::BIN_OPERATORS::POW:
+            TypeCheckUtils::assertNumericType(lhsPrim);
+            if (TypeCheckUtils::isInt(rhsPrim)) {
+                primType = Typing::PRIMITIVE::FLOAT;
+                this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), primType);
+            } else {
+                TypeCheckUtils::wrongTypeError("Expected Int exponent", rhsPrim);
+            }
             break;
         case AST::BIN_OPERATORS::LOR:
         case AST::BIN_OPERATORS::LAND:

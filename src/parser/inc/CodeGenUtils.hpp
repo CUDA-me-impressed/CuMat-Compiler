@@ -12,6 +12,7 @@
 #include "CompilerOptions.hpp"
 #include "SymbolTable.hpp"
 #include "Type.hpp"
+#include "TypeCheckingSymbolTable.hpp"
 
 namespace Utils {
 struct IRContext {
@@ -20,12 +21,14 @@ struct IRContext {
     llvm::Function* function;
     SymbolTable* symbolTable;
     CompilerOptions* compilerOptions;
+    TypeCheckUtils::TypeCheckingSymbolTable* semanticSymbolTable;
 };
 
 struct LLVMMatrixRecord {
     llvm::Value* dataPtr;
     llvm::Value* rank;      // Signed
     llvm::Value* numBytes;  // Signed
+    llvm::Value* dimensionPtr;
 };
 
 enum FunctionCUDAType { Host, Device };
@@ -66,5 +69,7 @@ void setValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* o
 llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type);
 
 int getRealIndexOffset(const std::vector<uint>& dimensions, const std::vector<int>& index);
+
+llvm::Value* upcastLiteralToMatrix(Utils::IRContext* context, const Typing::Type  &type, llvm::Value* literalVal);
 
 }  // namespace Utils

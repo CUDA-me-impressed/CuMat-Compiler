@@ -26,6 +26,8 @@ class FunctionType;
 
 using Type = std::variant<FunctionType, GenericType, CustomType, MatrixType>;
 
+static std::unordered_map<std::size_t, llvm::Type*> existingStructTypes;
+
 class MatrixType {
    public:
     uint rank{0};  // 1 = Vector, 2 = Matrix, 3 = 3D matrix...
@@ -43,6 +45,7 @@ class MatrixType {
     [[nodiscard]] bool simpleDimensionCompatible(const MatrixType& val) const { return true; };
 
     llvm::Type* getLLVMType(Utils::IRContext* context);
+    llvm::Type* getMatHeaderType(Utils::IRContext* context, llvm::Type* primTy, uint rank, int length, int offset);
 
     llvm::Type* getLLVMPrimitiveType(Utils::IRContext* context) const;
     [[nodiscard]] PRIMITIVE getPrimitiveType() const;

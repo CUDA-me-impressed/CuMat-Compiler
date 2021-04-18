@@ -68,6 +68,9 @@ llvm::Type* Typing::MatrixType::getLLVMPrimitiveType(Utils::IRContext* context) 
     return ty;
 }
 
+
+
+
 template <class T>
 inline void hash_combine(std::size_t& seed, const T& v) {
     std::hash<T> hasher;
@@ -78,37 +81,17 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) {
     llvm::Type* primTy = this->getLLVMPrimitiveType(context);
     auto rank = this->rank;
     auto length = this->getLength();
+    auto offset = this->offset();
 
     // generate a signature for a matrix
     std::size_t seed = 0;
-    hash_combine(seed, rank);
-    hash_combine(seed, length);
     hash_combine(seed, primTy);
     // static function members persist through calls, cursed I know
-    static std::unordered_map<std::size_t, llvm::Type*> existingStructTypes;
     if (existingStructTypes.contains(seed)) {
         return existingStructTypes.at(seed);
     }
 
-    llvm::ArrayType* matDataType = llvm::ArrayType::get(primTy, 0);
-    auto* matDataPtrType = matDataType->getPointerTo();
-
-    auto rankConst = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, this->rank));
-    auto numBytes = llvm::ConstantInt::get(context->module->getContext(),
-                                           llvm::APInt(64, (this->getLength() * this->offset()) / 8));
-
-    std::vector<llvm::Type*> headerTypes;
-    headerTypes.push_back(matDataPtrType);
-    headerTypes.push_back(rankConst->getType());  // Rank
-    headerTypes.push_back(numBytes->getType());   // # of bytes
-    // TODO: Tidy up
-    for (int i = 0; i < this->rank; i++) {  // Dimensions
-        auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, this->dimensions.at(i)));
-        headerTypes.push_back(val->getType());
-    }
-
-    auto matHeaderType = llvm::StructType::create(headerTypes);
-    matHeaderType->setName("matHeader");
+    auto matHeaderType = getMatHeaderType(context, primTy, rank, length, offset);
 
     existingStructTypes.try_emplace(seed, matHeaderType);
 
@@ -116,3 +99,40 @@ llvm::Type* Typing::MatrixType::getLLVMType(Utils::IRContext* context) {
 }
 
 Typing::PRIMITIVE Typing::MatrixType::getPrimitiveType() const { return this->primType; }
+
+llvm::Type* Typing::MatrixType::getMatHeaderType(Utils::IRContext* context, llvm::Type* primTy, uint rank, int length, int offset) {
+
+    llvm::ArrayType* matDataType = llvm::ArrayType::get(primTy, 0);
+    auto* matDataPtrType = matDataType->getPointerTo();
+
+    auto rankConst = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, rank));
+    auto numBytes = llvm::ConstantInt::get(context->module->getContext(),
+                                           llvm::APInt(64, (length* offset) / 8));
+
+    std::vector<llvm::Type*> headerTypes;
+    headerTypes.push_back(matDataPtrType);
+    headerTypes.push_back(rankConst->getType());  // Rank
+    headerTypes.push_back(numBytes->getType());   // # of bytes
+
+    llvm::ArrayType* matDimensionArr = llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0);
+    auto* matDimensionPtrType = matDimensionArr->getPointerTo();
+    headerTypes.push_back(matDataPtrType);
+//    // TODO: Tidy up
+//    for (int i = 0; i < this->rank; i++) {  // Dimensions
+//        auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, this->dimensions.at(i)));
+//        headerTypes.push_back(val->getType());
+//    }
+
+    auto matHeaderType = llvm::StructType::create(headerTypes);
+    switch (this->primType) {
+        case Typing::PRIMITIVE::INT: {
+            matHeaderType->setName("matHeaderI");
+            break;
+        }
+        case Typing::PRIMITIVE::FLOAT: {
+            matHeaderType->setName("matHeaderF");
+            break;
+        }
+    }
+    return matHeaderType;
+}

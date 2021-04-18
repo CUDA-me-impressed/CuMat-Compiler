@@ -4,6 +4,7 @@
 #include <valarray>
 
 #include "CodeGenUtils.hpp"
+#include "TypeCheckingUtils.hpp"
 #include "DimensionsSymbolTable.hpp"
 
 llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
@@ -17,10 +18,31 @@ llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::VariableNode::semanticPass(Utils::IRContext* context) {
-    this->type = context->symbolTable->getValue(this->name, context->symbolTable->getCurrentFunction())->type;
+    std::string nameSpace;
+    if (this->name != "_") {
+        if (!this->namespacePath.empty()) {
+            // If there's a namespace path, concatenate it to a single string
+            nameSpace = std::accumulate(this->namespacePath.begin(), this->namespacePath.end(), std::string(""));
+        }
 
-    if (this->variableSlicing) {
-        this->variableSlicing->semanticPass(context);
+        if (context->semanticSymbolTable->inVarTable(this->name)) {
+            // Get type if in Variable table
+            this->type = context->semanticSymbolTable->getVarType(this->name);
+        } else if (context->semanticSymbolTable->inFuncTable(this->name, nameSpace)) {
+            // Next, check if it's in the function table
+            if (this->variableSlicing) {
+                // Cannot decompose a function
+                TypeCheckUtils::decompError();
+            }
+            this->type = context->semanticSymbolTable->getFuncType(this->name, nameSpace);
+        } else {
+            // Finally, give up and throw a `notDefined` error
+            TypeCheckUtils::notDefinedError(this->name);
+        }
+
+        if (this->variableSlicing) {
+            this->variableSlicing->semanticPass(context);
+        }
     }
 }
 
@@ -174,6 +196,7 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
     // Return the sliced matrix value
     return slicedMatrix;
 }
+
 
 void AST::VariableNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     auto p = nt->search_impl(name);

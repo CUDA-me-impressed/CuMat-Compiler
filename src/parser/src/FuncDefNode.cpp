@@ -1,6 +1,9 @@
 #include "FuncDefNode.hpp"
+#include "TypeCheckingUtils.hpp"
 
-#include <DimensionPass.hpp>
+#include <iostream>
+
+#include "DimensionPass.hpp"
 
 #include "DimensionsSymbolTable.hpp"
 #include "TreePrint.hpp"
@@ -11,7 +14,7 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
     for (const auto& typeNamePair : this->parameters) {
         typesRaw.push_back(typeNamePair.second);
-        argTypes.push_back(std::get<Typing::MatrixType>(*typeNamePair.second).getLLVMType(context));
+        argTypes.push_back(std::get<Typing::MatrixType>(*typeNamePair.second).getLLVMType(context)->getPointerTo());
     }
 
     context->symbolTable->enterFunction(funcName);
@@ -23,6 +26,12 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     auto* mtType = mt.getLLVMType(context)->getPointerTo();
     llvm::FunctionType* ft = llvm::FunctionType::get(mtType, argTypes, false);
     llvm::Function* func = llvm::Function::Create(ft, llvm::Function::ExternalLinkage, this->funcName, context->module);
+
+    // Add paramaters to the symbol table
+    int i = 0;
+    for(auto funcitt = func->arg_begin(); funcitt != func->arg_end(); funcitt++, i++){
+        context->symbolTable->setValue(this->parameters[i].second, (llvm::Value*) funcitt, this->parameters[i].first, funcName, "");
+    }
 
     context->symbolTable->setFunctionData(funcName, typesRaw, func);
     context->function = func;
@@ -36,12 +45,18 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
+
+    // TODO: Put the args into symbol table temporarily for the block semantic pass - remove before end of function
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
     for (const auto& typeNamePair : this->parameters) {
+        if ((typeNamePair.second.get())->index() == 0) {
+            std::cerr << "Cannot have functions as arguments" << std::endl;
+            std::exit(TypeCheckUtils::ErrorCodes::FUNCTION_ERROR);
+        }
+        context->semanticSymbolTable->storeVarType(typeNamePair.first, typeNamePair.second);
         typesRaw.push_back(typeNamePair.second);
     }
 
-    // TODO: Update to use new semantic symbol table when it is made
     // Store within the symbol table
     context->symbolTable->addNewFunction(funcName, typesRaw);
 
@@ -49,6 +64,17 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
 
     // Pop the function as we leave the definition of the code
     context->symbolTable->escapeFunction();
+
+    // Check if the function name is already in use
+    if (context->semanticSymbolTable->inFuncTable(this->funcName, "")) {
+        TypeCheckUtils::alreadyDefinedError(this->funcName, false);
+    }
+    // Construct the function type and store it
+    auto type = TypeCheckUtils::makeFunctionType(this->returnType, typesRaw);
+    context->semanticSymbolTable->storeFuncType(this->funcName, "", type);
+    for (const auto& typeNamePair : this->parameters) {
+        context->semanticSymbolTable->removeVarEntry(typeNamePair.first);
+    }
 }
 
 std::string AST::FuncDefNode::toTree(const std::string& prefix, const std::string& childPrefix) const {

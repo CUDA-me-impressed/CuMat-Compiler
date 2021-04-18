@@ -1,3 +1,10 @@
+#include <variant>
+#include <vector>
+#include <string>
+#include <utility>
+#include <variant>
+
+#include "TypeCheckingUtils.hpp"
 #include "DecompNode.hpp"
 
 #include <variant>
@@ -49,9 +56,21 @@ llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {
     return nullptr;
 }
 
-void AST::DecompNode::semanticPass(Utils::IRContext* context) {
+void AST::DecompNode::semanticPass(Utils::IRContext* context, Typing::PRIMITIVE primType) {
+    // Store a variable entry for the left hand string
+    if (this->lVal != "_") {
+        context->semanticSymbolTable->storeVarType(this->lVal,TypeCheckUtils::makeMatrixType(std::vector<uint>(), primType));
+    }
     if (this->rVal.index() == 1) {
+        // If a child decomp node exists, run semantic pass on it as well
         std::shared_ptr<AST::DecompNode> child = std::get<std::shared_ptr<AST::DecompNode>>(this->rVal);
+        child->semanticPass(context, primType);
+    } else {
+        // Else, store the rVal name as a variable
+        std::string rValStr = std::get<std::string>(this->rVal);
+        if (rValStr != "_") {
+            context->semanticSymbolTable->storeVarType(rValStr,TypeCheckUtils::makeMatrixType(std::vector<uint>(), primType));
+        }
     }
 }
 void AST::DecompNode::dimensionPass(Analysis::DimensionSymbolTable* nt, Typing::MatrixType& type) {
