@@ -82,5 +82,10 @@ void AST::FuncDefNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     }
 }
 void AST::FuncDefNode::dimensionNamePass(Analysis::DimensionSymbolTable* nt) {
+    if (auto a = std::get_if<Typing::MatrixType>(this->returnType.get())) {
+        if (a->dimensions.empty()) {
+            a->dimensions.emplace_back(1);
+        }
+    }
     nt->add_node(this->funcName, this->returnType);
 }
