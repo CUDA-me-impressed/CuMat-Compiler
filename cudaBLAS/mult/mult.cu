@@ -10,6 +10,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <stdio.h>
+#include "../utils/headers.hpp"
 #define BLOCK_SIZE 32 // nvidia GPUs typically have 1024 threads per block, 32*32
 
 __global__ void CuMatMatMultKernelI(const long *matA, const long *matB, long* matRes, int width, int i, int j)
@@ -27,7 +28,13 @@ __global__ void CuMatMatMultKernelI(const long *matA, const long *matB, long* ma
     }
 }
 
-extern "C" void CuMatMatMultMatrixI(long * matA, long * matB, long * matRes, long i, long p, long j){
+extern "C" void CuMatMatMultMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, HeaderI* matHeaderRes, long i, long p, long j){
+    long* matA;
+    long* matB;
+    long* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     auto matASize = sizeof(long) * i * p;
     auto matBSize = sizeof(long) * p * j;
     auto matResSize = i * j * sizeof(long);
@@ -71,7 +78,13 @@ extern "C" void CuMatMatMultMatrixI(long * matA, long * matB, long * matRes, lon
 }
 
 // matRes(m,n) = matA(m,k) * matB(k,n)
-extern "C" void CuMatMatMultMatrixD(const double *matA, const double *matB, double *matRes, const int m, const int k, const int n) {
+extern "C" void CuMatMatMultMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, HeaderD* matHeaderRes, const int m, const int k, const int n) {
+    double* matA;
+    double* matB;
+    double* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     // Declare matA, matB, matRes on device
     double* d_A;
     double* d_B;
