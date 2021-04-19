@@ -116,7 +116,7 @@ llvm::Type* Typing::MatrixType::getMatHeaderType(Utils::IRContext* context, llvm
 
     llvm::ArrayType* matDimensionArr = llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0);
     auto* matDimensionPtrType = matDimensionArr->getPointerTo();
-    headerTypes.push_back(matDataPtrType);
+    headerTypes.push_back(matDimensionPtrType);
 //    // TODO: Tidy up
 //    for (int i = 0; i < this->rank; i++) {  // Dimensions
 //        auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, this->dimensions.at(i)));
