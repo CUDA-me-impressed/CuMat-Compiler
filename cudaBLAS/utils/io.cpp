@@ -1,123 +1,117 @@
 #include <iostream>
+#include <string>
 #include "headers.hpp"
+#include <exception>
+
+std::string printMatrixIRankRec(long rank, long offset, HeaderI* h)
+{
+    if(rank < 0)
+    {
+        throw new std::runtime_error("Tried to print a negative rank matrix! : " + std::to_string(rank));
+    }
+
+    if(rank == 0) //Empty
+    {
+        return "";
+    }
+
+    std::string output;
+
+    if(rank == 1) //Return row
+    {
+        long rowLength = h->dimensions[0];
+        auto data = h->data;
+        if(rowLength > 0) {output += std::to_string(data[0 + offset]);}
+        for(long l = 1; l < rowLength; ++l)
+        {
+            output += ", " + std::to_string(data[l+offset]);
+        }
+        return output;
+    }
+
+    long rankLengthBelow = h->dimensions[rank - 2]; //As rank must be 2 or more here, this is safe
+    long dimLength = h->dimensions[rank - 1];
+    if(dimLength > 0)
+    {
+        output += printMatrixIRankRec(rank - 1, offset, h);
+    }
+    for(long l = 1; l < dimLength; ++l)
+    {
+        long newOffset = offset + l*rankLengthBelow;
+        std::string dimSep;
+        for(int i = 0; i < rank - 1; i++) //rank 2 matrix should have a single \ for separation
+        {
+            dimSep += "\\"; //One backslash, escaped
+        }
+        output += " " + dimSep + "\n" + printMatrixIRankRec(rank - 1, newOffset, h);
+    }
+    return output;
+}
+
+std::string printMatrixDRankRec(long rank, long offset, HeaderD* h)
+{
+    if(rank < 0)
+    {
+        throw new std::runtime_error("Tried to print a negative rank matrix! : " + std::to_string(rank));
+    }
+
+    if(rank == 0) //Empty
+    {
+        return "";
+    }
+
+    std::string output;
+
+    if(rank == 1) //Return row
+    {
+        long rowLength = h->dimensions[0];
+        auto data = h->data;
+        if(rowLength > 0) {output += std::to_string(data[0 + offset]);}
+        for(long l = 1; l < rowLength; ++l)
+        {
+            output += ", " + std::to_string(data[l+offset]);
+        }
+        return output;
+    }
+
+    long rankLengthBelow = h->dimensions[rank - 2]; //As rank must be 2 or more here, this is safe
+    long dimLength = h->dimensions[rank - 1];
+    if(dimLength > 0)
+    {
+        output += printMatrixDRankRec(rank - 1, offset, h);
+    }
+    for(long l = 1; l < dimLength; ++l)
+    {
+        long newOffset = offset + l*rankLengthBelow;
+        std::string dimSep;
+        for(int i = 0; i < rank - 1; i++) //rank 2 matrix should have a single \ for separation
+        {
+            dimSep += "\\"; //One backslash, escaped
+        }
+        output += " " + dimSep + "\n" + printMatrixDRankRec(rank - 1, newOffset, h);
+    }
+    return output;
+}
 
 extern "C" void printMatrixI(HeaderI* h)
 {
-	if(h->rank == 1)
-	{
-		std::cout << "[";
-		long len = h->dimensions[0];
-		long* data = h->data;
-		if (len > 0) {std::cout << data[0];}
-		for(long l = 1; l < len; ++l)
-		{
-			std::cout << "," << data[l];
-		}
-		std::cout<<"]" << std::endl;
-	} else if(h->rank == 2)
-	{
-		std::cout << "[";
-		long width = h->dimensions[0];
-		long height = h->dimensions[1];
-		long* data = h->data;
-		for(long row = 0; row < height; row++)
-		{
-			for(long col = 0; col < width; col++)
-			{
-				int loc = col + (row * width);
-				std::cout << data[loc] << " ";
-			}
-			std::cout << "\\" << std::endl;
-		}
-		std::cout << "]" << std::endl;
-	} else
-	{
-		std::cout << "Many dimensions is hard" << std::endl;
-		std::cout << "[";
-		long len = 0;
-		for(long r = 0; r < h->rank; r++)
-		{
-			len += h->dimensions[r];
-		}
-		long* data = h->data;
-		if (len > 0) {std::cout << data[0];}
-		for(long l = 1; l < len; ++l)
-		{
-			std::cout << "," << data[l];
-		}
-		std::cout<<"]" << std::endl;
-	}
+    std::string output;
+
+    output += printMatrixIRankRec(h->rank,0,h);
+
+    output = "[\n" + output + "\n]";
+    std::cout << output << std::endl;
+    return;
 }
 
 
 extern "C" void printMatrixD(HeaderD* h)
 {
-	if(h->rank == 1)
-	{
-		std::cout << "[";
-		long len = h->dimensions[0];
-		double* data = h->data;
-		if (len > 0) {std::cout << data[0];}
-		for(long l = 1; l < len; ++l)
-		{
-			std::cout << "," << data[l];
-		}
-		std::cout<<"]" << std::endl;
-	} else if(h->rank == 2)
-	{
-		std::cout << "[";
-		long width = h->dimensions[0];
-		long height = h->dimensions[1];
-		double* data = h->data;
-		for(long row = 0; row < height; row++)
-		{
-			for(long col = 0; col < width; col++)
-			{
-				int loc = col + (row * width);
-				std::cout << data[loc] << " ";
-			}
-			std::cout << "\\" << std::endl;
-		}
-		std::cout << "]" << std::endl;
-	} else
-	{
-		std::cout << "Many dimensions is hard" << std::endl;
-		std::cout << "[";
-		long len = 0;
-		for(long r = 0; r < h->rank; r++)
-		{
-			len += h->dimensions[r];
-		}
-		double* data = h->data;
-		if (len > 0) {std::cout << data[0];}
-		for(long l = 1; l < len; ++l)
-		{
-			std::cout << "," << data[l];
-		}
-		std::cout<<"]" << std::endl;
-	}
-}
+    std::string output;
 
-/*
-extern "C" void printMatrixI(long* m, long len)
-{
-	std::cout << "[";
-	if (len > 0) { std::cout << m[0]; }
-	for(long l = 1; l < len; ++l)
-	{
-		std::cout << "," <<  m[l];
-	}
-	std::cout << "]" << std::endl;
-}
+    output += printMatrixDRankRec(h->rank,0,h);
 
-extern "C" void printMatrixD(double* m, double len)
-{
-    std::cout << "[";
-    if (len > 0) { std::cout << m[0]; }
-    for(long l = 1; l < len; ++l)
-    {
-        std::cout << "," <<  m[l];
-    }
-    std::cout << "]" << std::endl;
+    output = "[\n" + output + "\n]";
+    std::cout << output << std::endl;
+    return;
 }
-*/
