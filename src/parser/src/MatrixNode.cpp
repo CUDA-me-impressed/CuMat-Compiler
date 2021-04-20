@@ -50,34 +50,74 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
 
     int trueIndex = 0;  // True index measures the current index plus any of the j's
     // Compress literal nodes to matrix representation
-    for (int i = 0; i < this->data.size(); i++) {
-        auto element = this->data.at(i);
-        auto* dataPtr = Utils::getValueFromPointerOffset(context, matRecord.dataPtr, i, "matArrPtr");
+    if (auto primType = std::get_if<Typing::MatrixType>(&*this->type)) {
+        llvm::Type* elType = primType->getLLVMPrimitiveType(context);
+        llvm::ArrayType* arrayType = llvm::ArrayType::get(elType, this->data.size());
+        std::vector<llvm::Constant*> values;
 
-        // Check if we can naively do this without causing recursive check -> Yes its not technically a matrix
-        // Yes this violates our idea of every type being a matrix but its equivalent fuck it
-        auto* literal = std::get_if<Typing::MatrixType>(&*element->type);
-        if (literal->rank == 0) {
-            // Let's just generate code for the literal itself -> This returns a single value
-            llvm::Value* elementLLVMMat = element->codeGen(context);
-            Utils::insertValueAtPointerOffset(context, matRecord.dataPtr, i, elementLLVMMat, false);
-            trueIndex++;
-        } else if (literal != nullptr) {
-            // We have encountered a non-literal value -> This when evaluated WILL return a matrix
-            // Because it returns a matrix, we want to copy all of its data into our new matrix
-            llvm::Value* matLLVMVal = element->codeGen(context);
-            auto matElementRecord = Utils::getMatrixFromPointer(context, matLLVMVal);
-            // All other types are 64-bit
-            int numElements = literal->getLength();
-            for (int j = 0; j < numElements; j++) {
-                auto* oldLLVMVal = Utils::getValueFromPointerOffset(context, matElementRecord.dataPtr, j, "matCpyOut");
-                llvm::Type* tyInt = llvm::Type::getInt64Ty(context->module->getContext());
-                auto* trueIndexLLVM = llvm::ConstantInt::get(tyInt, trueIndex + j);
-                Utils::setValueFromMatrixPtr(context, matRecord.dataPtr, trueIndexLLVM, oldLLVMVal);
+        for (int i = 0; i < this->data.size(); i++) {
+            auto element = this->data.at(i);
+
+            // Check if we can naively do this without causing recursive check -> Yes its not technically a matrix
+            // Yes this violates our idea of every type being a matrix but its equivalent fuck it
+            auto* literal = std::get_if<Typing::MatrixType>(&*element->type);
+            if (literal->rank == 0) {
+                // Let's just generate code for the literal itself -> This returns a single value
+                auto* elementLLVMMat = static_cast<llvm::Constant*>(element->codeGen(context));
+                values.push_back(elementLLVMMat);
+                //                Utils::insertValueAtPointerOffset(context, matRecord.dataPtr, i, elementLLVMMat,
+                //                false);
+                trueIndex++;
+            } else {
+                // We have encountered a non-literal value -> This when evaluated WILL return a matrix
+                // Because it returns a matrix, we want to copy all of its data into our new matrix
+                llvm::Value* matLLVMVal = element->codeGen(context);
+                auto matElementRecord = Utils::getMatrixFromPointer(context, matLLVMVal);
+                // All other types are 64-bit
+                int numElements = literal->getLength();
+                for (int j = 0; j < numElements; j++) {
+                    auto* oldLLVMVal =
+                        Utils::getValueFromPointerOffset(context, matElementRecord.dataPtr, j, "matCpyOut");
+                    llvm::Type* tyInt = llvm::Type::getInt64Ty(context->module->getContext());
+                    auto* trueIndexLLVM = llvm::ConstantInt::get(tyInt, trueIndex + j);
+                    Utils::setValueFromMatrixPtr(context, matRecord.dataPtr, trueIndexLLVM, oldLLVMVal);
+                }
+                trueIndex += numElements;
             }
-            trueIndex += numElements;
         }
+        llvm::Constant* init = llvm::ConstantArray::get(arrayType, values);
+        context->Builder->Insert(init);
+
+        auto* i32Ty = llvm::Type::getInt32Ty(context->module->getContext());
+        llvm::BasicBlock* addBB = llvm::BasicBlock::Create(context->Builder->getContext(), "matInitEntry", context->function);
+        llvm::BasicBlock* endBB = llvm::BasicBlock::Create(context->Builder->getContext(), "matInitEnd");
+
+        auto indexAlloca = Utils::CreateEntryBlockAlloca(*context->Builder, "startIndex", llvm::Type::getInt32Ty(context->Builder->getContext()));
+        llvm::Constant* matIndexEnd = llvm::ConstantInt::get(i32Ty, values.size());
+        // parent->getBasicBlockList().push_back(addBB);
+        context->Builder->CreateBr(addBB);
+
+        context->Builder->SetInsertPoint(addBB);
+        {
+            auto* index = context->Builder->CreateLoad(indexAlloca, "index");
+
+            llvm::Value* arrElement = context->Builder->CreateExtractElement(init,index);
+            Utils::insertValueAtPointerOffsetValue(context, matRecord.dataPtr, index, arrElement, false);
+
+            // Update counter
+            auto* next = context->Builder->CreateAdd(
+                index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "inc");
+            context->Builder->CreateStore(next, indexAlloca);
+
+            // Test if completed list
+            auto* done = context->Builder->CreateICmpSGE(next, matIndexEnd);
+            context->Builder->CreateCondBr(done, endBB, addBB);
+        }
+
+        context->function->getBasicBlockList().push_back(endBB);
+        context->Builder->SetInsertPoint(endBB);
     }
+
     return matAlloc;
 }
 
