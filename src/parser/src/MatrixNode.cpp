@@ -87,15 +87,9 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
         }
         llvm::Constant* init = llvm::ConstantArray::get(arrayType, values);
 
-        llvm::GlobalVariable* gvarMatInit = new llvm::GlobalVariable(/*Module=*/*context->module,
-                                                          /*Type=*/arrayType,
-                                                          /*isConstant=*/false,
-                                                          /*Linkage=*/llvm::GlobalValue::CommonLinkage,
-                                                          /*Initializer=*/0,  // has initializer, specified below
-                                                          /*Name=*/"matVar");
-        gvarMatInit->setAlignment(4);
-        // Global Variable Definitions
-        gvarMatInit->setInitializer(init);
+       llvm::Value* arr = context->Builder->CreateAlloca(arrayType);
+       context->Builder->CreateStore(init, arr);
+
 
         auto* i32Ty = llvm::Type::getInt32Ty(context->module->getContext());
         llvm::BasicBlock* addBB =
@@ -112,8 +106,7 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
         {
             auto* index = context->Builder->CreateLoad(indexAlloca, "index");
 
-//            llvm::Value* arrElement = Utils::getValueFromPointerOffsetValue(context, gvarMatInit, index, "getArrConst");
-            llvm::Value* arrElement = context->Builder->CreateExtractValue(gvarMatInit, {1});
+            llvm::Value* arrElement = Utils::getValueFromPointerOffsetValue(context, arr, index, "getArrConst");
             Utils::insertValueAtPointerOffsetValue(context, matRecord.dataPtr, index, arrElement, false);
 
             // Update counter
