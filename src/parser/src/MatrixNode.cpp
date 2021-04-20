@@ -86,13 +86,24 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
             }
         }
         llvm::Constant* init = llvm::ConstantArray::get(arrayType, values);
-        context->Builder->Insert(init);
+
+        llvm::GlobalVariable* gvarMatInit = new llvm::GlobalVariable(/*Module=*/*context->module,
+                                                          /*Type=*/arrayType,
+                                                          /*isConstant=*/false,
+                                                          /*Linkage=*/llvm::GlobalValue::CommonLinkage,
+                                                          /*Initializer=*/0,  // has initializer, specified below
+                                                          /*Name=*/"matVar");
+        gvarMatInit->setAlignment(4);
+        // Global Variable Definitions
+        gvarMatInit->setInitializer(init);
 
         auto* i32Ty = llvm::Type::getInt32Ty(context->module->getContext());
-        llvm::BasicBlock* addBB = llvm::BasicBlock::Create(context->Builder->getContext(), "matInitEntry", context->function);
+        llvm::BasicBlock* addBB =
+            llvm::BasicBlock::Create(context->Builder->getContext(), "matInitEntry", context->function);
         llvm::BasicBlock* endBB = llvm::BasicBlock::Create(context->Builder->getContext(), "matInitEnd");
 
-        auto indexAlloca = Utils::CreateEntryBlockAlloca(*context->Builder, "startIndex", llvm::Type::getInt32Ty(context->Builder->getContext()));
+        auto indexAlloca = Utils::CreateEntryBlockAlloca(*context->Builder, "startIndex",
+                                                         llvm::Type::getInt32Ty(context->Builder->getContext()));
         llvm::Constant* matIndexEnd = llvm::ConstantInt::get(i32Ty, values.size());
         // parent->getBasicBlockList().push_back(addBB);
         context->Builder->CreateBr(addBB);
@@ -101,12 +112,13 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
         {
             auto* index = context->Builder->CreateLoad(indexAlloca, "index");
 
-            llvm::Value* arrElement = context->Builder->CreateExtractElement(init,index);
+//            llvm::Value* arrElement = Utils::getValueFromPointerOffsetValue(context, gvarMatInit, index, "getArrConst");
+            llvm::Value* arrElement = context->Builder->CreateExtractValue(gvarMatInit, {1});
             Utils::insertValueAtPointerOffsetValue(context, matRecord.dataPtr, index, arrElement, false);
 
             // Update counter
             auto* next = context->Builder->CreateAdd(
-                index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "inc");
+                index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{32, 1, true}), "inc");
             context->Builder->CreateStore(next, indexAlloca);
 
             // Test if completed list
