@@ -2,6 +2,8 @@
 #include "TypeCheckingUtils.hpp"
 
 #include <iostream>
+#include <variant>
+#include <utility>
 
 #include "DimensionPass.hpp"
 
@@ -61,6 +63,14 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
     context->symbolTable->addNewFunction(funcName, typesRaw);
 
     this->block->semanticPass(context);
+
+    auto blockType = std::get_if<Typing::MatrixType>(&*this->block->returnExpr->type);
+    auto returnType = std::get_if<Typing::MatrixType>(&*this->returnType);
+
+    if (blockType->getPrimitiveType() != returnType->getPrimitiveType()) {
+        std::cerr << "Return type must match declaration (check for implicit upcasting in binary operators)" << std::endl;
+        std::exit(TypeCheckUtils::ErrorCodes::FUNCTION_ERROR);
+    }
 
     // Pop the function as we leave the definition of the code
     context->symbolTable->escapeFunction();

@@ -17,6 +17,8 @@ class CompilerOptions {
 
     std::string outputFile;  // Default to name of file
 
+    bool silent = false;
+
     CompilerOptions() = default;
 
     explicit CompilerOptions(const std::string& inpFile) : inputFile(inpFile), outputFile(inpFile) {}

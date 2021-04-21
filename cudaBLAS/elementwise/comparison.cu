@@ -9,6 +9,7 @@
 #include <cublas_v2.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include "../utils/headers.hpp"
 
 // Device function
 __global__ void CuMatLTMatrixDKernel(double* A, double* B, double * res, long len){
@@ -18,7 +19,13 @@ __global__ void CuMatLTMatrixDKernel(double* A, double* B, double * res, long le
     }
 }
 
-extern "C" void CuMatLTMatrixD(double * matA, double * matB, double * matRes, long len){
+extern "C" void CuMatLTMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, HeaderD* matHeaderRes, long len){
+    double* matA;
+    double* matB;
+    double* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     double* d_A; double *d_B; double * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -58,7 +65,13 @@ __global__ void CuMatLTMatrixIKernel(long* A, long* B, long * res, long len){
 }
 
 
-extern "C" void CuMatLTMatrixI(long * matA, long * matB, long * matRes, long len){
+extern "C" void CuMatLTMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, HeaderI* matHeaderRes, long len){
+    long* matA;
+    long* matB;
+    long* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -100,7 +113,13 @@ __global__ void CuMatGTMatrixDKernel(double* A, double* B, double * res, long le
     }
 }
 
-extern "C" void CuMatGTMatrixD(double * matA, double * matB, double * matRes, long len){
+extern "C" void CuMatGTMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, HeaderD* matHeaderRes, long len){
+    double* matA;
+    double* matB;
+    double* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     double* d_A; double *d_B; double * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -140,7 +159,13 @@ __global__ void CuMatGTMatrixIKernel(long* A, long* B, long * res, long len){
 }
 
 
-extern "C" void CuMatGTMatrixI(long * matA, long * matB, long * matRes, long len){
+extern "C" void CuMatGTMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, HeaderI* matHeaderRes, long len){
+    long* matA;
+    long* matB;
+    long* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -182,7 +207,13 @@ __global__ void CuMatLTEMatrixDKernel(double* A, double* B, double * res, long l
     }
 }
 
-extern "C" void CuMatLTEMatrixD(double * matA, double * matB, double * matRes, long len){
+extern "C" void CuMatLTEMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, HeaderD* matHeaderRes, long len){
+    double* matA;
+    double* matB;
+    double* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     double* d_A; double *d_B; double * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -222,7 +253,13 @@ __global__ void CuMatLTEMatrixIKernel(long* A, long* B, long * res, long len){
 }
 
 
-extern "C" void CuMatLTEMatrixI(long * matA, long * matB, long * matRes, long len){
+extern "C" void CuMatLTEMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, HeaderI* matHeaderRes, long len){
+    long* matA;
+    long* matB;
+    long* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -263,7 +300,13 @@ __global__ void CuMatGTEMatrixDKernel(double* A, double* B, double * res, long l
     }
 }
 
-extern "C" void CuMatGTEMatrixD(double * matA, double * matB, double * matRes, long len){
+extern "C" void CuMatGTEMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, HeaderD* matHeaderRes, long len){
+    double* matA;
+    double* matB;
+    double* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     double* d_A; double *d_B; double * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -303,7 +346,13 @@ __global__ void CuMatGTEMatrixIKernel(long* A, long* B, long * res, long len){
 }
 
 
-extern "C" void CuMatGTEMatrixI(long * matA, long * matB, long * matRes, long len){
+extern "C" void CuMatGTEMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, HeaderI* matHeaderRes, long len){
+    long* matA;
+    long* matB;
+    long* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -345,7 +394,13 @@ __global__ void CuMatEQMatrixDKernel(double* A, double* B, double * res, long le
     }
 }
 
-extern "C" void CuMatEQMatrixD(double * matA, double * matB, double * matRes, long len){
+extern "C" void CuMatEQMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, HeaderD* matHeaderRes, long len){
+    double* matA;
+    double* matB;
+    double* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     double* d_A; double *d_B; double * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -385,7 +440,13 @@ __global__ void CuMatEQMatrixIKernel(long* A, long* B, long * res, long len){
 }
 
 
-extern "C" void CuMatEQMatrixI(long * matA, long * matB, long * matRes, long len){
+extern "C" void CuMatEQMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, HeaderI* matHeaderRes, long len){
+    long* matA;
+    long* matB;
+    long* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -427,7 +488,13 @@ __global__ void CuMatNEQMatrixDKernel(double* A, double* B, double * res, long l
     }
 }
 
-extern "C" void CuMatNEQMatrixD(double * matA, double * matB, double * matRes, long len){
+extern "C" void CuMatNEQMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, HeaderD* matHeaderRes, long len){
+    double* matA;
+    double* matB;
+    double* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     double* d_A; double *d_B; double * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -467,7 +534,13 @@ __global__ void CuMatNEQMatrixIKernel(long* A, long* B, long * res, long len){
 }
 
 
-extern "C" void CuMatNEQMatrixI(long * matA, long * matB, long * matRes, long len){
+extern "C" void CuMatNEQMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, HeaderI* matHeaderRes, long len){
+    long* matA;
+    long* matB;
+    long* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA

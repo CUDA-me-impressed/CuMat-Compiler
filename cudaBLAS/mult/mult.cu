@@ -10,6 +10,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <stdio.h>
+#include "../utils/headers.hpp"
 #define BLOCK_SIZE 32 // nvidia GPUs typically have 1024 threads per block, 32*32
 
 __global__ void CuMatMatMultKernelI(const long *matA, const long *matB, long* matRes, int width, int i, int j)
@@ -27,7 +28,14 @@ __global__ void CuMatMatMultKernelI(const long *matA, const long *matB, long* ma
     }
 }
 
-extern "C" void CuMatMatMultMatrixI(long * matA, long * matB, long * matRes, long i, long p, long j){
+extern "C" void CuMatMatMultMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, HeaderI* matHeaderRes, long i, long p, long j){
+    long* matA;
+    long* matB;
+    long* matRes;
+    printf("huh %lu, %lu, %lu\n",i,p,j);
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     auto matASize = sizeof(long) * i * p;
     auto matBSize = sizeof(long) * p * j;
     auto matResSize = i * j * sizeof(long);
@@ -55,7 +63,6 @@ extern "C" void CuMatMatMultMatrixI(long * matA, long * matB, long * matRes, lon
     dim3 dim_grid(ceilf(i/(float)BLOCK_SIZE), ceilf(j/(float)BLOCK_SIZE), 1);
     dim3 dim_block(BLOCK_SIZE, BLOCK_SIZE, 1);
 
-
     CuMatMatMultKernelI<<<dim_grid, dim_block>>>(d_A, d_B, d_Res, p,  i, j);
 
     // Copy result from device to host
@@ -71,7 +78,13 @@ extern "C" void CuMatMatMultMatrixI(long * matA, long * matB, long * matRes, lon
 }
 
 // matRes(m,n) = matA(m,k) * matB(k,n)
-extern "C" void CuMatMatMultMatrixD(const double *matA, const double *matB, double *matRes, const int m, const int k, const int n) {
+extern "C" void CuMatMatMultMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, HeaderD* matHeaderRes, const int m, const int k, const int n) {
+    double* matA;
+    double* matB;
+    double* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     // Declare matA, matB, matRes on device
     double* d_A;
     double* d_B;
@@ -97,14 +110,31 @@ extern "C" void CuMatMatMultMatrixD(const double *matA, const double *matB, doub
     const double alpha = 1.0f;
     const double beta = 0.0f;
 
+    // Timing
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start);
     // Do the actual multiplication
     cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, m, n, k, &alpha, d_B, lda, d_A, ldb, &beta, d_Res, ldc);
+
+    cudaEventRecord(stop);
+
+    cudaEventSynchronize(stop);
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+
+    printf("The elapsed time in gpu was %.5f ms\n", milliseconds);
 
     // Synchronise before copy
     cudaDeviceSynchronize();
 
     // Copy device memory to host
     cudaMemcpy(matRes,d_Res,matResSize,cudaMemcpyDeviceToHost);
+
+
+
 
     // Destroy the handle
     cublasDestroy(handle);

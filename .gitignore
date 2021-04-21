@@ -47,3 +47,5 @@ _local_*.*
 cudaBLAS/CuMat-testBasic.cm
 
 cudaBLAS/CuMat-testBasic.cmProgram
+
+cudaBLAS/pythonoutput.cm

@@ -10,6 +10,8 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <math.h>
+#include "../utils/headers.hpp"
+
 // Device function
 __global__ void CuMatPowMatrixDKernel(double* A, double* B, double * res, long len){
     long index = blockDim.x * blockIdx.x + threadIdx.x;
@@ -18,7 +20,13 @@ __global__ void CuMatPowMatrixDKernel(double* A, double* B, double * res, long l
     }
 }
 
-extern "C" void CuMatPowMatrixD(double * matA, double * matB, double * matRes, long len){
+extern "C" void CuMatPowMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, HeaderD* matHeaderRes, long len){
+    double* matA;
+    double* matB;
+    double* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     double* d_A; double *d_B; double * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -58,7 +66,13 @@ __global__ void CuMatPowMatrixIKernel(long* A, long* B, long * res, long len){
 }
 
 
-extern "C" void CuMatPowMatrixI(long * matA, long * matB, long * matRes, long len){
+extern "C" void CuMatPowMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, HeaderI* matHeaderRes, long len){
+    long* matA;
+    long* matB;
+    long* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA

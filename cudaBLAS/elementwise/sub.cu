@@ -9,6 +9,7 @@
 #include <cublas_v2.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include "../utils/headers.hpp"
 
 // Device function
 __global__ void CuMatSubMatrixDKernel(double* A, double* B, double * res, long len){
@@ -18,7 +19,13 @@ __global__ void CuMatSubMatrixDKernel(double* A, double* B, double * res, long l
     }
 }
 
-extern "C" void CuMatSubMatrixD(double * matA, double * matB, double * matRes, long len){
+extern "C" void CuMatSubMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, HeaderD* matHeaderRes, long len){
+    double* matA;
+    double* matB;
+    double* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     double* d_A; double *d_B; double * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
@@ -58,7 +65,13 @@ __global__ void CuMatSubMatrixIKernel(long* A, long* B, long * res, long len){
 }
 
 
-extern "C" void CuMatSubMatrixI(long * matA, long * matB, long * matRes, long len){
+extern "C" void CuMatSubMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, HeaderI* matHeaderRes, long len){
+    long* matA;
+    long* matB;
+    long* matRes;
+    matA = matHeaderA->data;
+    matB = matHeaderB->data;
+    matRes = matHeaderRes->data;
     long* d_A; long *d_B; long * d_Res;
     size_t size = len*sizeof(long);
     // Allocate memory for CUDA
