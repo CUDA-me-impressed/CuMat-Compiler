@@ -23,7 +23,7 @@
 void printArgumentError(std::string message, std::string arg) {
     const std::string helpText =
         "CuMat Compiler Syntax: CuMat inputFile [ -Wall | -Winfo | -Wnone ] [ "
-        "-Oall | -Onone | -Oexp ] [ -o outputfile ]";
+        "-Oall | -Onone | -Oexp ] [-s] [ -o outputfile ]";
     std::cout << helpText << std::endl;
     std::cout << message << arg << std::endl;
 }
@@ -33,7 +33,7 @@ int main(int argc, char* argv[], char* envp[]) {
     std::string inputFileName;
     std::string outputFile;
 
-    const std::set<std::string> validFlags = {"-Wall", "-Winfo", "-Wnone", "-Oall", "-Onone", "-Oexp", "-o"};
+    const std::set<std::string> validFlags = {"-Wall", "-Winfo", "-Wnone", "-Oall", "-Onone", "-Oexp", "-o", "-s"};
 
     // First argument is always name of exe, ignore
     for (int i = 1; i < argc; ++i) {
@@ -85,6 +85,14 @@ int main(int argc, char* argv[], char* envp[]) {
             printArgumentError("Unrecognised warning level", warn);
             return 1;  // Quit early
         }
+    }
+
+    // Assign silent output
+    std::vector<std::string> silent;
+    std::copy_if(args.begin(), args.end(), std::back_inserter(silent),
+                 [](std::string s) { return s.rfind("-s", 0) == 0; });
+    if(!silent.empty()){
+        co.silent = true;
     }
 
     // Assign Optimisation level

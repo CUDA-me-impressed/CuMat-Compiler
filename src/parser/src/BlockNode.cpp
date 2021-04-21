@@ -51,7 +51,7 @@ std::string AST::BlockNode::toTree(const std::string& prefix, const std::string&
  * @param returnExprVal
  */
 void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value* returnExprVal) {
-    if (this->callingFunctionName == "main") {
+    if (this->callingFunctionName == "main" && !context->compilerOptions->silent) {
         // lmao this is awful code deal with it
         if (auto retType = std::get_if<Typing::MatrixType>(&*this->returnExpr->type)) {
             std::vector<llvm::Value*> argVals({returnExprVal});
