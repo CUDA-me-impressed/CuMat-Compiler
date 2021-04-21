@@ -41,8 +41,8 @@ target_compile_definitions(llvm_interface INTERFACE ${LLVM_DEFINITIONS})
 # Include Catch2
 include(FetchContent)
 FetchContent_Declare(Catch2_download
-        GIT_REPOSITORY      https://github.com/catchorg/Catch2.git
-        GIT_TAG             v2.13.3)
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v2.13.3)
 FetchContent_Populate(Catch2_download)
 FetchContent_GetProperties(Catch2_download
         SOURCE_DIR Catch2_source_dir)
@@ -53,8 +53,8 @@ target_include_directories(Catch2 INTERFACE
 
 # Include trompeloeil
 FetchContent_Declare(Trompeloeil_download
-        GIT_REPOSITORY      https://github.com/rollbear/trompeloeil.git
-        GIT_TAG             v39)
+        GIT_REPOSITORY https://github.com/rollbear/trompeloeil.git
+        GIT_TAG v39)
 FetchContent_Populate(Trompeloeil_download)
 FetchContent_GetProperties(Trompeloeil_download
         SOURCE_DIR Trompeloeil_source_dir)

@@ -1,10 +1,22 @@
 #include "AssignmentNode.hpp"
+#include "TypeCheckingUtils.hpp"
 
 #include <iostream>
+#include <numeric>
+
+#include "DimensionsSymbolTable.hpp"
+#include "TreePrint.hpp"
 
 llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
     // Generate LLVM value for the rval expression
     llvm::Value* rValLLVM = this->rVal->codeGen(context);
+
+    // Ensure that matrix literals are upcast
+    if(auto* rValType = std::get_if<Typing::MatrixType>(&*rVal->type)){
+        if(rValType->rank == 0){
+            rValLLVM = Utils::upcastLiteralToMatrix(context, *rValType, rValLLVM);
+        }
+    }
 
     // Handle decomposition
     if (this->lVal) {
@@ -14,10 +26,12 @@ llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
         if (!context->symbolTable->inSymbolTable(this->name, context->symbolTable->getCurrentFunction())) {
             // Something has gone wrong during the parse stage and we have not added the symbol into the table
             // Raising a warning!
-            std::cout << "[Internal Warning] Symbol " << this->name
-                      << " was not found within the symbol"
-                         " table. Created during codegen"
-                      << std::endl;
+            if (context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+                std::cout << "[Internal Warning] Symbol " << this->name
+                          << " was not found within the symbol"
+                             " table. Created during codegen"
+                          << std::endl;
+            }
             // No typing information can be inferred at this stage (nullptr) - Can and will cause issues hence the
             // warning
             context->symbolTable->setValue(nullptr, rValLLVM, this->name, context->symbolTable->getCurrentFunction());
@@ -30,10 +44,35 @@ llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
 
 void AST::AssignmentNode::semanticPass(Utils::IRContext* context) {
     this->rVal->semanticPass(context);
+    auto rValTy = std::get_if<Typing::MatrixType>(this->rVal->type.get());
+    auto rValFty = std::get_if<Typing::FunctionType>(this->rVal->type.get());
+    bool isFunction = rValFty != nullptr;
 
     if (this->lVal != nullptr) {
-        this->lVal->semanticPass(context);
+        // Check if decomposition is taking place
+        if (isFunction) {
+            // Cannot decompose function
+            TypeCheckUtils::decompError();
+        } else if (rValTy != nullptr) {
+            // Else, call semantic pass on rVal passing through the primitive type
+            this->lVal->semanticPass(context, rValTy->getPrimitiveType());
+        }
     } else {
+        // In this branch, only the `name` attribute is defined, signalling simple assignment
+        if (context->semanticSymbolTable->inVarTable(this->name)) {
+            // Error if the variable name is already in use
+            TypeCheckUtils::alreadyDefinedError(this->name, true);
+        }
+        if (isFunction) {
+            // Store a function type as a variable
+            AST::VariableNode varNode = *dynamic_cast<AST::VariableNode*>(this->rVal.get());
+            // Concatenate the namespace into a single string
+            std::string nameSpace = std::accumulate(varNode.namespacePath.begin(), varNode.namespacePath.end(), std::string(""));
+            context->semanticSymbolTable->storeVarType(this->name, nullptr, nameSpace, varNode.name);
+        } else {
+            context->semanticSymbolTable->storeVarType(this->name, this->rVal->type);
+        }
+
         if (context->symbolTable->inSymbolTable(this->name, context->symbolTable->getCurrentFunction())) {
             throw std::runtime_error("Attempting to redefine variable: " + this->name);
         }
@@ -41,12 +80,15 @@ void AST::AssignmentNode::semanticPass(Utils::IRContext* context) {
                                        context->symbolTable->getCurrentFunction());
     }
 }
+
 llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::shared_ptr<DecompNode> decomp,
                                                llvm::Value* matHeader) {
     // Get the type for the original value
     auto matType = std::get_if<Typing::MatrixType>(&*this->rVal->type);
     if (!matType) {
-        std::cout << "[Internal Warning] Cannot find type information for rVal with variable " << name << std::endl;
+        if (context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+            std::cout << "[Internal Warning] Cannot find type information for rVal with variable " << name << std::endl;
+        }
         // Attempt correction
     }
 
@@ -59,6 +101,8 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
     lValMatType->dimensions = std::vector<uint>(matType->dimensions.begin(), matType->dimensions.end() - 1);
     rValMatType->dimensions = matType->dimensions;
     rValMatType->dimensions.insert(rValMatType->dimensions.begin(), rValMatType->dimensions.front() - 1);
+    lValMatType->primType = matType->getPrimitiveType();
+    rValMatType->primType = matType->getPrimitiveType();
     // Create the matricies in LLVM to store these l/r vals
     auto* lValMatAlloc = Utils::createMatrix(context, *lValMatType);
     auto* rValMatAlloc = Utils::createMatrix(context, *rValMatType);
@@ -70,17 +114,19 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
 
     llvm::Value* rValDataPtr = context->Builder->CreateGEP(matRecord.dataPtr, lValMatRecord.numBytes, "rValOffset");
     // Point both of the data pointers to the correct locations
-    Utils::insertValueAtPointerOffset(context, lValMatRecord.dataPtr, 0, matRecord.dataPtr);
-    Utils::insertValueAtPointerOffset(context, rValMatRecord.dataPtr, 0, rValDataPtr);
+    Utils::insertValueAtPointerOffset(context, lValMatRecord.dataPtr, 0, matRecord.dataPtr, false);
+    Utils::insertValueAtPointerOffset(context, rValMatRecord.dataPtr, 0, rValDataPtr, false);
 
     // Handle assignment symbol table code
     if (!context->symbolTable->inSymbolTable(this->name, context->symbolTable->getCurrentFunction())) {
         // Something has gone wrong during the parse stage and we have not added the symbol into the table
         // Raising a warning!
-        std::cout << "[Internal Warning] Symbol " << this->name
-                  << " was not found within the symbol"
-                     " table. Created during codegen"
-                  << std::endl;
+        if (context->compilerOptions->warningVerbosity == WARNINGS::ALL) {
+            std::cout << "[Internal Warning] Symbol " << this->name
+                      << " was not found within the symbol"
+                         " table. Created during codegen"
+                      << std::endl;
+        }
         // No typing information can be inferred at this stage (nullptr) - Can and will cause issues hence the warning
         context->symbolTable->setValue(nullptr, lValMatAlloc, this->name, context->symbolTable->getCurrentFunction());
     } else {
@@ -94,4 +140,22 @@ llvm::Value* AST::AssignmentNode::decompAssign(Utils::IRContext* context, std::s
         decompAssign(context, nestedDecomp, lValMatAlloc);
     }
     return lValMatAlloc;  // Dunno, seems to be what I would want, maybe change?
+}
+
+std::string AST::AssignmentNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    using namespace Tree;
+    std::string str{prefix + std::string{"Assignment\n"}};
+    str += lVal->toTree(childPrefix + T, childPrefix + I);
+    str += rVal->toTree(childPrefix + L, childPrefix + B);
+    return str;
+}
+void AST::AssignmentNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    rVal->dimensionPass(nt);
+    if (!this->name.empty()) {
+        nt->add_node(this->name, rVal->type);
+    } else {
+        if (auto* t = std::get_if<Typing::MatrixType>(rVal->type.get())) {
+            lVal->dimensionPass(nt, *t);
+        }
+    }
 }

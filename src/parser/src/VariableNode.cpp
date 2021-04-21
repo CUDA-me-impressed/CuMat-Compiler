@@ -2,7 +2,10 @@
 
 #include <numeric>
 #include <valarray>
+
 #include "CodeGenUtils.hpp"
+#include "TypeCheckingUtils.hpp"
+#include "DimensionsSymbolTable.hpp"
 
 llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
     llvm::Value* storeVal =
@@ -15,12 +18,31 @@ llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::VariableNode::semanticPass(Utils::IRContext* context) {
-    this->type = context->symbolTable->getValue(this->name,context->symbolTable->getCurrentFunction())->type;
+    std::string nameSpace;
+    if (this->name != "_") {
+        if (!this->namespacePath.empty()) {
+            // If there's a namespace path, concatenate it to a single string
+            nameSpace = std::accumulate(this->namespacePath.begin(), this->namespacePath.end(), std::string(""));
+        }
 
-    if (this->variableSlicing) {
-        this->variableSlicing->semanticPass(context);
-    } else {
-        throw std::runtime_error("[Internal Error] Variable slicing not generated correctly!");
+        if (context->semanticSymbolTable->inVarTable(this->name)) {
+            // Get type if in Variable table
+            this->type = context->semanticSymbolTable->getVarType(this->name);
+        } else if (context->semanticSymbolTable->inFuncTable(this->name, nameSpace)) {
+            // Next, check if it's in the function table
+            if (this->variableSlicing) {
+                // Cannot decompose a function
+                TypeCheckUtils::decompError();
+            }
+            this->type = context->semanticSymbolTable->getFuncType(this->name, nameSpace);
+        } else {
+            // Finally, give up and throw a `notDefined` error
+            TypeCheckUtils::notDefinedError(this->name);
+        }
+
+        if (this->variableSlicing) {
+            this->variableSlicing->semanticPass(context);
+        }
     }
 }
 
@@ -45,7 +67,7 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
         if (slicesVec.size() <= i || std::get_if<bool>(&slicesVec.at(i))) {
             slices.emplace_back(0, matType->dimensions.at(i));
         } else {
-            // We should get the element to be sliced and we can check if we have 1 or 2 indicies filled in
+            // We should get the element to be sliced and we can check if we have 1 or 2 indices filled in
             // If one, this means from the index to the dim end
             // If two, nice and simple, just insert
             auto sliceElement = *std::get_if<std::vector<int>>(&slicesVec.at(i));
@@ -57,7 +79,7 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
         }
     }
 
-    // Lloyd's algorithm to calculate indicies from slices
+    // Lloyd's algorithm to calculate indices from slices
     std::vector<int> firstSlices;
     std::vector<uint> slicedMatrixDimensions;
 
@@ -173,4 +195,15 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
 
     // Return the sliced matrix value
     return slicedMatrix;
+}
+
+
+void AST::VariableNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    auto p = nt->search_impl(name);
+    auto* us = std::get_if<Typing::MatrixType>(this->type.get());
+    auto* them = std::get_if<Typing::MatrixType>(p.get());
+    if (us && them) {
+        // TODO do slicing (not tonight though...)
+        us->dimensions = them->dimensions;
+    }
 }

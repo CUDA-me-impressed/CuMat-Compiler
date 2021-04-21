@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "ASTNode.hpp"
-#include "TypeDefAttributeNode.hpp"
 #include "Type.hpp"
+#include "TypeDefAttributeNode.hpp"
 
 namespace AST {
 class CustomTypeDefNode : public Node {
@@ -14,5 +14,6 @@ class CustomTypeDefNode : public Node {
     std::vector<std::shared_ptr<AST::TypeDefAttributeNode>> attributes;
 
     void semanticPass(Utils::IRContext* context) override;
+    void dimensionPass(Analysis::DimensionSymbolTable* nt) override;
 };
 }  // namespace AST

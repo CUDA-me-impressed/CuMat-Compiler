@@ -55,49 +55,72 @@ llvm::Value* AST::LiteralNode<T>::codeGen(Utils::IRContext* context) {
 
 template <>
 void AST::LiteralNode<int>::semanticPass(Utils::IRContext* context) {
-    for (auto const& child : this->children) child->semanticPass(context);
-    // std::shared_ptr<Typing::Type> type = makeGenericType("int");
-    // this->setType(type);
+    std::vector<uint> dim{ 1 };
+    this->type = TypeCheckUtils::makeMatrixType(dim, Typing::PRIMITIVE::INT);
 }
 
 template <>
 void AST::LiteralNode<float>::semanticPass(Utils::IRContext* context) {
-    for (auto const& child : this->children) child->semanticPass(context);
-    // std::shared_ptr<Typing::Type> type = makeGenericType("float");
-    // this->setType(type);
+    std::vector<uint> dim{ 1 };
+    this->type = TypeCheckUtils::makeMatrixType(dim, Typing::PRIMITIVE::FLOAT);
 }
 
 template <>
 void AST::LiteralNode<std::string>::semanticPass(Utils::IRContext* context) {
-    for (auto const& child : this->children) child->semanticPass(context);
-    // std::shared_ptr<Typing::Type> type = makeGenericType("string");
-    // this->setType(type);
+    std::vector<uint> dim{ 1 };
+    this->type = TypeCheckUtils::makeMatrixType(dim, Typing::PRIMITIVE::STRING);
 }
 
 template <>
 llvm::Value* AST::LiteralNode<int>::codeGen(Utils::IRContext* context) {
     if (std::get<Typing::MatrixType>(*type).primType != Typing::PRIMITIVE::INT) return nullptr;
 
-    Typing::MatrixType matType{0, std::vector<uint>(), Typing::PRIMITIVE::INT};
-    auto* matAlloc = Utils::createMatrix(context, matType);
-    auto* dataPtr = Utils::getValueFromPointerOffset(context, matAlloc, 0, "matArrPtr");
     auto ty = static_cast<llvm::Type*>(llvm::Type::getInt64Ty(context->module->getContext()));
-    auto* val = llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
-    Utils::insertValueAtPointerOffset(context, dataPtr, 0, val);
-    return matAlloc;
+    return llvm::ConstantInt::get(ty, llvm::APInt(64, value, true));
 }
 
 template <>
 llvm::Value* AST::LiteralNode<float>::codeGen(Utils::IRContext* context) {
     if (std::get<Typing::MatrixType>(*type).primType != Typing::PRIMITIVE::FLOAT) return nullptr;
-    auto ty = llvm::Type::getFloatTy(context->module->getContext());
-    return llvm::ConstantFP::get(ty, llvm::APFloat(value));
+    auto ty = llvm::Type::getDoubleTy(context->module->getContext());
+    return llvm::ConstantFP::get(ty, (double) value);
+}
+
+template <>
+llvm::Value* AST::LiteralNode<bool>::codeGen(Utils::IRContext* context) {
+    if (std::get<Typing::MatrixType>(*type).primType != Typing::PRIMITIVE::BOOL) return nullptr;
+
+    auto ty = static_cast<llvm::Type*>(llvm::Type::getInt1Ty(context->module->getContext()));
+    return llvm::ConstantInt::get(ty, llvm::APInt(1, value, true));
 }
 
 template <>
 llvm::Value* AST::LiteralNode<std::string>::codeGen(Utils::IRContext* context) {
     llvm::Type* ty;
     return nullptr;
+}
+
+// Yes, I could have template meta-programmed this to be general, but that's nasty
+template <>
+std::string AST::LiteralNode<float>::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    return prefix + std::to_string(value) + '\n';
+}
+template <class T>
+void AST::LiteralNode<T>::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    if (Typing::MatrixType* mt = std::get_if<Typing::MatrixType>(&*type)) {
+        mt->dimensions = std::vector<uint>{1};
+        mt->rank = 1;
+    } else {
+        throw std::runtime_error{"Invalid TypeClass for LiteralNode"};
+    }
+}
+template <>
+std::string AST::LiteralNode<int>::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    return prefix + std::to_string(value) + '\n';
+}
+template <>
+std::string AST::LiteralNode<std::string>::toTree(const std::string& prefix, const std::string& childPrefix) const {
+    return prefix + value + '\n';
 }
 
 template class AST::LiteralNode<float>;

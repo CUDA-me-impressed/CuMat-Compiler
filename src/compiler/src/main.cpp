@@ -17,11 +17,13 @@
 #include "CompilerOptions.hpp"
 #include "CuMatASTGenerator.hpp"
 #include "Preprocessor.hpp"
+#include "TypeCheckingSymbolTable.hpp"
+#include "DimensionsSymbolTable.hpp"
 
 void printArgumentError(std::string message, std::string arg) {
     const std::string helpText =
         "CuMat Compiler Syntax: CuMat inputFile [ -Wall | -Winfo | -Wnone ] [ "
-        "-Oall | -Onone | -Oexp ] [ -o outputfile ]";
+        "-Oall | -Onone | -Oexp ] [-s] [ -o outputfile ]";
     std::cout << helpText << std::endl;
     std::cout << message << arg << std::endl;
 }
@@ -31,7 +33,7 @@ int main(int argc, char* argv[], char* envp[]) {
     std::string inputFileName;
     std::string outputFile;
 
-    const std::set<std::string> validFlags = {"-Wall", "-Winfo", "-Wnone", "-Oall", "-Onone", "-Oexp", "-o"};
+    const std::set<std::string> validFlags = {"-Wall", "-Winfo", "-Wnone", "-Oall", "-Onone", "-Oexp", "-o", "-s"};
 
     // First argument is always name of exe, ignore
     for (int i = 1; i < argc; ++i) {
@@ -85,6 +87,14 @@ int main(int argc, char* argv[], char* envp[]) {
         }
     }
 
+    // Assign silent output
+    std::vector<std::string> silent;
+    std::copy_if(args.begin(), args.end(), std::back_inserter(silent),
+                 [](std::string s) { return s.rfind("-s", 0) == 0; });
+    if(!silent.empty()){
+        co.silent = true;
+    }
+
     // Assign Optimisation level
     std::vector<std::string> optimiseLevels;
     std::copy_if(args.begin(), args.end(), std::back_inserter(optimiseLevels),
@@ -135,12 +145,18 @@ int main(int argc, char* argv[], char* envp[]) {
         llvm::Module TheModule(std::get<0>(tree), TheContext);
         llvm::IRBuilder<> Builder(TheContext);
         Utils::SymbolTable symbolTable;
+        TypeCheckUtils::TypeCheckingSymbolTable semanticSymbolTable;
+        Analysis::DimensionSymbolTable dst;
 
         // Context containing the module and IR Builder AND SYMBOL TABLE
-        Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable};
+        Utils::IRContext treeContext = {&TheModule, &Builder, nullptr, &symbolTable, &co, &semanticSymbolTable};
         std::get<1>(tree)->semanticPass(&treeContext);
+        std::cout << "Done Semantic pass" << std::endl;
+        std::get<1>(tree)->dimensionPass(&dst);
+        std::cout << "Done Dimension pass" << std::endl;
         treeContext.symbolTable->createNVVMMetadata(&treeContext);  // TODO: Replace when program node codegen done
         std::get<1>(tree)->codeGen(&treeContext);
+        std::cout << "Done Codegen pass" << std::endl;
 
         std::error_code EC;
         llvm::raw_fd_ostream dest("CuMat-" + std::get<0>(tree) + ".ll", EC, llvm::sys::fs::F_None);

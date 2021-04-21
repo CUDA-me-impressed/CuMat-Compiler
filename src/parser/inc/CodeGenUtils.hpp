@@ -9,8 +9,10 @@
 #include <utility>
 #include <vector>
 
+#include "CompilerOptions.hpp"
 #include "SymbolTable.hpp"
 #include "Type.hpp"
+#include "TypeCheckingSymbolTable.hpp"
 
 namespace Utils {
 struct IRContext {
@@ -18,12 +20,15 @@ struct IRContext {
     llvm::IRBuilder<>* Builder;
     llvm::Function* function;
     SymbolTable* symbolTable;
+    CompilerOptions* compilerOptions;
+    TypeCheckUtils::TypeCheckingSymbolTable* semanticSymbolTable;
 };
 
 struct LLVMMatrixRecord {
     llvm::Value* dataPtr;
     llvm::Value* rank;      // Signed
     llvm::Value* numBytes;  // Signed
+    llvm::Value* dimensionPtr;
 };
 
 enum FunctionCUDAType { Host, Device };
@@ -43,9 +48,10 @@ llvm::Instruction* createMatrix(IRContext* context, const Typing::Type& type);
 
 LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
 
-void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val);
+void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val, bool i64);
 
-void insertValueAtPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, llvm::Value* val);
+void insertValueAtPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, llvm::Value* val,
+                                     bool i64);
 
 llvm::Value* getValueFromPointerOffset(IRContext* context, llvm::Value* ptr, int offset, const std::string& name);
 
@@ -63,4 +69,7 @@ void setValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* o
 llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type);
 
 int getRealIndexOffset(const std::vector<uint>& dimensions, const std::vector<int>& index);
+
+llvm::Value* upcastLiteralToMatrix(Utils::IRContext* context, const Typing::Type  &type, llvm::Value* literalVal);
+
 }  // namespace Utils

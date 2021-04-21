@@ -20,6 +20,16 @@ struct FunctionTableEntry {
     llvm::Function* func;
 };
 
+struct CUDAFunctionPair {
+    llvm::Function* funcInt;
+    llvm::Function* funcFloat;
+};
+
+struct MatHeaderTypes {
+    llvm::Type* intHeader;
+    llvm::Type* floatHeader;
+};
+
 struct FunctionParamCompare {
     [[nodiscard]] bool equalType(const std::shared_ptr<Typing::Type>& l, const std::shared_ptr<Typing::Type>& r) const {
         bool retVal = false;
@@ -27,7 +37,7 @@ struct FunctionParamCompare {
             // Matrix type checking
             retVal =
                 std::get_if<Typing::MatrixType>(r.get()) != nullptr &&
-                std::get_if<Typing::MatrixType>(l.get())->primType < std::get_if<Typing::MatrixType>(r.get())->primType;
+                std::get_if<Typing::MatrixType>(l.get())->primType == std::get_if<Typing::MatrixType>(r.get())->primType;
         } else if (std::get_if<Typing::FunctionType>(l.get()) != nullptr) {
             // Function type checks (for functions supplied as arguments)
             retVal = std::get_if<Typing::FunctionType>(r.get()) != nullptr &&
@@ -70,6 +80,13 @@ class SymbolTable {
     llvm::NamedMDNode* nvvmMetadataNode = nullptr;
 
    public:
+    std::map<int, CUDAFunctionPair> binaryFunctions;
+    std::map<int, CUDAFunctionPair> unaryFunctions;
+
+    CUDAFunctionPair printFunctions;
+    llvm::Type* matHeaderType;
+
+
     // Symbol data
     std::shared_ptr<SymbolTableEntry> getValue(const std::string& symbolName, const std::string& funcName,
                                                const std::string& funcNamespace = "");
@@ -94,6 +111,10 @@ class SymbolTable {
                                    const std::vector<std::shared_ptr<Typing::Type>>& params,
                                    const std::string& funcNamespace = "");
 
+    std::vector<std::shared_ptr<Typing::Type>> getFunctionTrueType(
+        const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
+        const std::string& funcNamespace = "");
+
     bool isFunctionDefined(const std::string& funcName, const std::string& funcNamespace = "");
 
     bool isFunctionDefinedParam(const std::string& funcName, const std::vector<std::shared_ptr<Typing::Type>>& params,
@@ -102,6 +123,8 @@ class SymbolTable {
     void createNVVMMetadata(Utils::IRContext* context);
 
     llvm::NamedMDNode* getNVVMMetadata();
+
+    void generateCUDAExternFunctions(Utils::IRContext* context);
 
     // Function stack
     void escapeFunction();
