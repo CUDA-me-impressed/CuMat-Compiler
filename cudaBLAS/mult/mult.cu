@@ -119,8 +119,6 @@ extern "C" void CuMatMatMultMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, He
     // Do the actual multiplication
     cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, m, n, k, &alpha, d_B, lda, d_A, ldb, &beta, d_Res, ldc);
 
-    // Synchronise before copy
-    cudaDeviceSynchronize();
     cudaEventRecord(stop);
 
     cudaEventSynchronize(stop);
@@ -128,6 +126,9 @@ extern "C" void CuMatMatMultMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, He
     cudaEventElapsedTime(&milliseconds, start, stop);
 
     printf("The elapsed time in gpu was %.5f ms\n", milliseconds);
+
+    // Synchronise before copy
+    cudaDeviceSynchronize();
 
     // Copy device memory to host
     cudaMemcpy(matRes,d_Res,matResSize,cudaMemcpyDeviceToHost);

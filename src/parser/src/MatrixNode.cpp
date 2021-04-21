@@ -88,7 +88,6 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
         auto* i32Ty = llvm::Type::getInt32Ty(context->module->getContext());
         llvm::Constant* init = llvm::ConstantArray::get(arrayType, values);
 
-        //       llvm::Value* arr = context->Builder->Create(arrayType);
         auto * dataAllocSize = llvm::ConstantExpr::getTruncOrBitCast(llvm::ConstantExpr::getSizeOf(arrayType), i32Ty);
         auto* arr = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), i32Ty, arrayType,
                                                  dataAllocSize, nullptr, nullptr, "");
