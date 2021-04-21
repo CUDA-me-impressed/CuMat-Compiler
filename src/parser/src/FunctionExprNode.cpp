@@ -112,7 +112,8 @@ void AST::FunctionExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
         a->dimensionPass(nt);
     }
     if (std::holds_alternative<Typing::FunctionType>(*nonAppliedFunction->type)) {
-        if (nt->search_impl(nonAppliedFunction->literalText)) {
+        if (auto func_type = nt->search_impl(nonAppliedFunction->literalText)) {
+            this->type = func_type;
         }
     }
 }

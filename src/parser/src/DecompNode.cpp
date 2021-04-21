@@ -84,7 +84,7 @@ void AST::DecompNode::dimensionPass(Analysis::DimensionSymbolTable* nt, Typing::
     std::string* rName = std::get_if<std::string>(&this->rVal);
     std::shared_ptr<DecompNode>* rNode = std::get_if<std::shared_ptr<DecompNode>>(&this->rVal);
     if (rName) {
-        nt->add_node(this->lVal, std::move(std::make_shared<Typing::Type>(rType)));
+        nt->add_node(*rName, std::move(std::make_shared<Typing::Type>(rType)));
     } else if (rNode) {
         (*rNode)->dimensionPass(nt, rType);
     }
