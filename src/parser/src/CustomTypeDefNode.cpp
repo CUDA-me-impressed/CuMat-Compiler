@@ -16,3 +16,6 @@ void AST::CustomTypeDefNode::semanticPass(Utils::IRContext* context) {
     std::shared_ptr<Typing::Type> type = TypeCheckUtils::makeCustomType(this->name, attrs);
     //    TODO: When semantic symbol table is implemented, add the type to that under the correct name
 }
+void AST::CustomTypeDefNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    // pass: I believe we've decided to ignore this feature
+}
