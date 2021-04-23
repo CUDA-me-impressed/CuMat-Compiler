@@ -111,7 +111,7 @@ void AST::FuncDefNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     auto* blocktype = std::get_if<Typing::MatrixType>(this->block->returnExpr->type.get());
 
     if (rettype && blocktype) {
-        if (rettype->dimensions == blocktype->dimensions) {
+        if (rettype->dimensions != blocktype->dimensions) {
             std::string expected{"["}, actual{"["};
             for (auto i : rettype->dimensions) expected.append(std::to_string(i) + ",");
             expected.pop_back();
