@@ -18,6 +18,7 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
 
     // Ensure that matrix literals are upcast
     if(auto* rValType = std::get_if<Typing::MatrixType>(&*returnExpr->type)){
+
         if(rValType->rank == 0){
             returnExprVal = Utils::upcastLiteralToMatrix(context, *rValType, returnExprVal);
         }
