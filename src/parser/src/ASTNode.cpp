@@ -36,4 +36,11 @@ std::string Node::toTree(const std::string& prefix, const std::string& childPref
     return str;
 }
 
+void Node::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    for (auto const& child : this->children) child->dimensionPass(nt);
+}
+void Node::dimensionNamePass(Analysis::DimensionSymbolTable* nt) {
+    for (auto const& child : this->children) child->dimensionNamePass(nt);
+}
+
 }  // namespace AST
