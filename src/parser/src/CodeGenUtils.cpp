@@ -68,7 +68,7 @@ llvm::Instruction* Utils::createMatrix(Utils::IRContext* context, const Typing::
     matDimAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(matDimAllocaSize, i32type);
     auto* matDimAlloc = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), i32type, matDimensionType,
                                                      matDimAllocaSize, nullptr, nullptr, "bitcast");
-    context->Builder->Insert(matDimAlloc, "matArrData");
+    context->Builder->Insert(matDimAlloc, "matDimData");
 
     for (int i = 0; i < matType.rank; i++) {
         auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, matType.dimensions.at(i)));

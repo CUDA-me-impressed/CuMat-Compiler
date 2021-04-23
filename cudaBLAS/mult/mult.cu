@@ -32,6 +32,7 @@ extern "C" void CuMatMatMultMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, He
     long* matA;
     long* matB;
     long* matRes;
+    printf("huh %lu, %lu, %lu\n",i,p,j);
     matA = matHeaderA->data;
     matB = matHeaderB->data;
     matRes = matHeaderRes->data;
@@ -61,7 +62,6 @@ extern "C" void CuMatMatMultMatrixI(HeaderI* matHeaderA, HeaderI* matHeaderB, He
     // Setup execution parameters
     dim3 dim_grid(ceilf(i/(float)BLOCK_SIZE), ceilf(j/(float)BLOCK_SIZE), 1);
     dim3 dim_block(BLOCK_SIZE, BLOCK_SIZE, 1);
-
 
     CuMatMatMultKernelI<<<dim_grid, dim_block>>>(d_A, d_B, d_Res, p,  i, j);
 
@@ -110,14 +110,31 @@ extern "C" void CuMatMatMultMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, He
     const double alpha = 1.0f;
     const double beta = 0.0f;
 
+    // Timing
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start);
     // Do the actual multiplication
     cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, m, n, k, &alpha, d_B, lda, d_A, ldb, &beta, d_Res, ldc);
+
+    cudaEventRecord(stop);
+
+    cudaEventSynchronize(stop);
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+
+    printf("The elapsed time in gpu was %.5f ms\n", milliseconds);
 
     // Synchronise before copy
     cudaDeviceSynchronize();
 
     // Copy device memory to host
     cudaMemcpy(matRes,d_Res,matResSize,cudaMemcpyDeviceToHost);
+
+
+
 
     // Destroy the handle
     cublasDestroy(handle);

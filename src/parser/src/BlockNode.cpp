@@ -16,18 +16,35 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
     // Generate Return statement code
     llvm::Value* returnExprVal = this->returnExpr->codeGen(context);
 
-    // Ensure that matrix literals are upcast
-    if(auto* rValType = std::get_if<Typing::MatrixType>(&*returnExpr->type)){
-        if(rValType->rank == 0){
-            returnExprVal = Utils::upcastLiteralToMatrix(context, *rValType, returnExprVal);
+    if (this->callingFunctionName == "main") {
+        // lmao this is awful code deal with it
+        if (auto retType = std::get_if<Typing::MatrixType>(&*this->returnExpr->type)) {
+            auto mainRecord = Utils::getMatrixFromPointer(context, returnExprVal);
+            llvm::Value* resLenLLVM =
+                llvm::ConstantInt::get(llvm::Type::getInt64Ty(context->module->getContext()), retType->getLength());
+            std::vector<llvm::Value*> argVals({mainRecord.dataPtr, resLenLLVM});
+
+            if (retType->primType == Typing::PRIMITIVE::INT) {
+                auto callRet = context->Builder->CreateCall(context->symbolTable->printFunctions.funcInt, argVals);
+            } else if (retType->primType == Typing::PRIMITIVE::FLOAT) {
+                auto callRet = context->Builder->CreateCall(context->symbolTable->printFunctions.funcFloat, argVals);
+            } else {
+                throw std::runtime_error("Main return type not valid");
+            }
+            // Ensure that matrix literals are upcast
+            if (auto* rValType = std::get_if<Typing::MatrixType>(&*returnExpr->type)) {
+                if (rValType->rank == 0) {
+                    returnExprVal = Utils::upcastLiteralToMatrix(context, *rValType, returnExprVal);
+                }
+            }
+
+            printIfMainFunction(context, returnExprVal);
+
+            llvm::Value* retVal = context->Builder->CreateRet(returnExprVal);
+
+            return retVal;
         }
     }
-
-    printIfMainFunction(context, returnExprVal);
-
-    llvm::Value* retVal = context->Builder->CreateRet(returnExprVal);
-
-    return retVal;
 }
 
 void AST::BlockNode::semanticPass(Utils::IRContext* context) {
@@ -35,6 +52,7 @@ void AST::BlockNode::semanticPass(Utils::IRContext* context) {
     for (auto const& assignment : this->assignments) assignment->semanticPass(context);
     this->returnExpr->semanticPass(context);
 }
+
 std::string AST::BlockNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
     using namespace Tree;
     std::string str{prefix + std::string{"Block\n"}};
@@ -51,7 +69,7 @@ std::string AST::BlockNode::toTree(const std::string& prefix, const std::string&
  * @param returnExprVal
  */
 void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value* returnExprVal) {
-    if (this->callingFunctionName == "main") {
+    if (this->callingFunctionName == "main" && !context->compilerOptions->silent) {
         // lmao this is awful code deal with it
         if (auto retType = std::get_if<Typing::MatrixType>(&*this->returnExpr->type)) {
             std::vector<llvm::Value*> argVals({returnExprVal});
@@ -63,8 +81,8 @@ void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value*
             } else {
                 throw std::runtime_error("Main return type not valid");
             }
-        } else if(auto retTypeFunc = std::get_if<Typing::FunctionType>(&*this->returnExpr->type)){
-            if(auto retType = std::get_if<Typing::MatrixType>(&*retTypeFunc->returnType)) {
+        } else if (auto retTypeFunc = std::get_if<Typing::FunctionType>(&*this->returnExpr->type)) {
+            if (auto retType = std::get_if<Typing::MatrixType>(&*retTypeFunc->returnType)) {
                 // Functions still return a matrix
 
                 std::vector<llvm::Value*> argVals({returnExprVal});
@@ -81,3 +99,9 @@ void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value*
     }
 }
 
+void AST::BlockNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    for (auto& a : this->assignments) {
+        a->dimensionPass(nt);
+    }
+    returnExpr->dimensionPass(nt);
+}

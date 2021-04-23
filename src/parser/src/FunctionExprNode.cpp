@@ -8,6 +8,7 @@
 #include "CodeGenUtils.hpp"
 #include "VariableNode.hpp"
 #include "TypeCheckingUtils.hpp"
+#include "DimensionsSymbolTable.hpp"
 #include "TreePrint.hpp"
 
 llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
@@ -108,4 +109,15 @@ std::string AST::FunctionExprNode::toTree(const std::string& prefix, const std::
             str += node->toTree(childPrefix + L, childPrefix + B);
     }
     return str;
+}
+
+
+void AST::FunctionExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    for (auto& a : args) {
+        a->dimensionPass(nt);
+    }
+    if (std::holds_alternative<Typing::FunctionType>(*nonAppliedFunction->type)) {
+        if (nt->search_impl(nonAppliedFunction->literalText)) {
+        }
+    }
 }
