@@ -646,6 +646,19 @@ void AST::BinaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
                                                       std::get<Typing::MatrixType>(*this->rhs->type));
                     t->rank = t->dimensions.size();
                 }
+            } else {
+                auto* lType = std::get_if<Typing::MatrixType>(this->lhs->type.get());
+                auto* rType = std::get_if<Typing::MatrixType>(this->rhs->type.get());
+                if (lType && rType) {
+                    std::string expected{"["}, actual{"["};
+                    for (auto i : lType->dimensions) expected.append(std::to_string(i) + ",");
+                    expected.pop_back();
+                    expected.append("]");
+                    for (auto i : rType->dimensions) actual.append(std::to_string(i) + ",");
+                    actual.pop_back();
+                    actual.append("]");
+                    dimension_error("Incompatible Binary Operator Dimensions", this);
+                }
             }
             break;
         case BIN_OPERATORS::MATM: {

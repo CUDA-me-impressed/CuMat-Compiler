@@ -16,10 +16,11 @@ bool expandableDimensionMatrix(const Typing::MatrixType& left, const Typing::Mat
         big = &right;
     }
     for (int i = 0; i < small->rank; i++) {
-        if (small->dimensions[i] && big->dimensions[i]) {
+        if (small->dimensions[i] != big->dimensions[i] && small->dimensions[i] != 0 && big->dimensions[i] != 0) {
+            return false;
         }
     }
-    return false;
+    return true;
 }
 
 bool expandableDimension(const Typing::Type& left, const Typing::Type& right) {

@@ -111,7 +111,7 @@ void AST::FuncDefNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     auto* blocktype = std::get_if<Typing::MatrixType>(this->block->returnExpr->type.get());
 
     if (rettype && blocktype) {
-        if (rettype->dimensions != blocktype->dimensions) {
+        if (!expandableDimensionMatrix(*rettype, *blocktype) || rettype->rank != blocktype->rank) {
             std::string expected{"["}, actual{"["};
             for (auto i : rettype->dimensions) expected.append(std::to_string(i) + ",");
             expected.pop_back();
@@ -129,6 +129,15 @@ void AST::FuncDefNode::dimensionNamePass(Analysis::DimensionSymbolTable* nt) {
     if (auto a = std::get_if<Typing::MatrixType>(this->returnType.get())) {
         if (a->dimensions.empty()) {
             a->dimensions.emplace_back(1);
+            a->rank = 1;
+        }
+    }
+    for (auto& [name, arg] : this->parameters) {
+        if (auto* a = std::get_if<Typing::MatrixType>(arg.get())) {
+            if (a->dimensions.empty()) {
+                a->dimensions.emplace_back(1);
+                a->rank = 1;
+            }
         }
     }
     nt->add_node(this->funcName, this->returnType);
