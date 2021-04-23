@@ -1,4 +1,4 @@
-#include <span>
+#include <string_view>
 
 #include "DimensionsSymbolTable.hpp"
 std::vector<std::string_view> $tb_split(std::string_view str, char delim = '.');
