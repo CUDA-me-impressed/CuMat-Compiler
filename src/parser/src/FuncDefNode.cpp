@@ -1,14 +1,13 @@
 #include "FuncDefNode.hpp"
-#include "TypeCheckingUtils.hpp"
 
 #include <iostream>
 #include <variant>
 #include <utility>
 
 #include "DimensionPass.hpp"
-
 #include "DimensionsSymbolTable.hpp"
 #include "TreePrint.hpp"
+#include "TypeCheckingUtils.hpp"
 
 llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     // Let us generate a new function -> We will first generate the function argument types
@@ -31,8 +30,9 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
 
     // Add paramaters to the symbol table
     int i = 0;
-    for(auto funcitt = func->arg_begin(); funcitt != func->arg_end(); funcitt++, i++){
-        context->symbolTable->setValue(this->parameters[i].second, (llvm::Value*) funcitt, this->parameters[i].first, funcName, "");
+    for (auto funcitt = func->arg_begin(); funcitt != func->arg_end(); funcitt++, i++) {
+        context->symbolTable->setValue(this->parameters[i].second, (llvm::Value*)funcitt, this->parameters[i].first,
+                                       funcName, "");
     }
 
     context->symbolTable->setFunctionData(funcName, typesRaw, func);
@@ -47,7 +47,6 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
-
     // TODO: Put the args into symbol table temporarily for the block semantic pass - remove before end of function
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
     for (const auto& typeNamePair : this->parameters) {
@@ -113,7 +112,16 @@ void AST::FuncDefNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
 
     if (rettype && blocktype) {
         if (rettype->dimensions == blocktype->dimensions) {
-            dimension_error("Return expression doesn't match declared signature", this);
+            std::string expected, actual{"["};
+            for (auto i : rettype->dimensions) expected.append(std::to_string(i) + ",");
+            expected.pop_back();
+            expected.append("]");
+            for (auto i : blocktype->dimensions) actual.append(std::to_string(i) + ",");
+            actual.pop_back();
+            actual.append("]");
+            dimension_error(std::string{"Return expression doesn't match declared signature. Expected "} + expected +
+                                ", got " + actual + ".",
+                            this);
         }
     }
 }
