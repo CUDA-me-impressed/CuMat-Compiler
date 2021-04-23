@@ -17,6 +17,8 @@ class VariableNode : public ExprNode {
     llvm::Value* codeGen(Utils::IRContext* context) override;
 
     llvm::Value* handleSlicing(Utils::IRContext* context, llvm::Value* val);
-    [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override{};
+    [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override {
+        return std::string{};
+    };
 };
 }  // namespace AST
