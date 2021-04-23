@@ -82,7 +82,16 @@ void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
 
     for (int i = 0; i < argTypes.size(); ++i) {
         auto argType = std::get_if<Typing::MatrixType>(argTypes[i].get());
-        auto param = std::get_if<Typing::MatrixType>(funcType->parameters[i].get());
+
+        Typing::MatrixType* param;
+        if(i < funcType->parameters.size()) {
+            param = std::get_if<Typing::MatrixType>(funcType->parameters[i].get());
+        }else{
+            std::cerr << "Invalid number of arguments supplied for " << nonAppliedFunc.name << "\n"
+                      << "Expected: " << funcType->parameters.size() << "\n"
+                      << "Found: " << argTypes.size();
+            std::exit(TypeCheckUtils::ErrorCodes::FUNCTION_ERROR);
+        }
 
         if (argType->getPrimitiveType() != param->getPrimitiveType()) {
             std::cerr << "Function argument types do not match type definition for " << nonAppliedFunc.name << "\n"
