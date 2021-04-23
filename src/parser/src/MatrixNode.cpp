@@ -109,37 +109,6 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
             auto * freeMem = llvm::CallInst::CreateFree(arr, context->Builder->GetInsertBlock());
             context->Builder->Insert(freeMem);
         }
-        //        llvm::BasicBlock* addBB =
-        //            llvm::BasicBlock::Create(context->Builder->getContext(), "matInitEntry", context->function);
-        //        llvm::BasicBlock* endBB = llvm::BasicBlock::Create(context->Builder->getContext(), "matInitEnd");
-        //
-        //        auto indexAlloca = Utils::CreateEntryBlockAlloca(*context->Builder, "startIndex",
-        //                                                         llvm::Type::getInt32Ty(context->Builder->getContext()));
-        //        llvm::Constant* matIndexEnd = llvm::ConstantInt::get(i32Ty, values.size());
-        //        // parent->getBasicBlockList().push_back(addBB);
-        //        context->Builder->CreateBr(addBB);
-        //
-        //        context->Builder->SetInsertPoint(addBB);
-        //        {
-        //            auto* index = context->Builder->CreateLoad(indexAlloca, "index");
-        //
-        //            llvm::Value* arrElement = Utils::getValueFromPointerOffsetValue(context, arr, index,
-        //            "getArrConst"); Utils::insertValueAtPointerOffsetValue(context, matRecord.dataPtr, index,
-        //            arrElement, false);
-        //
-        //            // Update counter
-        //            auto* next = context->Builder->CreateAdd(
-        //                index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{32, 1, true}),
-        //                "inc");
-        //            context->Builder->CreateStore(next, indexAlloca);
-        //
-        //            // Test if completed list
-        //            auto* done = context->Builder->CreateICmpSGE(next, matIndexEnd);
-        //            context->Builder->CreateCondBr(done, endBB, addBB);
-        //        }
-        //
-        //        context->function->getBasicBlockList().push_back(endBB);
-        //        context->Builder->SetInsertPoint(endBB);
     }
 
     return matAlloc;
