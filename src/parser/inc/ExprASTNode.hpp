@@ -22,5 +22,6 @@ class ExprNode : public Node {
         std::shared_ptr<AST::ExprNode>& me) const {
         throw std::runtime_error("attempt to access constData on non-const node");
     };
+    [[nodiscard]] virtual bool isLiteralNode() const noexcept { return false; };
 };
 }  // namespace AST
