@@ -4,8 +4,8 @@
 #include <valarray>
 
 #include "CodeGenUtils.hpp"
-#include "TypeCheckingUtils.hpp"
 #include "DimensionsSymbolTable.hpp"
+#include "TypeCheckingUtils.hpp"
 
 llvm::Value* AST::VariableNode::codeGen(Utils::IRContext* context) {
     llvm::Value* storeVal =
@@ -197,7 +197,6 @@ llvm::Value* AST::VariableNode::handleSlicing(Utils::IRContext* context, llvm::V
     return slicedMatrix;
 }
 
-
 void AST::VariableNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     auto p = nt->search_impl(name);
     auto* us = std::get_if<Typing::MatrixType>(this->type.get());
@@ -205,5 +204,6 @@ void AST::VariableNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     if (us && them) {
         // TODO do slicing (not tonight though...)
         us->dimensions = them->dimensions;
+        us->rank = them->rank;
     }
 }

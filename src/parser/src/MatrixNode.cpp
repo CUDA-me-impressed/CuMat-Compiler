@@ -164,7 +164,7 @@ void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
         }
     }
 
-    std::vector<uint> dimensions = this->getDimensions(); // Maybe use dimensions of inner matrix?
+    std::vector<uint> dimensions = this->getDimensions();  // Maybe use dimensions of inner matrix?
 
     this->type = TypeCheckUtils::makeMatrixType(dimensions, primType);
 }
@@ -202,33 +202,40 @@ void AST::MatrixNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     }
     std::vector<uint> apparent_dim{};
     std::vector<uint> size{};
-
-    {
-        auto sep = this->separators.begin();
-        for (int i = 0; i < this->data.size() - 1; i++) {
-            const auto& elem = data[i];
+    if (separators.empty()) {
+        auto* type = std::get_if<Typing::MatrixType>(&*this->type);
+        if (type) {
+            type->dimensions = {1};
+            type->rank = 1;
+        }
+    } else {
+        {
+            auto sep = this->separators.begin();
+            for (int i = 0; i < this->data.size() - 1; i++) {
+                const auto& elem = data[i];
+                const auto* type = std::get_if<Typing::MatrixType>(&*elem->type);
+                if (type) {
+                    const auto& dims = type->dimensions;
+                    dim_subpass(apparent_dim, size, dims, *(sep++));
+                }
+            }
+        }
+        {
+            // have to do this separately as sep is one element shorter than data
+            const auto& elem = data[data.size() - 1];
             const auto* type = std::get_if<Typing::MatrixType>(&*elem->type);
             if (type) {
                 const auto& dims = type->dimensions;
-                dim_subpass(apparent_dim, size, dims, *(sep++));
+                dim_subpass(apparent_dim, size, dims, size.size());
             }
+            apparent_dim.emplace_back(size.back());
         }
-    }
-    {
-        // have to do this separately as sep is one element shorter than data
-        const auto& elem = data[data.size() - 1];
-        const auto* type = std::get_if<Typing::MatrixType>(&*elem->type);
-        if (type) {
-            const auto& dims = type->dimensions;
-            dim_subpass(apparent_dim, size, dims, size.size());
-        }
-        apparent_dim.emplace_back(size.back());
-    }
 
-    auto* type = std::get_if<Typing::MatrixType>(&*this->type);
-    if (type) {
-        type->dimensions = apparent_dim;
-        type->rank = apparent_dim.size();
+        auto* type = std::get_if<Typing::MatrixType>(&*this->type);
+        if (type) {
+            type->dimensions = apparent_dim;
+            type->rank = apparent_dim.size();
+        }
     }
 
     std::vector<std::shared_ptr<ExprNode>> new_vector{};
