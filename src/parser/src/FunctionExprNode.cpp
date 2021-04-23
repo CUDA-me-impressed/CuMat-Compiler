@@ -38,7 +38,7 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
         llvm::Value* argVal = arg->codeGen(context);
         // Ensure that matrix literals are upcast
         if(auto* argType = std::get_if<Typing::MatrixType>(&*arg->type)){
-            if(argType->rank == 0){
+            if (arg->isLiteralNode()) {
                 argVal = Utils::upcastLiteralToMatrix(context, *argType, argVal);
             }
         }

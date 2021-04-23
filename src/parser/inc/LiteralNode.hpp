@@ -23,5 +23,7 @@ class LiteralNode : public ExprNode {
         std::shared_ptr<AST::ExprNode>& me) const override {
         return std::vector<std::shared_ptr<AST::ExprNode>>{me};
     }
+
+    [[nodiscard]] bool isLiteralNode() const noexcept override { return true; };
 };
 }  // namespace AST

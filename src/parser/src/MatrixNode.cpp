@@ -63,7 +63,7 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
             // Check if we can naively do this without causing recursive check -> Yes its not technically a matrix
             // Yes this violates our idea of every type being a matrix but its equivalent fuck it
             auto* literal = std::get_if<Typing::MatrixType>(&*element->type);
-            if (literal->rank == 0) {
+            if (element->isLiteralNode()) {
                 // Let's just generate code for the literal itself -> This returns a single value
                 auto* elementLLVMMat = static_cast<llvm::Constant*>(element->codeGen(context));
                 values.push_back(elementLLVMMat);
