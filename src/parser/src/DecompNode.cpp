@@ -1,15 +1,12 @@
-#include <variant>
-#include <vector>
+#include "DecompNode.hpp"
+
 #include <string>
 #include <utility>
 #include <variant>
-
-#include "TypeCheckingUtils.hpp"
-#include "DecompNode.hpp"
-
-#include <variant>
+#include <vector>
 
 #include "DimensionsSymbolTable.hpp"
+#include "TypeCheckingUtils.hpp"
 
 llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {
     //    if (auto variableName = std::get_if<std::string>(&rVal)) {
@@ -59,7 +56,8 @@ llvm::Value* AST::DecompNode::codeGen(Utils::IRContext* context) {
 void AST::DecompNode::semanticPass(Utils::IRContext* context, Typing::PRIMITIVE primType) {
     // Store a variable entry for the left hand string
     if (this->lVal != "_") {
-        context->semanticSymbolTable->storeVarType(this->lVal,TypeCheckUtils::makeMatrixType(std::vector<uint>(), primType));
+        context->semanticSymbolTable->storeVarType(this->lVal,
+                                                   TypeCheckUtils::makeMatrixType(std::vector<uint>(), primType));
     }
     if (this->rVal.index() == 1) {
         // If a child decomp node exists, run semantic pass on it as well
@@ -69,15 +67,23 @@ void AST::DecompNode::semanticPass(Utils::IRContext* context, Typing::PRIMITIVE 
         // Else, store the rVal name as a variable
         std::string rValStr = std::get<std::string>(this->rVal);
         if (rValStr != "_") {
-            context->semanticSymbolTable->storeVarType(rValStr,TypeCheckUtils::makeMatrixType(std::vector<uint>(), primType));
+            context->semanticSymbolTable->storeVarType(rValStr,
+                                                       TypeCheckUtils::makeMatrixType(std::vector<uint>(), primType));
         }
     }
 }
 void AST::DecompNode::dimensionPass(Analysis::DimensionSymbolTable* nt, Typing::MatrixType& type) {
     Typing::MatrixType lType = type;
     Typing::MatrixType rType = type;
-    lType.rank--;
-    lType.dimensions.pop_back();
+
+    if (lType.rank <= 1) {
+        lType.rank = 1;
+        lType.dimensions[0] = 1;
+    } else {
+        lType.rank--;
+        lType.dimensions.pop_back();
+    }
+
     rType.dimensions.back()--;
 
     nt->add_node(this->lVal, std::move(std::make_shared<Typing::Type>(lType)));
