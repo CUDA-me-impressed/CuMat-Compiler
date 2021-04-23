@@ -1,43 +1,9 @@
+#include "DimensionPass.hpp"
 
-#include <BinaryExprNode.hpp>
+#include <ASTNode.hpp>
 #include <DimensionsSymbolTable.hpp>
 #include <Type.hpp>
-
-#include "Utils.hpp"
-
-bool expandableDimension(const Typing::Type& left, const Typing::Type& right);
-
-void AST::Node::dimensionPass(Analysis::DimensionSymbolTable* nt) {
-    for (auto const& child : this->children) child->dimensionPass(nt);
-}
-
-void AST::BinaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
-    switch (this->op) {
-        case BIN_OPERATORS::PLUS:
-        case BIN_OPERATORS::MINUS:
-        case BIN_OPERATORS::MUL:
-        case BIN_OPERATORS::DIV:
-        case BIN_OPERATORS::LOR:
-        case BIN_OPERATORS::LAND:
-        case BIN_OPERATORS::LT:
-        case BIN_OPERATORS::GT:
-        case BIN_OPERATORS::LTE:
-        case BIN_OPERATORS::GTE:
-        case BIN_OPERATORS::EQ:
-        case BIN_OPERATORS::NEQ:
-        case BIN_OPERATORS::BAND:
-        case BIN_OPERATORS::BOR:
-        case BIN_OPERATORS::POW:
-            if (expandableDimension(*this->lhs->type, *this->rhs->type)) {
-            }
-            break;
-        case BIN_OPERATORS::MATM:
-            // uses different dimensional rules...
-            break;
-        case BIN_OPERATORS::CHAIN:
-            break;
-    }
-}
+#include <iostream>
 
 bool expandableDimensionMatrix(const Typing::MatrixType& left, const Typing::MatrixType& right) {
     const Typing::MatrixType* small;
@@ -50,10 +16,11 @@ bool expandableDimensionMatrix(const Typing::MatrixType& left, const Typing::Mat
         big = &right;
     }
     for (int i = 0; i < small->rank; i++) {
-        if (small->dimensions[i] && big->dimensions[i]) {
+        if (small->dimensions[i] != big->dimensions[i] && small->dimensions[i] != 0 && big->dimensions[i] != 0) {
+            return false;
         }
     }
-    return false;
+    return true;
 }
 
 bool expandableDimension(const Typing::Type& left, const Typing::Type& right) {
@@ -71,4 +38,11 @@ std::vector<uint> expandedDimension(const Typing::MatrixType& left, const Typing
         big = &right;
     }
     return {big->dimensions};
+}
+
+void dimension_error(const std::string& message, AST::Node* node) {
+    std::cerr << "Dimension Error" << std::endl;
+    std::cerr << node->literalText << std::endl;
+    std::cerr << message << std::endl;
+    throw std::runtime_error{message};
 }

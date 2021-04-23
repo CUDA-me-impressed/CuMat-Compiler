@@ -1,9 +1,13 @@
 #include "FuncDefNode.hpp"
-#include "TypeCheckingUtils.hpp"
 
 #include <iostream>
+#include <variant>
+#include <utility>
 
+#include "DimensionPass.hpp"
+#include "DimensionsSymbolTable.hpp"
 #include "TreePrint.hpp"
+#include "TypeCheckingUtils.hpp"
 
 llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
     // Let us generate a new function -> We will first generate the function argument types
@@ -26,8 +30,9 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
 
     // Add paramaters to the symbol table
     int i = 0;
-    for(auto funcitt = func->arg_begin(); funcitt != func->arg_end(); funcitt++, i++){
-        context->symbolTable->setValue(this->parameters[i].second, (llvm::Value*) funcitt, this->parameters[i].first, funcName, "");
+    for (auto funcitt = func->arg_begin(); funcitt != func->arg_end(); funcitt++, i++) {
+        context->symbolTable->setValue(this->parameters[i].second, (llvm::Value*)funcitt, this->parameters[i].first,
+                                       funcName, "");
     }
 
     context->symbolTable->setFunctionData(funcName, typesRaw, func);
@@ -42,7 +47,6 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
-
     // TODO: Put the args into symbol table temporarily for the block semantic pass - remove before end of function
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
     for (const auto& typeNamePair : this->parameters) {
@@ -59,9 +63,17 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
 
     this->block->semanticPass(context);
 
+    auto blockType = std::get_if<Typing::MatrixType>(&*this->block->returnExpr->type);
+    auto returnType = std::get_if<Typing::MatrixType>(&*this->returnType);
+
+    if (blockType->getPrimitiveType() != returnType->getPrimitiveType()) {
+        std::cerr << "Return type must match declaration (check for implicit upcasting in binary operators)" << std::endl;
+        std::exit(TypeCheckUtils::ErrorCodes::FUNCTION_ERROR);
+    }
+
     // Pop the function as we leave the definition of the code
     context->symbolTable->escapeFunction();
-    
+
     // Check if the function name is already in use
     if (context->semanticSymbolTable->inFuncTable(this->funcName, "")) {
         TypeCheckUtils::alreadyDefinedError(this->funcName, false);
@@ -86,4 +98,47 @@ std::string AST::FuncDefNode::toTree(const std::string& prefix, const std::strin
     str += ")->" + printType(*returnType) + "\n";
     str += block->toTree(childPrefix + L, childPrefix + B);
     return str;
+}
+
+void AST::FuncDefNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    auto inner_nt = std::move(nt->push_scope());
+    for (auto& [name, type] : this->parameters) {
+        inner_nt->add_node(name, type);
+    }
+    this->block->dimensionPass(inner_nt.get());
+
+    auto* rettype = std::get_if<Typing::MatrixType>(this->returnType.get());
+    auto* blocktype = std::get_if<Typing::MatrixType>(this->block->returnExpr->type.get());
+
+    if (rettype && blocktype) {
+        if (!expandableDimensionMatrix(*rettype, *blocktype) || rettype->rank != blocktype->rank) {
+            std::string expected{"["}, actual{"["};
+            for (auto i : rettype->dimensions) expected.append(std::to_string(i) + ",");
+            expected.pop_back();
+            expected.append("]");
+            for (auto i : blocktype->dimensions) actual.append(std::to_string(i) + ",");
+            actual.pop_back();
+            actual.append("]");
+            dimension_error(std::string{"Return expression doesn't match declared signature. Expected "} + expected +
+                                ", got " + actual + ".",
+                            this);
+        }
+    }
+}
+void AST::FuncDefNode::dimensionNamePass(Analysis::DimensionSymbolTable* nt) {
+    if (auto a = std::get_if<Typing::MatrixType>(this->returnType.get())) {
+        if (a->dimensions.empty()) {
+            a->dimensions.emplace_back(1);
+            a->rank = 1;
+        }
+    }
+    for (auto& [name, arg] : this->parameters) {
+        if (auto* a = std::get_if<Typing::MatrixType>(arg.get())) {
+            if (a->dimensions.empty()) {
+                a->dimensions.emplace_back(1);
+                a->rank = 1;
+            }
+        }
+    }
+    nt->add_node(this->funcName, this->returnType);
 }

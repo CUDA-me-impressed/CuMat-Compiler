@@ -12,9 +12,13 @@ class VariableNode : public ExprNode {
     std::string name;
     std::shared_ptr<SliceNode> variableSlicing;
     void semanticPass(Utils::IRContext* context) override;
+    void dimensionPass(Analysis::DimensionSymbolTable* nt) override;
+
     llvm::Value* codeGen(Utils::IRContext* context) override;
 
     llvm::Value* handleSlicing(Utils::IRContext* context, llvm::Value* val);
-    [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override{};
+    [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override {
+        return std::string{};
+    };
 };
 }  // namespace AST

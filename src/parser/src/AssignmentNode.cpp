@@ -4,6 +4,7 @@
 #include <iostream>
 #include <numeric>
 
+#include "DimensionsSymbolTable.hpp"
 #include "TreePrint.hpp"
 
 llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
@@ -12,7 +13,7 @@ llvm::Value* AST::AssignmentNode::codeGen(Utils::IRContext* context) {
 
     // Ensure that matrix literals are upcast
     if(auto* rValType = std::get_if<Typing::MatrixType>(&*rVal->type)){
-        if(rValType->rank == 0){
+        if (this->rVal->isLiteralNode()) {
             rValLLVM = Utils::upcastLiteralToMatrix(context, *rValType, rValLLVM);
         }
     }
@@ -147,4 +148,14 @@ std::string AST::AssignmentNode::toTree(const std::string& prefix, const std::st
     str += lVal->toTree(childPrefix + T, childPrefix + I);
     str += rVal->toTree(childPrefix + L, childPrefix + B);
     return str;
+}
+void AST::AssignmentNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    rVal->dimensionPass(nt);
+    if (!this->name.empty()) {
+        nt->add_node(this->name, rVal->type);
+    } else {
+        if (auto* t = std::get_if<Typing::MatrixType>(rVal->type.get())) {
+            lVal->dimensionPass(nt, *t);
+        }
+    }
 }

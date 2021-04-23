@@ -35,6 +35,7 @@ class Node {
 
     virtual llvm::Value* codeGen(Utils::IRContext* context);
     virtual void dimensionPass(Analysis::DimensionSymbolTable* nt);
+    virtual void dimensionNamePass(Analysis::DimensionSymbolTable* nt);
 
     [[nodiscard]] virtual std::string toTree(const std::string& prefix, const std::string& childPrefix) const;
 };

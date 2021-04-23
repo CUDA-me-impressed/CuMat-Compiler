@@ -17,9 +17,8 @@ llvm::Value* AST::BlockNode::codeGen(Utils::IRContext* context) {
     llvm::Value* returnExprVal = this->returnExpr->codeGen(context);
 
     // Ensure that matrix literals are upcast
-    if(auto* rValType = std::get_if<Typing::MatrixType>(&*returnExpr->type)){
-
-        if(rValType->rank == 0){
+    if (auto* rValType = std::get_if<Typing::MatrixType>(&*returnExpr->type)) {
+        if (returnExpr->isLiteralNode()) {
             returnExprVal = Utils::upcastLiteralToMatrix(context, *rValType, returnExprVal);
         }
     }
@@ -36,6 +35,7 @@ void AST::BlockNode::semanticPass(Utils::IRContext* context) {
     for (auto const& assignment : this->assignments) assignment->semanticPass(context);
     this->returnExpr->semanticPass(context);
 }
+
 std::string AST::BlockNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
     using namespace Tree;
     std::string str{prefix + std::string{"Block\n"}};
@@ -52,7 +52,7 @@ std::string AST::BlockNode::toTree(const std::string& prefix, const std::string&
  * @param returnExprVal
  */
 void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value* returnExprVal) {
-    if (this->callingFunctionName == "main" && !context->compilerOptions->silent) {
+    if (this->callingFunctionName == "main") {
         // lmao this is awful code deal with it
         if (auto retType = std::get_if<Typing::MatrixType>(&*this->returnExpr->type)) {
             std::vector<llvm::Value*> argVals({returnExprVal});
@@ -64,8 +64,8 @@ void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value*
             } else {
                 throw std::runtime_error("Main return type not valid");
             }
-        } else if(auto retTypeFunc = std::get_if<Typing::FunctionType>(&*this->returnExpr->type)){
-            if(auto retType = std::get_if<Typing::MatrixType>(&*retTypeFunc->returnType)) {
+        } else if (auto retTypeFunc = std::get_if<Typing::FunctionType>(&*this->returnExpr->type)) {
+            if (auto retType = std::get_if<Typing::MatrixType>(&*retTypeFunc->returnType)) {
                 // Functions still return a matrix
 
                 std::vector<llvm::Value*> argVals({returnExprVal});
@@ -82,3 +82,9 @@ void AST::BlockNode::printIfMainFunction(Utils::IRContext* context, llvm::Value*
     }
 }
 
+void AST::BlockNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    for (auto& a : this->assignments) {
+        a->dimensionPass(nt);
+    }
+    returnExpr->dimensionPass(nt);
+}

@@ -17,6 +17,7 @@ class AssignmentNode : public Node {
     llvm::Value* codeGen(Utils::IRContext* context) override;
     llvm::Value* decompAssign(Utils::IRContext* context, std::shared_ptr<DecompNode> decompNode,
                               llvm::Value* matHeader);
+    void dimensionPass(Analysis::DimensionSymbolTable* nt) override;
 
     [[nodiscard]] std::string toTree(const std::string& prefix, const std::string& childPrefix) const override;
 };

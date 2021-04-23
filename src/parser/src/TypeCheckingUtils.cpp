@@ -81,7 +81,7 @@ std::string TypeCheckUtils::primToString(Typing::PRIMITIVE ty) {
 }
 
 void TypeCheckUtils::wrongTypeError(std::string message, Typing::PRIMITIVE ty) {
-    std::cerr << "Wrong type encountered/n" << message << "/n"
+    std::cerr << "Wrong type encountered\n" << message << "\n"
               << "Found: " << primToString(ty) << std::endl;
     std::exit(TypeCheckUtils::ErrorCodes::WRONG_TYPE);
 }
@@ -97,7 +97,7 @@ void TypeCheckUtils::noneError() {
 }
 
 void TypeCheckUtils::notDefinedError(std::string name) {
-    std::cerr << "Function with same name already defined: " << name << std::endl;
+    std::cerr << "No matching definition found: " << name << std::endl;
     std::exit(TypeCheckUtils::ErrorCodes::NOT_DEFINED_ERROR);
 }
 

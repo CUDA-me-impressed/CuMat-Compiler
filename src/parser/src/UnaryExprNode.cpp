@@ -20,7 +20,7 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
 
     // Ensure that matrix literals are upcast
     if(auto* opType = std::get_if<Typing::MatrixType>(&*this->operand->type)){
-        if(opType->rank == 0){
+        if (this->operand->isLiteralNode()) {
             operand = Utils::upcastLiteralToMatrix(context, *opType, operand);
         }
     }
