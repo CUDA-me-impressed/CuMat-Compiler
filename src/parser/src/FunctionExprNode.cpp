@@ -80,8 +80,13 @@ void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
     };
 
     for (int i = 0; i < argTypes.size(); ++i) {
-        if (argTypes[i] != funcType->parameters[i]) {
-            std::cerr << "Function argument types do not match type definition" << std::endl;
+        auto argType = std::get_if<Typing::MatrixType>(argTypes[i].get());
+        auto param = std::get_if<Typing::MatrixType>(funcType->parameters[i].get());
+
+        if (argType->getPrimitiveType() != param->getPrimitiveType()) {
+            std::cerr << "Function argument types do not match type definition\n"
+                      << "Expected: " << TypeCheckUtils::primToString(argType->getPrimitiveType()) << "\n"
+                      << "Found: " << TypeCheckUtils::primToString(param->getPrimitiveType()) << std::endl;
             std::exit(TypeCheckUtils::ErrorCodes::FUNCTION_ERROR);
         }
     }
