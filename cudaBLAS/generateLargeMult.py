@@ -7,16 +7,16 @@ def printAsCuMatMatrix(mat):
     file = file + ']'
     return file
 
-n = 257
+n = 250
 dim = (n,n)
 
 x = np.ones(dim) * 2.1
 # y = np.identity(dim[0]) * 1
 
-programHeader = "func int main { a = "
+programHeader = "func float[" + str(n) + "," + str(n) + "] main { a = "
 programHeader = programHeader + printAsCuMatMatrix(x).replace("\n", "")
 programHeader = programHeader + "\n"
-programHeader = programHeader + "return a .* a"
+programHeader = programHeader + "return a * a"
 programHeader = programHeader + "}"
 text_file = open("pythonoutput.cm", "w")
 
