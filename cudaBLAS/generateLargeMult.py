@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 def printAsCuMatMatrix(mat):
     np.set_printoptions(threshold=9999999999)
@@ -7,7 +8,9 @@ def printAsCuMatMatrix(mat):
     file = file + ']'
     return file
 
-n = 250
+
+# for n in [300,400,500,750,1000]:
+n = 10
 dim = (n,n)
 
 x = np.ones(dim) * 2.1
@@ -23,3 +26,6 @@ text_file = open("pythonoutput.cm", "w")
 text_file.write(programHeader)
 
 text_file.close()
+
+os.system("cp pythonoutput.cm ../cmake-build-debug/src/compiler/src/python.cm")
+os.system("cp pythonoutput.cm ../cmake-build-debug/src/compiler/src/python.cm")
