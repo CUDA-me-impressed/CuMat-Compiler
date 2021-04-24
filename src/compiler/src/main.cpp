@@ -33,7 +33,7 @@ int main(int argc, char* argv[], char* envp[]) {
     std::string inputFileName;
     std::string outputFile;
 
-    const std::set<std::string> validFlags = {"-Wall", "-Winfo", "-Wnone", "-Oall", "-Onone", "-Oexp", "-o", "-s"};
+    const std::set<std::string> validFlags = {"-Wall", "-Winfo", "-Wnone", "-Mauto", "-Mcpu", "-Mgpu", "-Oall", "-Onone", "-Oexp", "-o", "-s"};
 
     // First argument is always name of exe, ignore
     for (int i = 1; i < argc; ++i) {
@@ -93,6 +93,28 @@ int main(int argc, char* argv[], char* envp[]) {
                  [](std::string s) { return s.rfind("-s", 0) == 0; });
     if(!silent.empty()){
         co.silent = true;
+    }
+
+    // Assign GPU / CPU / Auto mode
+    std::vector<std::string> compMode;
+    std::copy_if(args.begin(), args.end(), std::back_inserter(warningLevels),
+                 [](std::string s) { return s.rfind("-M", 0) == 0; });
+    if (warningLevels.size() > 1) {
+        printArgumentError("Maximum of one computation mode should be set", "");
+        return 1;
+    }
+    if (warningLevels.size() == 1) {
+        auto warn = warningLevels.front();
+        if (warn == "-Mgpu") {
+            co.computationMode = COMPUTATION::GPU;
+        } else if (warn == "-Mcpu") {
+            co.computationMode = COMPUTATION::CPU;
+        } else if (warn == "-Mauto") {
+            co.computationMode = COMPUTATION::AUTO;
+        } else {  // This shouldn't happen, but for completeness
+            printArgumentError("Unrecognised computation level", warn);
+            return 1;  // Quit early
+        }
     }
 
     // Assign Optimisation level
