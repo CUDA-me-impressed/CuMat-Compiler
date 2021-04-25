@@ -5,8 +5,10 @@
 #include "elementwise/mult.cu"
 
 #include "mult/mult.cu"
+#include "mult/gemv.cu"
 #include "utils.cu"
 #include "utils/io.cpp"
+#include "utils/headers.hpp"
 #include <iostream>
 
 
@@ -14,11 +16,11 @@ extern void CuMatAddMatrixI(long*,long*,long*,long);
 extern void printMatrix(long*,long);
 
 int main(){
-    long A[6] = {1,2,7,3};
-    long B[6] = {1,0,0,1};
-    long C[6];
+    long A[4] = {1,0,0,1};
+    long B[2] = {1,0};
+    long C[2];
 
-    CuMatAddMatrixI(A,B,C,4);
+    CuMatGEMVMatrixI(A,B,C,4);
 
     printMatrixI(C,4);
     //for(int i = 0; i < 6; i++){

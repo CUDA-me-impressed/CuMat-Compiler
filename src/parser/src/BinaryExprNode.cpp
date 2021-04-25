@@ -40,6 +40,14 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                 throw std::runtime_error("Resultant Matrix Type not determined!");
             }
 
+            for(int i = 0; i < resType->dimensions.size(); i++){
+                if(resType->dimensions[i] == 0){
+                    resType->dimensions = std::vector<uint>(resType->dimensions.begin(), resType->dimensions.begin()+i);
+                    resType->rank = i;
+                    break;
+                }
+            }
+
             newMatAlloc = Utils::createMatrix(context, *resType);
 
             if (shouldExecuteGPU(context, op) || this->op == BIN_OPERATORS::MATM) {
@@ -669,7 +677,7 @@ void AST::BinaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
             auto* r = std::get_if<Typing::MatrixType>(this->rhs->type.get());
 
             if (t && l && r) {
-                if (l->rank != 2 || r->rank != 2) {
+                if (l->rank > 2 || r->rank > 2) {
                     dimension_error("Matrix multiplication only defined on rank 2 variables", this);
                 } else {
                     if (l->dimensions[1] != r->dimensions[0]) {
