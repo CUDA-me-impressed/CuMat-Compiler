@@ -487,13 +487,38 @@ antlrcpp::Any CuMatVisitor::visitExp_not(CuMatParser::Exp_notContext* ctx) {
     auto negations = ctx->op_not();
     // Quick optimisation for silly scenarios like !!!!3 to become 3
     if (negations.size() % 2 == 0) {
-        return std::move(visit(ctx->exp_chain()));
+        return std::move(visit(ctx->exp_transpose()));
     } else {
         auto n = std::make_shared<AST::UnaryExprNode>();
         n->literalText = ctx->getText();
         n->op = AST::UNA_OPERATORS::LNOT;
-        n->operand = std::move(visit(ctx->exp_chain()));
+        n->operand = std::move(visit(ctx->exp_transpose()));
         return std::move(pConv<AST::ExprNode>(n));
+    }
+}
+
+antlrcpp::Any CuMatVisitor::visitExp_transpose(CuMatParser::Exp_transposeContext* ctx) {
+    // Transposing is weird and does not cancel out
+    auto transpositions = ctx->op_transpose();
+    if(transpositions.size() == 0)
+    {
+        return std::move(visit(ctx->exp_chain()));
+    } else {
+        auto n = std::make_shared<AST::UnaryExprNode>();
+        n->literalText = ctx->getText();
+        n->op = AST::UNA_OPERATORS::TRANSPOSE;
+        n->operand = std::move(visit(ctx->exp_chain()));
+        if(transpositions.size() == 1)
+        {
+            return std::move(pConv<AST::ExprNode>(n));
+        } else {
+            std::shared_ptr<AST::ExprNode> rightSide;
+            for(int i = 1; i < transpositions.size(); ++i) //One less as already done
+            {
+                
+            }
+        }
+
     }
 }
 

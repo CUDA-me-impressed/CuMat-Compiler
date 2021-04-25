@@ -46,6 +46,7 @@ GTE                         : '>=' | '≥' ;
 BOR                         : '|' ;
 BAND                        : '&' ;
 BNOT                        : '.!' ;
+TRANSPOSE                   : '#' ;
 PLUS                        : '+' ;
 MINUS                       : '-' ;
 TIMES                       : '×' ;

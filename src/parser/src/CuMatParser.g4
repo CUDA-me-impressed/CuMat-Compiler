@@ -40,7 +40,8 @@ exp_pow                     : exp_mat (op_pow exp_mat)* ; // rtol
 exp_mat                     : exp_neg (op_mat exp_neg)* ;
 exp_neg                     : op_neg* exp_bnot ;
 exp_bnot                    : op_bnot* exp_not ;
-exp_not                     : op_not* exp_chain ;
+exp_not                     : op_not* exp_transpose ;
+exp_transpose               : op_transpose* exp_chain ;
 exp_chain                   : exp_func (op_chain exp_func)* ; // rtol
 exp_func                    : value args* ;
 
@@ -54,6 +55,7 @@ op_mat                      : EOL? (MATM) EOL? ; // Dot product symbol??
 op_neg                      : EOL? (MINUS) ;
 op_not                      : EOL? (LNOT) ;
 op_bnot                     : EOL? (BNOT) ;
+op_transpose                : EOL? (TRANSPOSE) ;
 op_chain                    : EOL? (CHAIN) EOL? ;
 
 lambda                      : LAMBDA LPAR parameters RPAR ARROW expression ;

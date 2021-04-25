@@ -8,8 +8,8 @@ class DimensionSymbolTable;
 
 namespace AST {
 
-enum UNA_OPERATORS { NEG, LNOT, BNOT };
-static const char* UNA_OP_ENUM_STRING[] = {"neg", "lnot", "bnot"};
+enum UNA_OPERATORS { NEG, LNOT, BNOT, TRANSPOSE };
+static const char* UNA_OP_ENUM_STRING[] = {"neg", "lnot", "bnot", "transpose"};
 
 class UnaryExprNode : public ExprNode {
    public:
