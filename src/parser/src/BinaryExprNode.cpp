@@ -42,7 +42,7 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
 
             newMatAlloc = Utils::createMatrix(context, *resType);
 
-            if (true || shouldExecuteGPU(context, op) || this->op == BIN_OPERATORS::MATM) {
+            if (shouldExecuteGPU(context, op) || this->op == BIN_OPERATORS::MATM) {
                 if (this->op != BIN_OPERATORS::MATM) {
                     llvm::Value* resLenLLVM = llvm::ConstantInt::get(
                         llvm::Type::getInt64Ty(context->module->getContext()), resType->getLength());
@@ -466,7 +466,9 @@ bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext* context, AST::BIN_O
     }
     entropy *= rhsType->getLength() * lhsType->getLength();
     int maxCPUEntropy = 400;  // 400 corresponds to 20x20 matrix
-    return entropy >= maxCPUEntropy;
+    bool entropyQuery = entropy >= maxCPUEntropy;
+    return (entropyQuery || context->compilerOptions->computationMode == COMPUTATION::GPU) &&
+           (context->compilerOptions->computationMode != COMPUTATION::CPU);
 }
 
 /**

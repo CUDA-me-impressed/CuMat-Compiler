@@ -54,7 +54,6 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
     // Compress literal nodes to matrix representation
     if (auto primType = std::get_if<Typing::MatrixType>(&*this->type)) {
         llvm::Type* elType = primType->getLLVMPrimitiveType(context);
-        llvm::ArrayType* arrayType = llvm::ArrayType::get(elType, this->data.size());
         std::vector<llvm::Constant*> values;
 
         for (int i = 0; i < this->data.size(); i++) {
@@ -88,49 +87,30 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
             }
         }
         auto* i32Ty = llvm::Type::getInt32Ty(context->module->getContext());
-        llvm::Constant* init = llvm::ConstantArray::get(arrayType, values);
+        int arraySize = 256*256 - 1000;
+        int numArrays = ((int) values.size() / arraySize) + 1;
 
-        auto* dataAllocSize = llvm::ConstantExpr::getTruncOrBitCast(llvm::ConstantExpr::getSizeOf(arrayType), i32Ty);
-        auto* arr = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), i32Ty, arrayType, dataAllocSize,
-                                                 nullptr, nullptr, "");
-        context->Builder->Insert(arr, "matTmpData");
-        context->Builder->CreateStore(init, arr);
-        context->Builder->CreateMemCpy(
-            matRecord.dataPtr, matRecord.dataPtr->getPointerAlignment(context->module->getDataLayout()), arr,
-            arr->getPointerAlignment(context->module->getDataLayout()), llvm::ConstantExpr::getSizeOf(arrayType));
-        auto* freeMem = llvm::CallInst::CreateFree(arr, context->Builder->GetInsertBlock());
-        context->Builder->Insert(freeMem);
-        //        llvm::BasicBlock* addBB =
-        //            llvm::BasicBlock::Create(context->Builder->getContext(), "matInitEntry", context->function);
-        //        llvm::BasicBlock* endBB = llvm::BasicBlock::Create(context->Builder->getContext(), "matInitEnd");
-        //
-        //        auto indexAlloca = Utils::CreateEntryBlockAlloca(*context->Builder, "startIndex",
-        //                                                         llvm::Type::getInt32Ty(context->Builder->getContext()));
-        //        llvm::Constant* matIndexEnd = llvm::ConstantInt::get(i32Ty, values.size());
-        //        // parent->getBasicBlockList().push_back(addBB);
-        //        context->Builder->CreateBr(addBB);
-        //
-        //        context->Builder->SetInsertPoint(addBB);
-        //        {
-        //            auto* index = context->Builder->CreateLoad(indexAlloca, "index");
-        //
-        //            llvm::Value* arrElement = Utils::getValueFromPointerOffsetValue(context, arr, index,
-        //            "getArrConst"); Utils::insertValueAtPointerOffsetValue(context, matRecord.dataPtr, index,
-        //            arrElement, false);
-        //
-        //            // Update counter
-        //            auto* next = context->Builder->CreateAdd(
-        //                index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{32, 1, true}),
-        //                "inc");
-        //            context->Builder->CreateStore(next, indexAlloca);
-        //
-        //            // Test if completed list
-        //            auto* done = context->Builder->CreateICmpSGE(next, matIndexEnd);
-        //            context->Builder->CreateCondBr(done, endBB, addBB);
-        //        }
-        //
-        //        context->function->getBasicBlockList().push_back(endBB);
-        //        context->Builder->SetInsertPoint(endBB);
+        for(int i = 0; i < numArrays; i++){
+            int arrayEnd = std::min(((i+1)* arraySize), (int)values.size());
+            std::vector<llvm::Constant*> subArray = std::vector<llvm::Constant*>(values.begin()+(i*arraySize), values.begin()+ arrayEnd);
+            llvm::ArrayType* arrayType = llvm::ArrayType::get(elType, subArray.size());
+            llvm::Constant* init = llvm::ConstantArray::get(arrayType, subArray);
+            auto * dataAllocSize = llvm::ConstantExpr::getTruncOrBitCast(llvm::ConstantExpr::getSizeOf(arrayType), i32Ty);
+            auto* arr = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), i32Ty, arrayType,
+                                                     dataAllocSize, nullptr, nullptr, "");
+            context->Builder->Insert(arr, "matTmpData");
+            context->Builder->CreateStore(init, arr);
+
+            // Get a new dataptr
+            llvm::Value* offset = llvm::ConstantInt::get(i32Ty, (i*arraySize));
+            llvm::Value* dataPtr = Utils::getPointerAddressFromOffset(context, matRecord.dataPtr, offset);
+
+            context->Builder->CreateMemCpy(
+                dataPtr, dataPtr->getPointerAlignment(context->module->getDataLayout()), arr,
+                arr->getPointerAlignment(context->module->getDataLayout()), llvm::ConstantExpr::getSizeOf(arrayType));
+            auto * freeMem = llvm::CallInst::CreateFree(arr, context->Builder->GetInsertBlock());
+            context->Builder->Insert(freeMem);
+        }
     }
 
     return matAlloc;

@@ -7,11 +7,15 @@ enum class WARNINGS { ALL, INFO, NONE };
 
 enum class OPTIMISATION { NONE, ALL, EXPERIMENTAL };
 
+enum class COMPUTATION {AUTO, GPU, CPU};
+
 class CompilerOptions {
    public:
     WARNINGS warningVerbosity = WARNINGS::NONE;
 
     OPTIMISATION optimisationLevel = OPTIMISATION::ALL;
+
+    COMPUTATION computationMode = COMPUTATION::AUTO;
 
     std::string inputFile;
 
