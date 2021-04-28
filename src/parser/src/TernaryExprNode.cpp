@@ -12,7 +12,7 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
     if (!conditionEval) return nullptr;  // TODO: Handle errors gracefully
 
     auto matRecord = Utils::getMatrixFromPointer(context, conditionEval);
-    if (matRecord.rank != Utils::getValueFromLLVM(context, 0, Typing::PRIMITIVE::INT, true)) return nullptr;
+
     // Fetch value from matrix memory
     llvm::Value* dataVal = Utils::getValueFromPointerOffset(context, matRecord.dataPtr, 0, "dataVal");
 
@@ -30,23 +30,39 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
     llvm::BasicBlock* mergeBB = llvm::BasicBlock::Create(context->module->getContext(), "merge");
     llvm::BasicBlock* falseyBB = llvm::BasicBlock::Create(context->module->getContext(), "falsey");
 
+    context->Builder->CreateCondBr(conditionEval, truthyBB, falseyBB);
+
     // Handle the code of the body at the correct position
     context->Builder->SetInsertPoint(truthyBB);
-    llvm::Value* returnVal = this->truthy->codeGen(context);
+    llvm::Value* truthyVal = this->truthy->codeGen(context);
     context->Builder->CreateBr(mergeBB);
-    returnVal = context->Builder->GetInsertBlock();
 
     func->getBasicBlockList().push_back(falseyBB);
     // Insert at the correct position
     context->Builder->SetInsertPoint(falseyBB);
-    returnVal = this->falsey->codeGen(context);
+    auto* falseyVal = this->falsey->codeGen(context);
 
     // Merge the lines of execution together
     context->Builder->CreateBr(mergeBB);
+
     func->getBasicBlockList().push_back(mergeBB);
     context->Builder->SetInsertPoint(mergeBB);
 
-    return returnVal;
+    auto truthyType = std::get_if<Typing::MatrixType>(&*this->truthy->type);
+    if(this->truthy->isLiteralNode()){
+        Utils::upcastLiteralToMatrix(context, (const Typing::Type&)truthyType, truthyVal);
+    }
+
+    auto falseyType = std::get_if<Typing::MatrixType>(&*this->falsey->type);
+    if(this->falsey->isLiteralNode()){
+        Utils::upcastLiteralToMatrix(context, (const Typing::Type&)falseyType, falseyVal);
+    }
+
+    llvm::PHINode *PN = context->Builder->CreatePHI(truthyVal->getType(), 2, "iftmp");
+    PN->addIncoming(truthyVal, truthyBB);
+    PN->addIncoming(falseyVal, falseyBB);
+
+    return PN;
 }
 
 void AST::TernaryExprNode::semanticPass(Utils::IRContext* context) {
