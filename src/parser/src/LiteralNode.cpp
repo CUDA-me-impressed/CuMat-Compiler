@@ -105,6 +105,7 @@ template <>
 std::string AST::LiteralNode<float>::toTree(const std::string& prefix, const std::string& childPrefix) const {
     return prefix + std::to_string(value) + '\n';
 }
+
 template <class T>
 void AST::LiteralNode<T>::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     Typing::MatrixType* mt = std::get_if<Typing::MatrixType>(&*type);
@@ -115,6 +116,7 @@ void AST::LiteralNode<T>::dimensionPass(Analysis::DimensionSymbolTable* nt) {
         throw std::runtime_error{"Invalid TypeClass for LiteralNode"};
     }
 }
+
 template <>
 std::string AST::LiteralNode<int>::toTree(const std::string& prefix, const std::string& childPrefix) const {
     return prefix + std::to_string(value) + '\n';
