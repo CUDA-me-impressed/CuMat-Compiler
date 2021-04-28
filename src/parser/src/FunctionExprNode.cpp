@@ -74,11 +74,11 @@ void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
 
     // Get the argument types for the function
     std::vector<std::shared_ptr<Typing::Type>> argTypes;
-    for (auto const& arg : this->args) {
+    for (auto& arg : this->args) {
         arg->semanticPass(context);
-        argTypes.push_back(std::move(arg->type));
+        argTypes.push_back(arg->type);
         // Check that the argument type in this position matches the argument type in the function type
-    };
+    }
 
     for (int i = 0; i < argTypes.size(); ++i) {
         auto argType = std::get_if<Typing::MatrixType>(argTypes[i].get());
