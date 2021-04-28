@@ -107,7 +107,8 @@ std::string AST::LiteralNode<float>::toTree(const std::string& prefix, const std
 }
 template <class T>
 void AST::LiteralNode<T>::dimensionPass(Analysis::DimensionSymbolTable* nt) {
-    if (Typing::MatrixType* mt = std::get_if<Typing::MatrixType>(&*type)) {
+    Typing::MatrixType* mt = std::get_if<Typing::MatrixType>(&*type);
+    if (mt) {
         mt->dimensions = std::vector<uint>{1};
         mt->rank = 1;
     } else {

@@ -65,9 +65,12 @@ void AST::TernaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     falsey->dimensionPass(nt);
     auto* true_mt = std::get_if<Typing::MatrixType>(&*truthy->type);
     auto* false_mt = std::get_if<Typing::MatrixType>(&*falsey->type);
-    if (true_mt && false_mt) {
-        if (true_mt->dimensions != false_mt->dimensions) {
+    auto* type = std::get_if<Typing::MatrixType>(this->type.get());
+    if (true_mt && false_mt && type) {
+        if (!expandableDimensionMatrix(*true_mt, *false_mt) || true_mt->rank != false_mt->rank) {
             dimension_error("If else block branches yield miss-matched dimension", this);
         }
+        type->dimensions = expandedDimension(*true_mt, *false_mt);
+        type->rank = type->dimensions.size();
     }
 }
