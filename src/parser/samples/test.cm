@@ -1,3 +1,7 @@
-func int main {
-    return [1,2\3,4] + [5,6\7,8]
+func int test(int[*] x) {
+    return if 1 == 1 then 2 else 3
+}
+
+func int[*] main {
+    return test (6)
 }

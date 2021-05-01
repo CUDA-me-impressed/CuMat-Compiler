@@ -1,4 +1,4 @@
-func int head(int[*] list) {
+func int[*] head(int[*] list) {
     [x:_] = list
     return x
 }
