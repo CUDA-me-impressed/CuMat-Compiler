@@ -53,16 +53,23 @@ void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset
 void insertValueAtPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, llvm::Value* val,
                                      bool i64);
 
+llvm::Value* getValueFromPointerOffsetBool(Utils::IRContext* context, llvm::Value* ptr, int offset, const std::string& name);
+
 llvm::Value* getValueFromPointerOffset(IRContext* context, llvm::Value* ptr, int offset, const std::string& name);
 
 llvm::Value* getValueFromPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue,
                                             const std::string& name);
+
+llvm::Value* getValueFromPointerOffsetValueBool(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, const std::string& name);
 
 llvm::Value* getPointerAddressFromOffset(IRContext* context, llvm::Value* ptr, llvm::Value* offset);
 
 llvm::Value* getValueFromIndex(IRContext* context, llvm::Value* ptr, std::shared_ptr<Typing::MatrixType> mat,
                                const std::vector<llvm::Value*>& indicies);
 llvm::Value* getValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* offset, const std::string& name);
+
+llvm::Value* getValueFromMatrixPtrBool(IRContext* context, llvm::Value* mPtr, llvm::Value* offset, const std::string& name);
+
 
 void setValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* offset, llvm::Value* val);
 

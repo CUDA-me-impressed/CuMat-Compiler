@@ -230,6 +230,14 @@ llvm::Value* Utils::getValueFromPointerOffset(Utils::IRContext* context, llvm::V
     return context->Builder->CreateLoad(offsetPtr, name);
 }
 
+llvm::Value* Utils::getValueFromPointerOffsetBool(Utils::IRContext* context, llvm::Value* ptr, int offset,
+                                              const std::string& name) {
+    auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt1Ty(context->module->getContext()), 0);
+    auto xOffset = llvm::ConstantInt::get(llvm::Type::getInt1Ty(context->module->getContext()), offset);
+    auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset}, "getPtr");
+    return context->Builder->CreateLoad(offsetPtr, name);
+}
+
 llvm::Value* Utils::getValueFromPointerOffsetValue(Utils::IRContext* context, llvm::Value* ptr,
                                                    llvm::Value* offsetValue, const std::string& name) {
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
@@ -237,10 +245,23 @@ llvm::Value* Utils::getValueFromPointerOffsetValue(Utils::IRContext* context, ll
     return context->Builder->CreateLoad(offsetPtr, name);
 }
 
+llvm::Value* Utils::getValueFromPointerOffsetValueBool(Utils::IRContext* context, llvm::Value* ptr,
+                                                   llvm::Value* offsetValue, const std::string& name) {
+    auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt1Ty(context->module->getContext()), 0);
+    auto offsetptr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, offsetValue});
+    return context->Builder->CreateLoad(offsetptr, name);
+}
+
 llvm::Value* Utils::getValueFromMatrixPtr(Utils::IRContext* context, llvm::Value* mPtr, llvm::Value* offset,
                                           const std::string& name) {
     auto* dataPtr = getValueFromPointerOffset(context, mPtr, 0, "dataPtr");
     return getValueFromPointerOffsetValue(context, dataPtr, offset, "matValue");
+}
+
+llvm::Value* Utils::getValueFromMatrixPtrBool(Utils::IRContext* context, llvm::Value* mPtr, llvm::Value* offset,
+                                              const std::string& name){
+    auto* dataPtr = getValueFromPointerOffsetBool(context, mPtr, 0, "dataPtr");
+    return getValueFromPointerOffsetValueBool(context, dataPtr, offset, "matValue");
 }
 
 /**

@@ -194,5 +194,5 @@ extern "C" void CuMatMatMultMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, He
         cudaMemcpy(matRes, d_Res, matResSize, cudaMemcpyDeviceToHost);
 
         cublasDestroy(handle);
-    }else if(matHeaderA->dimensions[])
+    }
 }

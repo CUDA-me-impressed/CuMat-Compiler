@@ -123,8 +123,14 @@ llvm::Value* AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, 
 
         auto* lindex = Builder->CreateURem(index, lsize);
         auto* rindex = Builder->CreateURem(index, rsize);
-        auto* l = Utils::getValueFromMatrixPtr(context, lhsVal, lindex, "lhs");
-        auto* r = Utils::getValueFromMatrixPtr(context, rhsVal, rindex, "rhs");
+        llvm::Value* l, *r;
+        if(lhsType.primType == Typing::PRIMITIVE::BOOL){
+            l = Utils::getValueFromMatrixPtrBool(context, lhsVal, lindex, "lhs");
+            r = Utils::getValueFromMatrixPtrBool(context, rhsVal, rindex, "rhs");
+        }else {
+            l = Utils::getValueFromMatrixPtr(context, lhsVal, lindex, "lhs");
+            r = Utils::getValueFromMatrixPtr(context, rhsVal, rindex, "rhs");
+        }
         auto* opResult = applyOperatorToOperands(context, this->op, l, r, opName);
         Utils::setValueFromMatrixPtr(context, matAlloc, index, opResult);
 
