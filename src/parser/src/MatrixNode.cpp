@@ -143,7 +143,6 @@ void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
     Typing::MatrixType exprType;
     // Runs through all elements to check types and ranks
     for (auto& el : data) {
-        el->semanticPass(context);
         try {
             exprType = std::get<Typing::MatrixType>(*el->type);
         } catch (std::bad_cast b) {
