@@ -133,11 +133,11 @@ Utils::FunctionTableEntry Utils::SymbolTable::getFunction(const std::string& fun
                                                           const std::vector<std::shared_ptr<Typing::Type>>& params,
                                                           const std::string& funcNamespace) {
     const std::string fullFuncName = funcNamespace + "::" + funcName;
-    if (!this->funcTable[fullFuncName].contains(params)) {
-        throw std::runtime_error("[Internal Error] Cannot retrieve function, not defined");
-    }
-    auto trueParams = getFunctionTrueType(funcName, params, funcNamespace);
-    return this->funcTable[fullFuncName][trueParams];
+//    if (!this->funcTable[fullFuncName].contains(params)) {
+//        throw std::runtime_error("[Internal Error] Cannot retrieve function, not defined");
+//    }
+//    auto trueParams = getFunctionTrueType(funcName, params, funcNamespace);
+    return this->funcTable[fullFuncName].begin()->second;
 }
 
 /**
