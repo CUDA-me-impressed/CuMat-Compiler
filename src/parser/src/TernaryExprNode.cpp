@@ -1,6 +1,7 @@
 #include "TernaryExprNode.hpp"
 
 #include <DimensionPass.hpp>
+#include <iostream>
 
 #include "CodeGenUtils.hpp"
 #include "TypeCheckingUtils.hpp"
@@ -55,19 +56,34 @@ void AST::TernaryExprNode::semanticPass(Utils::IRContext* context) {
     this->falsey->semanticPass(context);
     Typing::MatrixType tTy = TypeCheckUtils::extractMatrixType(this->truthy);
     Typing::MatrixType fTy = TypeCheckUtils::extractMatrixType(this->falsey);
-    TypeCheckUtils::assertMatchingTypes(tTy.getPrimitiveType(), fTy.getPrimitiveType());
-
-    this->type = TypeCheckUtils::makeMatrixType(std::vector<uint>(), tTy.getPrimitiveType());
+    if (TypeCheckUtils::isNone(tTy.getPrimitiveType()) or TypeCheckUtils::isNone(fTy.getPrimitiveType())) {
+        if (TypeCheckUtils::isNone(tTy.getPrimitiveType()) and TypeCheckUtils::isNone(fTy.getPrimitiveType())) {
+            std::cerr << "Both branches of a Ternary Expression cannot be recursive calls" << std::endl;
+            std::exit(TypeCheckUtils::FUNCTION_ERROR);
+        }
+        if (TypeCheckUtils::isNone(tTy.getPrimitiveType())) {
+            this->type = TypeCheckUtils::makeMatrixType(std::vector<uint>(), fTy.getPrimitiveType());
+        } else {
+            this->type = TypeCheckUtils::makeMatrixType(std::vector<uint>(), tTy.getPrimitiveType());
+        }
+    } else {
+        TypeCheckUtils::assertMatchingTypes(tTy.getPrimitiveType(), fTy.getPrimitiveType());
+        this->type = TypeCheckUtils::makeMatrixType(std::vector<uint>(), tTy.getPrimitiveType());
+    }
 }
+
 void AST::TernaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     condition->dimensionPass(nt);
     truthy->dimensionPass(nt);
     falsey->dimensionPass(nt);
     auto* true_mt = std::get_if<Typing::MatrixType>(&*truthy->type);
     auto* false_mt = std::get_if<Typing::MatrixType>(&*falsey->type);
-    if (true_mt && false_mt) {
-        if (true_mt->dimensions != false_mt->dimensions) {
+    auto* type = std::get_if<Typing::MatrixType>(this->type.get());
+    if (true_mt && false_mt && type) {
+        if (!expandableDimensionMatrix(*true_mt, *false_mt) || true_mt->rank != false_mt->rank) {
             dimension_error("If else block branches yield miss-matched dimension", this);
         }
+        type->dimensions = expandedDimension(*true_mt, *false_mt);
+        type->rank = type->dimensions.size();
     }
 }

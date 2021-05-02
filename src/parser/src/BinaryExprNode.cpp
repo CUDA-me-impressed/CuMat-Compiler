@@ -4,6 +4,7 @@
 #include <MatrixNode.hpp>
 
 #include "CompilerOptions.hpp"
+#include "DimensionPass.hpp"
 #include "TreePrint.hpp"
 #include "TypeCheckingUtils.hpp"
 
@@ -23,12 +24,11 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
 
     if (auto* lhsType = std::get_if<Typing::MatrixType>(&*lhsMatNode->type)) {
         if (auto* rhsType = std::get_if<Typing::MatrixType>(&*rhsMatNode->type)) {
-
             // Upcasting literal to matrix type
-            if(lhsType->rank == 0){
+            if (lhsMatNode->isLiteralNode()) {
                 lhsVal = Utils::upcastLiteralToMatrix(context, *lhsType, lhsVal);
             }
-            if(rhsType->rank == 0){
+            if (rhsMatNode->isLiteralNode()) {
                 rhsVal = Utils::upcastLiteralToMatrix(context, *rhsType, rhsVal);
             }
 
@@ -42,12 +42,11 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
 
             newMatAlloc = Utils::createMatrix(context, *resType);
 
-            if (true || shouldExecuteGPU(context, op) || this->op == BIN_OPERATORS::MATM) {
+            if (shouldExecuteGPU(context, op) || this->op == BIN_OPERATORS::MATM) {
                 if (this->op != BIN_OPERATORS::MATM) {
                     llvm::Value* resLenLLVM = llvm::ConstantInt::get(
                         llvm::Type::getInt64Ty(context->module->getContext()), resType->getLength());
-                    std::vector<llvm::Value*> argVals(
-                        {lhsVal, rhsVal,newMatAlloc, resLenLLVM});
+                    std::vector<llvm::Value*> argVals({lhsVal, rhsVal, newMatAlloc, resLenLLVM});
 
                     if (lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT) {
                         auto callRet = context->Builder->CreateCall(
@@ -63,8 +62,7 @@ llvm::Value* AST::BinaryExprNode::codeGen(Utils::IRContext* context) {
                     llvm::Value* lenK = llvm::ConstantInt::get(lenType, lhsType->dimensions[1]);
                     llvm::Value* lenJ = llvm::ConstantInt::get(lenType, lhsType->dimensions[1]);
 
-                    std::vector<llvm::Value*> argVals(
-                        {lhsVal, rhsVal,newMatAlloc, lenI, lenK, lenJ});
+                    std::vector<llvm::Value*> argVals({lhsVal, rhsVal, newMatAlloc, lenI, lenK, lenJ});
 
                     if (lhsType->primType == Typing::PRIMITIVE::INT && rhsType->primType == Typing::PRIMITIVE::INT) {
                         auto callRet = context->Builder->CreateCall(
@@ -393,7 +391,7 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
         case AST::BIN_OPERATORS::MINUS:
         case AST::BIN_OPERATORS::MUL:
         case AST::BIN_OPERATORS::DIV:
-        case AST::BIN_OPERATORS::MATM: // Dimensions sorted by Thomas later
+        case AST::BIN_OPERATORS::MATM:  // Dimensions sorted by Thomas later
             TypeCheckUtils::assertNumericType(lhsPrim);
             TypeCheckUtils::assertNumericType(rhsPrim);
             primType = TypeCheckUtils::getHighestType(lhsPrim, rhsPrim);
@@ -468,7 +466,9 @@ bool AST::BinaryExprNode::shouldExecuteGPU(Utils::IRContext* context, AST::BIN_O
     }
     entropy *= rhsType->getLength() * lhsType->getLength();
     int maxCPUEntropy = 400;  // 400 corresponds to 20x20 matrix
-    return entropy >= maxCPUEntropy;
+    bool entropyQuery = entropy >= maxCPUEntropy;
+    return (entropyQuery || context->compilerOptions->computationMode == COMPUTATION::GPU) &&
+           (context->compilerOptions->computationMode != COMPUTATION::CPU);
 }
 
 /**
@@ -620,5 +620,69 @@ std::string AST::BinaryExprNode::toTree(const std::string& prefix, const std::st
     str += lhs->toTree(childPrefix + T, childPrefix + I);
     str += rhs->toTree(childPrefix + L, childPrefix + B);
     return str;
+}
+
+void AST::BinaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
+    this->lhs->dimensionPass(nt);
+    this->rhs->dimensionPass(nt);
+    switch (this->op) {
+        case BIN_OPERATORS::PLUS:
+        case BIN_OPERATORS::MINUS:
+        case BIN_OPERATORS::MUL:
+        case BIN_OPERATORS::DIV:
+        case BIN_OPERATORS::LOR:
+        case BIN_OPERATORS::LAND:
+        case BIN_OPERATORS::LT:
+        case BIN_OPERATORS::GT:
+        case BIN_OPERATORS::LTE:
+        case BIN_OPERATORS::GTE:
+        case BIN_OPERATORS::EQ:
+        case BIN_OPERATORS::NEQ:
+        case BIN_OPERATORS::BAND:
+        case BIN_OPERATORS::BOR:
+        case BIN_OPERATORS::POW:
+            if (expandableDimension(*this->lhs->type, *this->rhs->type)) {
+                auto* t = std::get_if<Typing::MatrixType>(&*this->type);
+                if (t) {
+                    t->dimensions = expandedDimension(std::get<Typing::MatrixType>(*this->lhs->type),
+                                                      std::get<Typing::MatrixType>(*this->rhs->type));
+                    t->rank = t->dimensions.size();
+                }
+            } else {
+                auto* lType = std::get_if<Typing::MatrixType>(this->lhs->type.get());
+                auto* rType = std::get_if<Typing::MatrixType>(this->rhs->type.get());
+                if (lType && rType) {
+                    std::string expected{"["}, actual{"["};
+                    for (auto i : lType->dimensions) expected.append(std::to_string(i) + ",");
+                    expected.pop_back();
+                    expected.append("]");
+                    for (auto i : rType->dimensions) actual.append(std::to_string(i) + ",");
+                    actual.pop_back();
+                    actual.append("]");
+                    dimension_error("Incompatible Binary Operator Dimensions", this);
+                }
+            }
+            break;
+        case BIN_OPERATORS::MATM: {
+            auto* t = std::get_if<Typing::MatrixType>(&*this->type);
+            auto* l = std::get_if<Typing::MatrixType>(this->lhs->type.get());
+            auto* r = std::get_if<Typing::MatrixType>(this->rhs->type.get());
+
+            if (t && l && r) {
+                if (l->rank != 2 || r->rank != 2) {
+                    dimension_error("Matrix multiplication only defined on rank 2 variables", this);
+                } else {
+                    if (l->dimensions[1] != r->dimensions[0]) {
+                        dimension_error("Invalid matrix multiplication", this);
+                    }
+                    t->dimensions = {l->dimensions[0], r->dimensions[1]};
+                    t->rank = 2;
+                }
+            }
+            break;
+        }
+        case BIN_OPERATORS::CHAIN:
+            break;
+    }
 }
 }  // namespace AST

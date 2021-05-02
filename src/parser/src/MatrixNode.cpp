@@ -54,7 +54,6 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
     // Compress literal nodes to matrix representation
     if (auto primType = std::get_if<Typing::MatrixType>(&*this->type)) {
         llvm::Type* elType = primType->getLLVMPrimitiveType(context);
-        llvm::ArrayType* arrayType = llvm::ArrayType::get(elType, this->data.size());
         std::vector<llvm::Constant*> values;
 
         for (int i = 0; i < this->data.size(); i++) {
@@ -63,7 +62,7 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
             // Check if we can naively do this without causing recursive check -> Yes its not technically a matrix
             // Yes this violates our idea of every type being a matrix but its equivalent fuck it
             auto* literal = std::get_if<Typing::MatrixType>(&*element->type);
-            if (literal->rank == 0) {
+            if (element->isLiteralNode()) {
                 // Let's just generate code for the literal itself -> This returns a single value
                 auto* elementLLVMMat = static_cast<llvm::Constant*>(element->codeGen(context));
                 values.push_back(elementLLVMMat);
@@ -88,49 +87,30 @@ llvm::Value* AST::MatrixNode::codeGen(Utils::IRContext* context) {
             }
         }
         auto* i32Ty = llvm::Type::getInt32Ty(context->module->getContext());
-        llvm::Constant* init = llvm::ConstantArray::get(arrayType, values);
+        int arraySize = 256*256 - 1000;
+        int numArrays = ((int) values.size() / arraySize) + 1;
 
-        auto * dataAllocSize = llvm::ConstantExpr::getTruncOrBitCast(llvm::ConstantExpr::getSizeOf(arrayType), i32Ty);
-        auto* arr = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), i32Ty, arrayType,
-                                                 dataAllocSize, nullptr, nullptr, "");
-        context->Builder->Insert(arr, "matTmpData");
-        context->Builder->CreateStore(init, arr);
-        context->Builder->CreateMemCpy(
-            matRecord.dataPtr, matRecord.dataPtr->getPointerAlignment(context->module->getDataLayout()), arr,
-            arr->getPointerAlignment(context->module->getDataLayout()), llvm::ConstantExpr::getSizeOf(arrayType));
-        auto * freeMem = llvm::CallInst::CreateFree(arr, context->Builder->GetInsertBlock());
-        context->Builder->Insert(freeMem);
-        //        llvm::BasicBlock* addBB =
-        //            llvm::BasicBlock::Create(context->Builder->getContext(), "matInitEntry", context->function);
-        //        llvm::BasicBlock* endBB = llvm::BasicBlock::Create(context->Builder->getContext(), "matInitEnd");
-        //
-        //        auto indexAlloca = Utils::CreateEntryBlockAlloca(*context->Builder, "startIndex",
-        //                                                         llvm::Type::getInt32Ty(context->Builder->getContext()));
-        //        llvm::Constant* matIndexEnd = llvm::ConstantInt::get(i32Ty, values.size());
-        //        // parent->getBasicBlockList().push_back(addBB);
-        //        context->Builder->CreateBr(addBB);
-        //
-        //        context->Builder->SetInsertPoint(addBB);
-        //        {
-        //            auto* index = context->Builder->CreateLoad(indexAlloca, "index");
-        //
-        //            llvm::Value* arrElement = Utils::getValueFromPointerOffsetValue(context, arr, index,
-        //            "getArrConst"); Utils::insertValueAtPointerOffsetValue(context, matRecord.dataPtr, index,
-        //            arrElement, false);
-        //
-        //            // Update counter
-        //            auto* next = context->Builder->CreateAdd(
-        //                index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{32, 1, true}),
-        //                "inc");
-        //            context->Builder->CreateStore(next, indexAlloca);
-        //
-        //            // Test if completed list
-        //            auto* done = context->Builder->CreateICmpSGE(next, matIndexEnd);
-        //            context->Builder->CreateCondBr(done, endBB, addBB);
-        //        }
-        //
-        //        context->function->getBasicBlockList().push_back(endBB);
-        //        context->Builder->SetInsertPoint(endBB);
+        for(int i = 0; i < numArrays; i++){
+            int arrayEnd = std::min(((i+1)* arraySize), (int)values.size());
+            std::vector<llvm::Constant*> subArray = std::vector<llvm::Constant*>(values.begin()+(i*arraySize), values.begin()+ arrayEnd);
+            llvm::ArrayType* arrayType = llvm::ArrayType::get(elType, subArray.size());
+            llvm::Constant* init = llvm::ConstantArray::get(arrayType, subArray);
+            auto * dataAllocSize = llvm::ConstantExpr::getTruncOrBitCast(llvm::ConstantExpr::getSizeOf(arrayType), i32Ty);
+            auto* arr = llvm::CallInst::CreateMalloc(context->Builder->GetInsertBlock(), i32Ty, arrayType,
+                                                     dataAllocSize, nullptr, nullptr, "");
+            context->Builder->Insert(arr, "matTmpData");
+            context->Builder->CreateStore(init, arr);
+
+            // Get a new dataptr
+            llvm::Value* offset = llvm::ConstantInt::get(i32Ty, (i*arraySize));
+            llvm::Value* dataPtr = Utils::getPointerAddressFromOffset(context, matRecord.dataPtr, offset);
+
+            context->Builder->CreateMemCpy(
+                dataPtr, dataPtr->getPointerAlignment(context->module->getDataLayout()), arr,
+                arr->getPointerAlignment(context->module->getDataLayout()), llvm::ConstantExpr::getSizeOf(arrayType));
+            auto * freeMem = llvm::CallInst::CreateFree(arr, context->Builder->GetInsertBlock());
+            context->Builder->Insert(freeMem);
+        }
     }
 
     return matAlloc;
@@ -184,7 +164,7 @@ void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
         }
     }
 
-    std::vector<uint> dimensions = this->getDimensions(); // Maybe use dimensions of inner matrix?
+    std::vector<uint> dimensions = this->getDimensions();  // Maybe use dimensions of inner matrix?
 
     this->type = TypeCheckUtils::makeMatrixType(dimensions, primType);
 }
@@ -222,33 +202,40 @@ void AST::MatrixNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     }
     std::vector<uint> apparent_dim{};
     std::vector<uint> size{};
-
-    {
-        auto sep = this->separators.begin();
-        for (int i = 0; i < this->data.size() - 1; i++) {
-            const auto& elem = data[i];
+    if (separators.empty()) {
+        auto* type = std::get_if<Typing::MatrixType>(&*this->type);
+        if (type) {
+            type->dimensions = {1};
+            type->rank = 1;
+        }
+    } else {
+        {
+            auto sep = this->separators.begin();
+            for (int i = 0; i < this->data.size() - 1; i++) {
+                const auto& elem = data[i];
+                const auto* type = std::get_if<Typing::MatrixType>(&*elem->type);
+                if (type) {
+                    const auto& dims = type->dimensions;
+                    dim_subpass(apparent_dim, size, dims, *(sep++));
+                }
+            }
+        }
+        {
+            // have to do this separately as sep is one element shorter than data
+            const auto& elem = data[data.size() - 1];
             const auto* type = std::get_if<Typing::MatrixType>(&*elem->type);
             if (type) {
                 const auto& dims = type->dimensions;
-                dim_subpass(apparent_dim, size, dims, *(sep++));
+                dim_subpass(apparent_dim, size, dims, size.size());
             }
+            apparent_dim.emplace_back(size.back());
         }
-    }
-    {
-        // have to do this separately as sep is one element shorter than data
-        const auto& elem = data[data.size() - 1];
-        const auto* type = std::get_if<Typing::MatrixType>(&*elem->type);
-        if (type) {
-            const auto& dims = type->dimensions;
-            dim_subpass(apparent_dim, size, dims, size.size());
-        }
-        apparent_dim.emplace_back(size.back());
-    }
 
-    auto* type = std::get_if<Typing::MatrixType>(&*this->type);
-    if (type) {
-        type->dimensions = apparent_dim;
-        type->rank = apparent_dim.size();
+        auto* type = std::get_if<Typing::MatrixType>(&*this->type);
+        if (type) {
+            type->dimensions = apparent_dim;
+            type->rank = apparent_dim.size();
+        }
     }
 
     std::vector<std::shared_ptr<ExprNode>> new_vector{};

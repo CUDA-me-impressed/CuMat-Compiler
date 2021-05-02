@@ -38,7 +38,7 @@ llvm::Value* AST::FunctionExprNode::codeGen(Utils::IRContext* context) {
         llvm::Value* argVal = arg->codeGen(context);
         // Ensure that matrix literals are upcast
         if(auto* argType = std::get_if<Typing::MatrixType>(&*arg->type)){
-            if(argType->rank == 0){
+            if (arg->isLiteralNode()) {
                 argVal = Utils::upcastLiteralToMatrix(context, *argType, argVal);
             }
         }
@@ -74,15 +74,29 @@ void AST::FunctionExprNode::semanticPass(Utils::IRContext* context) {
 
     // Get the argument types for the function
     std::vector<std::shared_ptr<Typing::Type>> argTypes;
-    for (auto const& arg : this->args) {
+    for (auto& arg : this->args) {
         arg->semanticPass(context);
-        argTypes.push_back(std::move(arg->type));
+        argTypes.push_back(arg->type);
         // Check that the argument type in this position matches the argument type in the function type
-    };
+    }
 
     for (int i = 0; i < argTypes.size(); ++i) {
-        if (argTypes[i] != funcType->parameters[i]) {
-            std::cerr << "Function argument types do not match type definition" << std::endl;
+        auto argType = std::get_if<Typing::MatrixType>(argTypes[i].get());
+
+        Typing::MatrixType* param;
+        if(i < funcType->parameters.size()) {
+            param = std::get_if<Typing::MatrixType>(funcType->parameters[i].get());
+        }else{
+            std::cerr << "Invalid number of arguments supplied for " << nonAppliedFunc.name << "\n"
+                      << "Expected: " << funcType->parameters.size() << "\n"
+                      << "Found: " << argTypes.size();
+            std::exit(TypeCheckUtils::ErrorCodes::FUNCTION_ERROR);
+        }
+
+        if (argType->getPrimitiveType() != param->getPrimitiveType()) {
+            std::cerr << "Function argument types do not match type definition for " << nonAppliedFunc.name << "\n"
+                      << "Expected: " << TypeCheckUtils::primToString(argType->getPrimitiveType()) << "\n"
+                      << "Found: " << TypeCheckUtils::primToString(param->getPrimitiveType()) << std::endl;
             std::exit(TypeCheckUtils::ErrorCodes::FUNCTION_ERROR);
         }
     }
@@ -111,8 +125,10 @@ void AST::FunctionExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     for (auto& a : args) {
         a->dimensionPass(nt);
     }
+
     if (std::holds_alternative<Typing::FunctionType>(*nonAppliedFunction->type)) {
-        if (nt->search_impl(nonAppliedFunction->literalText)) {
+        if (auto func_type = nt->search_impl(nonAppliedFunction->literalText)) {
+            this->type = func_type;
         }
     }
 }
