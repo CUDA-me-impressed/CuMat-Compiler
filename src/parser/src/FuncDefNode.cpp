@@ -68,8 +68,7 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
 
     auto typePtr = std::get_if<Typing::FunctionType>(type.get());
     typePtr->parameters = typesRaw;
-    auto tempReturnType = TypeCheckUtils::makeMatrixType(std::vector<uint>{}, Typing::PRIMITIVE::NONE);
-    typePtr->returnType = tempReturnType;
+    typePtr->returnType = this->returnType;
 
     // Store within the symbol table
     context->symbolTable->addNewFunction(funcName, typesRaw);
@@ -83,8 +82,6 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
         std::cerr << "Return type must match declaration (check for implicit upcasting in binary operators)" << std::endl;
         std::exit(TypeCheckUtils::ErrorCodes::FUNCTION_ERROR);
     }
-
-    typePtr->returnType = this->returnType;
 
     // Pop the function as we leave the definition of the code
     context->symbolTable->escapeFunction();
