@@ -47,7 +47,15 @@ llvm::Value* AST::FuncDefNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
-    // TODO: Put the args into symbol table temporarily for the block semantic pass - remove before end of function
+    // Check if the function name is already in use
+    if (context->semanticSymbolTable->inFuncTable(this->funcName, "")) {
+        TypeCheckUtils::alreadyDefinedError(this->funcName, false);
+    }
+
+    auto ty = Typing::FunctionType();
+    std::shared_ptr<Typing::Type> type = std::make_shared<Typing::Type>(ty);
+    context->semanticSymbolTable->storeFuncType(this->funcName, "", type);
+
     std::vector<std::shared_ptr<Typing::Type>> typesRaw;
     for (const auto& typeNamePair : this->parameters) {
         if ((typeNamePair.second.get())->index() == 0) {
@@ -57,6 +65,11 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
         context->semanticSymbolTable->storeVarType(typeNamePair.first, typeNamePair.second);
         typesRaw.push_back(typeNamePair.second);
     }
+
+    auto typePtr = std::get_if<Typing::FunctionType>(type.get());
+    typePtr->parameters = typesRaw;
+    auto tempReturnType = TypeCheckUtils::makeMatrixType(std::vector<uint>{}, Typing::PRIMITIVE::NONE);
+    typePtr->returnType = tempReturnType;
 
     // Store within the symbol table
     context->symbolTable->addNewFunction(funcName, typesRaw);
@@ -71,16 +84,11 @@ void AST::FuncDefNode::semanticPass(Utils::IRContext* context) {
         std::exit(TypeCheckUtils::ErrorCodes::FUNCTION_ERROR);
     }
 
+    typePtr->returnType = this->returnType;
+
     // Pop the function as we leave the definition of the code
     context->symbolTable->escapeFunction();
 
-    // Check if the function name is already in use
-    if (context->semanticSymbolTable->inFuncTable(this->funcName, "")) {
-        TypeCheckUtils::alreadyDefinedError(this->funcName, false);
-    }
-    // Construct the function type and store it
-    auto type = TypeCheckUtils::makeFunctionType(this->returnType, typesRaw);
-    context->semanticSymbolTable->storeFuncType(this->funcName, "", type);
     for (const auto& typeNamePair : this->parameters) {
         context->semanticSymbolTable->removeVarEntry(typeNamePair.first);
     }
