@@ -51,12 +51,12 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
 
     auto truthyType = std::get_if<Typing::MatrixType>(&*this->truthy->type);
     if(this->truthy->isLiteralNode()){
-        Utils::upcastLiteralToMatrix(context, (const Typing::Type&)truthyType, truthyVal);
+        Utils::upcastLiteralToMatrix(context, (const Typing::Type&)*truthyType, truthyVal);
     }
 
     auto falseyType = std::get_if<Typing::MatrixType>(&*this->falsey->type);
     if(this->falsey->isLiteralNode()){
-        Utils::upcastLiteralToMatrix(context, (const Typing::Type&)falseyType, falseyVal);
+        Utils::upcastLiteralToMatrix(context, (const Typing::Type&)*falseyType, falseyVal);
     }
 
     llvm::PHINode *PN = context->Builder->CreatePHI(truthyVal->getType(), 2, "iftmp");
