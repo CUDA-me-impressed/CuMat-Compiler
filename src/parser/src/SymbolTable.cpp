@@ -265,12 +265,12 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
 
     // Create the input functions
     auto inpArgTypesInt =
-        std::vector<llvm::Type*>({llvm::Type::getInt8PtrTy(context->module->getContext()),
-                                    llvm::Type::getInt64PtrTy(context->module->getContext()),
+        std::vector<llvm::Type*>({llvm::ArrayType::get(llvm::Type::getInt8Ty(context->module->getContext()), 0),
+                                  llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0),
                                     llvm::Type::getInt64Ty(context->module->getContext())});
     auto inpArgTypesDouble =
-        std::vector<llvm::Type*>({llvm::Type::getInt8PtrTy(context->module->getContext()),
-                                  llvm::Type::getInt64PtrTy(context->module->getContext()),
+        std::vector<llvm::Type*>({llvm::ArrayType::get(llvm::Type::getInt8Ty(context->module->getContext()), 0),
+                                  llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0),
                                   llvm::Type::getInt64Ty(context->module->getContext())});
     llvm::FunctionType* inpInt = llvm::FunctionType::get(matHeaderIntType,inpArgTypesInt,false);
     llvm::FunctionType* inpDouble = llvm::FunctionType::get(matHeaderFloatType,inpArgTypesDouble,false);
