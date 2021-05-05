@@ -165,7 +165,7 @@ extern "C" void CuMatMatMultMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, He
 
         // Destroy the handle
         cublasDestroy(handle);
-    }else if(aRank == 2 && bRank == 1){
+    }else if(aRank == 2 && bRank == 1) {
         // This is Matrix-Vector product
         size_t matASize = m * k * sizeof(double);
         size_t matBSize = k * sizeof(double);
@@ -194,5 +194,5 @@ extern "C" void CuMatMatMultMatrixD(HeaderD* matHeaderA, HeaderD* matHeaderB, He
         cudaMemcpy(matRes, d_Res, matResSize, cudaMemcpyDeviceToHost);
 
         cublasDestroy(handle);
-    }else if(matHeaderA->dimensions[])
+    }
 }

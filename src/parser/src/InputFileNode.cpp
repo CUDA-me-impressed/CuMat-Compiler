@@ -42,12 +42,18 @@ llvm::Value* AST::InputFileNode::codeGen(Utils::IRContext* context) {
         //stringAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(stringAllocaSize,i32type);
         auto* stringAlloc = context->Builder->CreateAlloca(stringArrayType, stringAllocaSize,"fileReadStringLiteral");
         //context->Builder->Insert(stringAlloc, "stringData");
-
+        std::vector<llvm::Constant*> filenameVec;
         for(int i = 0; i < this->fileName.length(); i++)
         {
             auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(8,this->fileName[i]));
-            insertValueAtPointerOffset(context, stringAlloc, i, val, false);
+            filenameVec.push_back(val);
+//            insertValueAtPointerOffset(context, stringAlloc, i, val, false);
         }
+        llvm::ArrayType* arrayType = llvm::ArrayType::get(i8type, filenameVec.size());
+        llvm::Constant* init = llvm::ConstantArray::get(arrayType, filenameVec);
+        context->Builder->CreateStore(init, stringAlloc);
+
+
         //Null terminator
         auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(8,0));
         insertValueAtPointerOffset(context, stringAlloc, this->fileName.length(), val, false);
