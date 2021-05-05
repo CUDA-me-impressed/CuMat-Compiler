@@ -70,11 +70,11 @@ void AST::TernaryExprNode::semanticPass(Utils::IRContext* context) {
     this->condition->semanticPass(context);
     this->truthy->semanticPass(context);
     this->falsey->semanticPass(context);
-    Typing::MatrixType tTy = TypeCheckUtils::extractMatrixType(this->truthy);
-    Typing::MatrixType fTy = TypeCheckUtils::extractMatrixType(this->falsey);
-    TypeCheckUtils::assertMatchingTypes(tTy.getPrimitiveType(), fTy.getPrimitiveType());
-    
-    this->type = TypeCheckUtils::makeMatrixType(std::vector<uint>(), tTy.getPrimitiveType());
+    Typing::MatrixType* tTy = TypeCheckUtils::extractMatrixType(this->truthy);
+    Typing::MatrixType* fTy = TypeCheckUtils::extractMatrixType(this->falsey);
+    TypeCheckUtils::assertMatchingTypes(tTy->getPrimitiveType(), fTy->getPrimitiveType());
+
+    this->type = TypeCheckUtils::makeMatrixType(std::vector<uint>(), tTy->getPrimitiveType());
 }
 void AST::TernaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
     condition->dimensionPass(nt);

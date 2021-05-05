@@ -1,15 +1,12 @@
 #include "InputFileNode.hpp"
 
 #include <iostream>
-#include <map>
-#include <numeric>
 #include <vector>
 
 #include "CodeGenUtils.hpp"
+#include "DimensionPass.hpp"
 #include "DimensionsSymbolTable.hpp"
 #include "TreePrint.hpp"
-#include "TypeCheckingUtils.hpp"
-#include "VariableNode.hpp"
 
 llvm::Value* AST::InputFileNode::codeGen(Utils::IRContext* context) {
     //TODO: CALL C++ FUNCTION FOR THIS
@@ -80,14 +77,21 @@ llvm::Value* AST::InputFileNode::codeGen(Utils::IRContext* context) {
 }
 
 void AST::InputFileNode::semanticPass(Utils::IRContext* context) {
-    //TODO: Very little
+    //pass
 }
 
 std::string AST::InputFileNode::toTree(const std::string& prefix, const std::string& childPrefix) const {
-    //TODO: Optional
+    return prefix + "Input From File";
 }
 
 
 void AST::InputFileNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
-    //TODO: Just acknowledge?
+    auto* type = std::get_if<Typing::MatrixType>(this->type.get());
+    if (type) {
+        for (uint i : type->dimensions) {
+            if (i == 0) {
+                dimension_error("Invalid dimensional argument to input function. Must be greater than 0", this);
+            }
+        }
+    }
 }

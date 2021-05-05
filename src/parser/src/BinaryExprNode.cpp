@@ -360,11 +360,11 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
     this->lhs->semanticPass(context);
     this->rhs->semanticPass(context);
 
-    Typing::MatrixType lhsTy = TypeCheckUtils::extractMatrixType(this->lhs);
-    Typing::MatrixType rhsTy = TypeCheckUtils::extractMatrixType(this->rhs);
+    Typing::MatrixType* lhsTy = TypeCheckUtils::extractMatrixType(this->lhs);
+    Typing::MatrixType* rhsTy = TypeCheckUtils::extractMatrixType(this->rhs);
 
-    Typing::PRIMITIVE lhsPrim = lhsTy.getPrimitiveType();
-    Typing::PRIMITIVE rhsPrim = rhsTy.getPrimitiveType();
+    Typing::PRIMITIVE lhsPrim = lhsTy->getPrimitiveType();
+    Typing::PRIMITIVE rhsPrim = rhsTy->getPrimitiveType();
 
     TypeCheckUtils::assertCompatibleTypes(lhsPrim, rhsPrim);
     Typing::PRIMITIVE primType;
@@ -374,19 +374,19 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
         case AST::BIN_OPERATORS::BOR:
             TypeCheckUtils::assertBooleanType(lhsPrim);
             TypeCheckUtils::assertBooleanType(rhsPrim);
-            this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), lhsPrim);
+            this->type = TypeCheckUtils::makeMatrixType(lhsTy->getDimensions(), lhsPrim);
             break;
         case AST::BIN_OPERATORS::PLUS:
             if ((not TypeCheckUtils::isString(lhsPrim)) and (not TypeCheckUtils::isNone(lhsPrim))) {
                 if ((not TypeCheckUtils::isString(rhsPrim)) and (not TypeCheckUtils::isNone(rhsPrim))) {
                     if (TypeCheckUtils::isBool(lhsPrim)) {
                         TypeCheckUtils::assertMatchingTypes(lhsPrim, rhsPrim);
-                        this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), Typing::PRIMITIVE::BOOL);
+                        this->type = TypeCheckUtils::makeMatrixType(lhsTy->getDimensions(), Typing::PRIMITIVE::BOOL);
                     } else {
                         TypeCheckUtils::assertNumericType(lhsPrim);
                         TypeCheckUtils::assertNumericType(rhsPrim);
                         primType = TypeCheckUtils::getHighestType(lhsPrim, rhsPrim);
-                        this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), primType);
+                        this->type = TypeCheckUtils::makeMatrixType(lhsTy->getDimensions(), primType);
                         break;
                     }
                 } else {
@@ -403,13 +403,13 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
             TypeCheckUtils::assertNumericType(lhsPrim);
             TypeCheckUtils::assertNumericType(rhsPrim);
             primType = TypeCheckUtils::getHighestType(lhsPrim, rhsPrim);
-            this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), primType);
+            this->type = TypeCheckUtils::makeMatrixType(lhsTy->getDimensions(), primType);
             break;
         case AST::BIN_OPERATORS::POW:
             TypeCheckUtils::assertNumericType(lhsPrim);
             if (TypeCheckUtils::isInt(rhsPrim)) {
                 primType = Typing::PRIMITIVE::FLOAT;
-                this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), primType);
+                this->type = TypeCheckUtils::makeMatrixType(lhsTy->getDimensions(), primType);
             } else {
                 TypeCheckUtils::wrongTypeError("Expected Int exponent", rhsPrim);
             }
@@ -419,7 +419,7 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
             TypeCheckUtils::assertLogicalType(lhsPrim);
             TypeCheckUtils::assertLogicalType(rhsPrim);
             primType = TypeCheckUtils::getHighestType(lhsPrim, rhsPrim);
-            this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), primType);
+            this->type = TypeCheckUtils::makeMatrixType(lhsTy->getDimensions(), primType);
             break;
         case AST::BIN_OPERATORS::LT:
         case AST::BIN_OPERATORS::GT:
@@ -427,7 +427,7 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
         case AST::BIN_OPERATORS::GTE:
             if ((not TypeCheckUtils::isBool(lhsPrim)) and (not TypeCheckUtils::isNone(lhsPrim))) {
                 if ((not TypeCheckUtils::isBool(rhsPrim)) and (not TypeCheckUtils::isNone(rhsPrim))) {
-                    this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), Typing::PRIMITIVE::BOOL);
+                    this->type = TypeCheckUtils::makeMatrixType(lhsTy->getDimensions(), Typing::PRIMITIVE::BOOL);
                 } else {
                     TypeCheckUtils::wrongTypeError("Expected: int, float, string", rhsPrim);
                 }
@@ -438,7 +438,7 @@ void AST::BinaryExprNode::semanticPass(Utils::IRContext* context) {
         case AST::BIN_OPERATORS::EQ:
         case AST::BIN_OPERATORS::NEQ:
             if (not TypeCheckUtils::isNone(lhsPrim) and not TypeCheckUtils::isNone(rhsPrim)) {
-                this->type = TypeCheckUtils::makeMatrixType(lhsTy.getDimensions(), Typing::PRIMITIVE::BOOL);
+                this->type = TypeCheckUtils::makeMatrixType(lhsTy->getDimensions(), Typing::PRIMITIVE::BOOL);
             } else {
                 if (TypeCheckUtils::isNone(lhsPrim)) {
                     TypeCheckUtils::wrongTypeError("Expected: int, float, string", lhsPrim);
