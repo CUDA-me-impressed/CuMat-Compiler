@@ -3,6 +3,7 @@
 #include <string>
 #include "headers.hpp"
 #include <exception>
+#include <vector>
 
 std::string printMatrixIRankRec(long rank, long offset, HeaderI* h)
 {

@@ -265,12 +265,12 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
 
     // Create the input functions
     auto inpArgTypesInt =
-        std::vector<llvm::Type*>({llvm::ArrayType::get(llvm::Type::getInt8Ty(context->module->getContext()), 0),
-                                  llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0),
+        std::vector<llvm::Type*>({llvm::ArrayType::get(llvm::Type::getInt8Ty(context->module->getContext()), 0)->getPointerTo(),
+                                  llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0)->getPointerTo(),
                                     llvm::Type::getInt64Ty(context->module->getContext())});
     auto inpArgTypesDouble =
-        std::vector<llvm::Type*>({llvm::ArrayType::get(llvm::Type::getInt8Ty(context->module->getContext()), 0),
-                                  llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0),
+        std::vector<llvm::Type*>({llvm::ArrayType::get(llvm::Type::getInt8Ty(context->module->getContext()), 0)->getPointerTo(),
+                                  llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0)->getPointerTo(),
                                   llvm::Type::getInt64Ty(context->module->getContext())});
     llvm::FunctionType* inpInt = llvm::FunctionType::get(matHeaderIntType,inpArgTypesInt,false);
     llvm::FunctionType* inpDouble = llvm::FunctionType::get(matHeaderFloatType,inpArgTypesDouble,false);
