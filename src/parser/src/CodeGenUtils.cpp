@@ -205,8 +205,10 @@ void Utils::insertValueAtPointerOffset(Utils::IRContext* context, llvm::Value* p
 
 void Utils::insertValueAtPointerOffsetValue(Utils::IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue,
                                             llvm::Value* val, bool i1) {
-
-    auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
+    llvm::Constant* zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
+    if (i1) {
+        offsetValue = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
+    }
     auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, offsetValue});
     context->Builder->CreateStore(val, offsetPtr);
 }
