@@ -4,6 +4,7 @@
 #include "headers.hpp"
 #include <exception>
 #include <vector>
+#include <sstream>
 
 std::string printMatrixIRankRec(long rank, long offset, HeaderI* h)
 {
