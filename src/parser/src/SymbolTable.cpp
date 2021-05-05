@@ -262,6 +262,25 @@ void Utils::SymbolTable::generateCUDAExternFunctions(Utils::IRContext* context) 
         llvm::Function::Create(ftDouble, llvm::Function::ExternalLinkage, "printMatrixD", context->module);
 
     printFunctions = {printFuncInt, printFuncFP};
+
+    // Create the input functions
+    auto inpArgTypesInt =
+        std::vector<llvm::Type*>({llvm::Type::getInt8PtrTy(context->module->getContext()),
+                                    llvm::Type::getInt64PtrTy(context->module->getContext()),
+                                    llvm::Type::getInt64Ty(context->module->getContext())});
+    auto inpArgTypesDouble =
+        std::vector<llvm::Type*>({llvm::Type::getInt8PtrTy(context->module->getContext()),
+                                  llvm::Type::getInt64PtrTy(context->module->getContext()),
+                                  llvm::Type::getInt64Ty(context->module->getContext())});
+    llvm::FunctionType* inpInt = llvm::FunctionType::get(matHeaderIntType,inpArgTypesInt,false);
+    llvm::FunctionType* inpDouble = llvm::FunctionType::get(matHeaderFloatType,inpArgTypesDouble,false);
+
+    llvm::Function* inputFuncInt =
+        llvm::Function::Create(inpInt, llvm::Function::ExternalLinkage, "readFromFileI", context->module);
+    llvm::Function* inputFuncFP =
+        llvm::Function::Create(inpDouble, llvm::Function::ExternalLinkage, "readFromFileD", context->module);
+
+    inputFunctions = {inputFuncInt,inputFuncFP};
 }
 
 std::vector<std::shared_ptr<Typing::Type>> Utils::SymbolTable::getFunctionTrueType(

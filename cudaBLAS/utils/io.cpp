@@ -174,7 +174,7 @@ extern "C" HeaderI * readFromFileI(const char* file, long* dims, long rank)
     return matHeader;
 }
 
-extern "C" HeaderD* readFromFileD(char* file, long* dims, long rank)
+extern "C" HeaderD* readFromFileD(const char* file, long* dims, long rank)
 {
     std::string fileName = std::string(file);
     auto fileContents = readFile(fileName);
