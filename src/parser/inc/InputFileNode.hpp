@@ -15,7 +15,6 @@ namespace AST {
 class InputFileNode : public ExprNode {
    public:
     std::string fileName{};
-    std::vector<uint> dimensions;
 
     void semanticPass(Utils::IRContext* context) override;
     void dimensionPass(Analysis::DimensionSymbolTable* nt) override;

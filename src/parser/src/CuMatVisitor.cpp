@@ -12,6 +12,7 @@
 #include "CustomTypeDefNode.hpp"
 #include "FuncDefNode.hpp"
 #include "FunctionExprNode.hpp"
+#include "InputFileNode.hpp"
 #include "ImportsNode.hpp"
 #include "LiteralNode.hpp"
 #include "MatrixNode.hpp"
@@ -523,6 +524,71 @@ antlrcpp::Any CuMatVisitor::visitExp_chain(CuMatParser::Exp_chainContext* ctx) {
 }
 
 antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext* ctx) {
+    if(ctx->value()->variable() != nullptr && (ctx->value()->variable()->varname()->identifier()->ID()->getText() == "readInts" || ctx->value()->variable()->varname()->identifier()->ID()->getText() == "readFloats"))
+    {
+        auto iN = std::make_shared<AST::InputFileNode>();
+        iN->literalText = ctx->getText();
+        auto numArgs = ctx->args().size();
+        if(numArgs < 2)
+        {
+            throw std::runtime_error("Not enough arguments to the Input Function");
+        }
+
+        auto fileNameArg = ctx->args()[0];
+
+        if(fileNameArg->expression().size() > 1)
+        {
+            throw std::runtime_error("First argument must not be a tuple");
+        }
+
+        auto fileNameNode = visit(fileNameArg->expression(0));
+        try {
+            std::shared_ptr<AST::ExprNode> eNode = std::move(fileNameNode);
+            auto fileNameN = std::move(pConv<AST::LiteralNode<std::string>>(eNode));
+            iN->fileName = std::move(fileNameN->value);
+        } catch (std::bad_cast b) {
+            throw std::runtime_error("First argument must be a string literal");
+        }
+
+        Typing::MatrixType t;
+
+        t.rank = ctx->args().size() - 1;
+
+        if(ctx->value()->variable()->varname()->identifier()->ID()->getText() == "readInts")
+        {
+            t.primType = Typing::PRIMITIVE::INT;
+        } else if (ctx->value()->variable()->varname()->identifier()->ID()->getText() == "readFloats")
+        {
+            t.primType = Typing::PRIMITIVE::FLOAT;
+        } else
+        {
+            throw std::runtime_error("Something went wrong with establishing which of the input functions is in use.");
+        }
+
+        //Mostly repeat for each subsequent argument
+        for(int i = 1; i < numArgs; ++i)
+        {
+            auto dimArg = ctx->args()[i];
+            if(dimArg->expression().size() > 1)
+            {
+                throw std::runtime_error("The dimensions must not be tuples");
+            }
+
+            auto dimStatement = visit(dimArg->expression(0));
+            try {
+                std::shared_ptr<AST::ExprNode> eNode = std::move(dimStatement);
+                auto dimN = std::move(pConv<AST::LiteralNode<int>>(eNode));
+                t.dimensions.push_back(dimN->value);
+            } catch (std::runtime_error re) {
+                throw std::runtime_error("There was an issue with the: " + std::to_string(i) + " argument to input");
+            }
+        }
+
+        iN->type = std::make_shared<Typing::Type>(t);
+
+        return std::move(pConv<AST::ExprNode>(iN));
+    }
+
     auto fN = std::make_shared<AST::FunctionExprNode>();
     fN->literalText = ctx->getText();
     // If no arguments applied, just pass it up
@@ -583,7 +649,7 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
         for (auto dim : ctx->dimensionLiteral()) {
             auto dimension = dim->BSLASH().size();
             seps.emplace_back(dimension + 1);
-            if (dimension > inDimension) {  // Above
+            /*if (dimension > inDimension) {  // Above
                 while (dimension >= dimensions.size()) {
                     dimensions.push_back(2);
                     inDimension++;
@@ -598,7 +664,7 @@ antlrcpp::Any CuMatVisitor::visitMatrixliteral(CuMatParser::MatrixliteralContext
                     inDimension = dimension;
                 }
             }
-
+            */
             for (auto exp : dim->rowliteral()->cols) {
                 values.emplace_back(std::move(visit(exp)));
                 seps.emplace_back(1);
