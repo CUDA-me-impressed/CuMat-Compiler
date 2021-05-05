@@ -12,58 +12,69 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
 
     if (!conditionEval) return nullptr;  // TODO: Handle errors gracefully
 
-    auto matRecord = Utils::getMatrixFromPointer(context, conditionEval);
+//    auto matRecord = Utils::getMatrixFromPointer(context, conditionEval);
 
     // Fetch value from matrix memory
-    llvm::Value* dataVal = Utils::getValueFromPointerOffset(context, matRecord.dataPtr, 0, "dataVal");
+//    llvm::Value* dataVal = Utils::getValueFromPointerOffset(context, matRecord.dataPtr, 0, "dataVal");
 
-    if (!dataVal->getType()->isIntegerTy(1)) {
-        llvm::Type* boolType = static_cast<llvm::Type*>(llvm::Type::getInt1Ty(context->module->getContext()));
-        std::exit(2);
-    }  // TODO: Handle errors gracefully
-    conditionEval = context->Builder->CreateICmpNE(
-        dataVal, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(1, 0, true)), "ifcond");
+//    if (!dataVal->getType()->isIntegerTy(1)) {
+//        llvm::Type* boolType = static_cast<llvm::Type*>(llvm::Type::getInt1Ty(context->module->getContext()));
+//        std::exit(2);
+//    }  // TODO: Handle errors gracefully
+//    conditionEval = context->Builder->CreateICmpNE(
+//        dataVal, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(1, 0, true)), "ifcond");
 
-    // Store function ptr for later use
-    llvm::Function* func = context->Builder->GetInsertBlock()->getParent();
+    return truthy->codeGen(context);
 
-    llvm::BasicBlock* truthyBB = llvm::BasicBlock::Create(context->module->getContext(), "truthy", func);
-    llvm::BasicBlock* mergeBB = llvm::BasicBlock::Create(context->module->getContext(), "merge");
-    llvm::BasicBlock* falseyBB = llvm::BasicBlock::Create(context->module->getContext(), "falsey");
-
-    context->Builder->CreateCondBr(conditionEval, truthyBB, falseyBB);
-
-    // Handle the code of the body at the correct position
-    context->Builder->SetInsertPoint(truthyBB);
-    llvm::Value* truthyVal = this->truthy->codeGen(context);
-    context->Builder->CreateBr(mergeBB);
-
-    func->getBasicBlockList().push_back(falseyBB);
-    // Insert at the correct position
-    context->Builder->SetInsertPoint(falseyBB);
-    auto* falseyVal = this->falsey->codeGen(context);
-
-    // Merge the lines of execution together
-    context->Builder->CreateBr(mergeBB);
-
-    func->getBasicBlockList().push_back(mergeBB);
-    context->Builder->SetInsertPoint(mergeBB);
-
-    auto truthyType = std::get_if<Typing::MatrixType>(&*this->truthy->type);
-    if(this->truthy->isLiteralNode()){
-        Utils::upcastLiteralToMatrix(context, (const Typing::Type&)*truthyType, truthyVal);
-    }
-
-    auto falseyType = std::get_if<Typing::MatrixType>(&*this->falsey->type);
-    if(this->falsey->isLiteralNode()){
-        Utils::upcastLiteralToMatrix(context, (const Typing::Type&)*falseyType, falseyVal);
-    }
-
-    llvm::PHINode *PN = context->Builder->CreatePHI(truthyVal->getType(), 2, "iftmp");
-    PN->addIncoming(truthyVal, truthyBB);
-    PN->addIncoming(falseyVal, falseyBB);
-
-    return PN;
+//    // Store function ptr for later use
+//    llvm::Function* func = context->Builder->GetInsertBlock()->getParent();
+//
+//    llvm::BasicBlock* truthyBB = llvm::BasicBlock::Create(context->module->getContext(), "truthy", func);
+//    llvm::BasicBlock* mergeBB = llvm::BasicBlock::Create(context->module->getContext(), "merge");
+//    llvm::BasicBlock* falseyBB = llvm::BasicBlock::Create(context->module->getContext(), "falsey");
+//
+//    llvm::Value* truthyVal = this->truthy->codeGen(context);
+//    llvm::Value* falseyVal = this->falsey->codeGen(context);
+//
+//    auto* truthyType = std::get_if<Typing::MatrixType>(&*this->truthy->type);
+//    if (this->truthy->isLiteralNode()) {
+//        truthyVal = Utils::upcastLiteralToMatrix(context, *truthyType, truthyVal);
+//    }
+//
+//    auto* falseyType = std::get_if<Typing::MatrixType>(&*this->falsey->type);
+//    if (this->falsey->isLiteralNode()) {
+//        falseyVal = Utils::upcastLiteralToMatrix(context, *falseyType, falseyVal);
+//    }
+//
+//    llvm::Type* i32ty = llvm::Type::getInt32Ty(context->module->getContext());
+//    auto dataAllocSize = llvm::ConstantExpr::getTruncOrBitCast(llvm::ConstantExpr::getSizeOf(truthyVal->getType()), i32ty);
+//
+//    auto* phi = Utils::createMatrix(context, *truthyType);
+//    context->Builder->Insert(phi);
+//
+//    context->Builder->CreateCondBr(conditionEval, truthyBB, falseyBB);
+//
+//    // Handle the code of the body at the correct position
+//    context->Builder->SetInsertPoint(truthyBB);
+//    context->Builder->CreateMemCpy(phi, phi->getPointerAlignment(context->module->getDataLayout()), truthyVal,
+//                                   truthyVal->getPointerAlignment(context->module->getDataLayout()),
+//                                   llvm::ConstantExpr::getSizeOf(truthyVal->getType()));
+//    context->Builder->CreateBr(mergeBB);
+//
+//    func->getBasicBlockList().push_back(falseyBB);
+//    // Insert at the correct position
+//    context->Builder->SetInsertPoint(falseyBB);
+//    context->Builder->CreateMemCpy(phi, phi->getPointerAlignment(context->module->getDataLayout()), falseyVal,
+//                                   falseyVal->getPointerAlignment(context->module->getDataLayout()),
+//                                   llvm::ConstantExpr::getSizeOf(falseyVal->getType()));
+//
+//    // Merge the lines of execution together
+//    context->Builder->CreateBr(mergeBB);
+//
+//    func->getBasicBlockList().push_back(mergeBB);
+//    context->Builder->SetInsertPoint(mergeBB);
+//
+//    return phi;
 }
 
 void AST::TernaryExprNode::semanticPass(Utils::IRContext* context) {
