@@ -20,15 +20,13 @@ llvm::Value* AST::InputFileNode::codeGen(Utils::IRContext* context) {
 
         llvm::Type* i32type = llvm::Type::getInt32Ty(context->module->getContext());
         // For the matrix dimensionality
-        llvm::ArrayType* matDimensionType = llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0);
+        llvm::ArrayType* matDimensionType = llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), retType->rank);
         // Allocation of the matrix data
         llvm::Constant* matDimAllocaSize = llvm::ConstantExpr::getSizeOf(matDimensionType);
         // This will by default be i64, need to cast to i32 (I think its safe)
         //matDimAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(matDimAllocaSize, i32type);
-        auto* matDimAlloc = context->Builder->CreateAlloca(matDimensionType,matDimAllocaSize,"fileReadDimensions");
-        //auto* matDimAlloc =  llvm::Builder::Alloc  llvm::CallInst (context->Builder->GetInsertBlock(), i32type, matDimensionType,
-        //                                                 matDimAllocaSize, nullptr, nullptr, "bitcast");
-        context->Builder->Insert(matDimAlloc, "matDimData");
+        auto* matDimAlloc = context->Builder->CreateAlloca(matDimensionType, matDimAllocaSize,"fileReadDimensions");
+        //context->Builder->Insert(matDimAlloc, "matDimData");
 
         for (int i = 0; i < retType->rank; i++) {
             auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(64, retType->dimensions.at(i)));
@@ -39,11 +37,11 @@ llvm::Value* AST::InputFileNode::codeGen(Utils::IRContext* context) {
 
         //Strings (Good luck me!)
         llvm::Type* i8type = llvm::Type::getInt8Ty(context->module->getContext());
-        llvm::ArrayType* stringArrayType = llvm::ArrayType::get(i8type, 0);
+        llvm::ArrayType* stringArrayType = llvm::ArrayType::get(i8type, this->fileName.size());
         llvm::Constant* stringAllocaSize = llvm::ConstantExpr::getSizeOf(stringArrayType);
         //stringAllocaSize = llvm::ConstantExpr::getTruncOrBitCast(stringAllocaSize,i32type);
-        auto* stringAlloc = context->Builder->CreateAlloca(stringArrayType,stringAllocaSize,"fileReadStringLiteral");
-        context->Builder->Insert(stringAlloc, "stringData");
+        auto* stringAlloc = context->Builder->CreateAlloca(stringArrayType, stringAllocaSize,"fileReadStringLiteral");
+        //context->Builder->Insert(stringAlloc, "stringData");
 
         for(int i = 0; i < this->fileName.length(); i++)
         {
@@ -54,7 +52,13 @@ llvm::Value* AST::InputFileNode::codeGen(Utils::IRContext* context) {
         auto val = llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(8,0));
         insertValueAtPointerOffset(context, stringAlloc, this->fileName.length(), val, false);
 
-        std::vector<llvm::Value*> argVals{stringAlloc,matDimAlloc,rank};
+        auto* expectedDimType = llvm::ArrayType::get(llvm::Type::getInt64Ty(context->module->getContext()), 0)->getPointerTo();
+        auto* expectedStringType = llvm::ArrayType::get(i8type, 0)->getPointerTo();
+
+        auto newStringAlloc = context->Builder->CreateBitCast(stringAlloc,expectedStringType);
+        auto newDimAlloc = context->Builder->CreateBitCast(matDimAlloc,expectedDimType);
+
+        std::vector<llvm::Value*> argVals{newStringAlloc,newDimAlloc,rank};
 
         if (retType->primType == Typing::PRIMITIVE::INT) {
             return context->Builder->CreateCall(context->symbolTable->inputFunctions.funcInt, argVals);

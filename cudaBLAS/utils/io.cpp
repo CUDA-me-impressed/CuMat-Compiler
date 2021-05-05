@@ -123,7 +123,7 @@ std::vector<std::string> readFile(const std::string& fileName)
 {
     std::ifstream fileStream = std::ifstream(fileName);
 
-    if(!fileStream.is_open())
+    if (!fileStream.is_open())
     {
         throw std::runtime_error("Could not find file: " + fileName);
     }
@@ -133,6 +133,8 @@ std::vector<std::string> readFile(const std::string& fileName)
     while (std::getline(fileStream, line)) fileLines.push_back(line);
 
     fileStream.close();
+
+    return fileLines;
 }
 
 extern "C" HeaderI * readFromFileI(const char* file, long* dims, long rank)
@@ -151,8 +153,8 @@ extern "C" HeaderI * readFromFileI(const char* file, long* dims, long rank)
     //Will have to create in CodeGen
     matHeader->dimensions = dims;
 
-    long totalElements = dims[0];
-    for (long i = 1; i < rank; ++i)
+    long totalElements = 1;
+    for (long i = 0; i < rank; ++i)
     {
         totalElements *= dims[i];
     }

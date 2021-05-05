@@ -545,7 +545,9 @@ antlrcpp::Any CuMatVisitor::visitExp_func(CuMatParser::Exp_funcContext* ctx) {
         try {
             std::shared_ptr<AST::ExprNode> eNode = std::move(fileNameNode);
             auto fileNameN = std::move(pConv<AST::LiteralNode<std::string>>(eNode));
-            iN->fileName = std::move(fileNameN->value);
+            auto text = std::move(fileNameN->value);
+            text = text.substr(1,text.size() - 2);
+            iN->fileName = std::move(text);
         } catch (std::bad_cast b) {
             throw std::runtime_error("First argument must be a string literal");
         }
