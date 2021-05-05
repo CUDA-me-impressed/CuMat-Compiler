@@ -51,7 +51,7 @@ LLVMMatrixRecord getMatrixFromPointer(IRContext* context, llvm::Value* basePtr);
 void insertValueAtPointerOffset(IRContext* context, llvm::Value* ptr, int offset, llvm::Value* val, bool i64);
 
 void insertValueAtPointerOffsetValue(IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue, llvm::Value* val,
-                                     bool i64);
+                                     bool i1);
 
 llvm::Value* getValueFromPointerOffsetBool(Utils::IRContext* context, llvm::Value* ptr, int offset, const std::string& name);
 
@@ -72,6 +72,7 @@ llvm::Value* getValueFromMatrixPtrBool(IRContext* context, llvm::Value* mPtr, ll
 
 
 void setValueFromMatrixPtr(IRContext* context, llvm::Value* mPtr, llvm::Value* offset, llvm::Value* val);
+void setValueFromMatrixPtrBool(IRContext* context, llvm::Value* mPtr, llvm::Value* offset, llvm::Value* val);
 
 llvm::Value* getLength(IRContext* context, llvm::Value* basePtr, const Typing::MatrixType& type);
 

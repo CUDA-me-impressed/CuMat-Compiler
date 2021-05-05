@@ -110,38 +110,64 @@ llvm::Value* AST::BinaryExprNode::elementWiseCodeGen(Utils::IRContext* context, 
     llvm::BasicBlock* addBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".loop", parent);
     llvm::BasicBlock* endBB = llvm::BasicBlock::Create(Builder->getContext(), opName + ".done");
 
-    auto indexAlloca = Utils::CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
-    auto* lsize = Utils::getLength(context, lhsVal, lhsType);
-    auto* rsize = Utils::getLength(context, rhsVal, rhsType);
-    auto* nsize = Utils::getLength(context, matAlloc, resType);
-    // parent->getBasicBlockList().push_back(addBB);
-    Builder->CreateBr(addBB);
+    if (resType.primType != Typing::PRIMITIVE::BOOL) {
+        auto indexAlloca = Utils::CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
+        auto* lsize = Utils::getLength(context, lhsVal, lhsType);
+        auto* rsize = Utils::getLength(context, rhsVal, rhsType);
+        auto* nsize = Utils::getLength(context, matAlloc, resType);
+        parent->getBasicBlockList().push_back(addBB);
+        Builder->CreateBr(addBB);
 
-    Builder->SetInsertPoint(addBB);
-    {
-        auto* index = Builder->CreateLoad(indexAlloca);
+        Builder->SetInsertPoint(addBB);
+        {
+            auto* index = Builder->CreateLoad(indexAlloca);
 
-        auto* lindex = Builder->CreateURem(index, lsize);
-        auto* rindex = Builder->CreateURem(index, rsize);
-        llvm::Value* l, *r;
-        if(lhsType.primType == Typing::PRIMITIVE::BOOL){
-            l = Utils::getValueFromMatrixPtrBool(context, lhsVal, lindex, "lhs");
-            r = Utils::getValueFromMatrixPtrBool(context, rhsVal, rindex, "rhs");
-        }else {
+            auto* lindex = Builder->CreateURem(index, lsize);
+            auto* rindex = Builder->CreateURem(index, rsize);
+            llvm::Value *l, *r;
             l = Utils::getValueFromMatrixPtr(context, lhsVal, lindex, "lhs");
             r = Utils::getValueFromMatrixPtr(context, rhsVal, rindex, "rhs");
+            auto* opResult = applyOperatorToOperands(context, this->op, l, r, opName);
+            Utils::setValueFromMatrixPtr(context, matAlloc, index, opResult);
+
+            // Update counter
+            auto* next = Builder->CreateAdd(
+                index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "add");
+            Builder->CreateStore(next, indexAlloca);
+
+            // Test if completed list
+            auto* done = Builder->CreateICmpUGE(next, nsize);
+            Builder->CreateCondBr(done, endBB, addBB);
         }
-        auto* opResult = applyOperatorToOperands(context, this->op, l, r, opName);
-        Utils::setValueFromMatrixPtr(context, matAlloc, index, opResult);
+    } else {
+        auto indexAlloca = Utils::CreateEntryBlockAlloca(*Builder, "", llvm::Type::getInt64Ty(Builder->getContext()));
+        auto* lsize = Utils::getLength(context, lhsVal, lhsType);
+        auto* rsize = Utils::getLength(context, rhsVal, rhsType);
+        auto* nsize = Utils::getLength(context, matAlloc, resType);
+        parent->getBasicBlockList().push_back(addBB);
+        Builder->CreateBr(addBB);
 
-        // Update counter
-        auto* next = Builder->CreateAdd(
-            index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "add");
-        Builder->CreateStore(next, indexAlloca);
+        Builder->SetInsertPoint(addBB);
+        {
+            auto* index = Builder->CreateLoad(indexAlloca);
 
-        // Test if completed list
-        auto* done = Builder->CreateICmpUGE(next, nsize);
-        Builder->CreateCondBr(done, endBB, addBB);
+            auto* lindex = Builder->CreateURem(index, lsize);
+            auto* rindex = Builder->CreateURem(index, rsize);
+            llvm::Value *l, *r;
+            l = Utils::getValueFromMatrixPtrBool(context, lhsVal, lindex, "lhs");
+            r = Utils::getValueFromMatrixPtrBool(context, rhsVal, rindex, "rhs");
+            auto* opResult = applyOperatorToOperands(context, this->op, l, r, opName);
+            Utils::setValueFromMatrixPtrBool(context, matAlloc, index, opResult);
+
+            // Update counter
+            auto* next = Builder->CreateAdd(
+                index, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt{64, 1, true}), "add");
+            Builder->CreateStore(next, indexAlloca);
+
+            // Test if completed list
+            auto* done = Builder->CreateICmpUGE(next, nsize);
+            Builder->CreateCondBr(done, endBB, addBB);
+        }
     }
 
     parent->getBasicBlockList().push_back(endBB);

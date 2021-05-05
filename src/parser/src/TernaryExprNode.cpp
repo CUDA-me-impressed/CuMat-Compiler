@@ -12,17 +12,17 @@ llvm::Value* AST::TernaryExprNode::codeGen(Utils::IRContext* context) {
 
     if (!conditionEval) return nullptr;  // TODO: Handle errors gracefully
 
-    auto matRecord = Utils::getMatrixFromPointer(context, conditionEval);
+//    auto matRecord = Utils::getMatrixFromPointer(context, conditionEval);
 
     // Fetch value from matrix memory
-    llvm::Value* dataVal = Utils::getValueFromPointerOffset(context, matRecord.dataPtr, 0, "dataVal");
+//    llvm::Value* dataVal = Utils::getValueFromPointerOffset(context, matRecord.dataPtr, 0, "dataVal");
 
-    if (!dataVal->getType()->isIntegerTy(1)) {
-        llvm::Type* boolType = static_cast<llvm::Type*>(llvm::Type::getInt1Ty(context->module->getContext()));
-        std::exit(2);
-    }  // TODO: Handle errors gracefully
-    conditionEval = context->Builder->CreateICmpNE(
-        dataVal, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(1, 0, true)), "ifcond");
+//    if (!dataVal->getType()->isIntegerTy(1)) {
+//        llvm::Type* boolType = static_cast<llvm::Type*>(llvm::Type::getInt1Ty(context->module->getContext()));
+//        std::exit(2);
+//    }  // TODO: Handle errors gracefully
+//    conditionEval = context->Builder->CreateICmpNE(
+//        dataVal, llvm::ConstantInt::get(context->module->getContext(), llvm::APInt(1, 0, true)), "ifcond");
 
     return truthy->codeGen(context);
 

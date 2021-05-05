@@ -204,11 +204,7 @@ void Utils::insertValueAtPointerOffset(Utils::IRContext* context, llvm::Value* p
 }
 
 void Utils::insertValueAtPointerOffsetValue(Utils::IRContext* context, llvm::Value* ptr, llvm::Value* offsetValue,
-                                            llvm::Value* val, bool i64) {
-    // Handle the case where we have an i64
-    if (i64)
-        offsetValue = context->Builder->CreateMul(
-            offsetValue, llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 2));
+                                            llvm::Value* val, bool i1) {
 
     auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
     auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, offsetValue});
@@ -232,8 +228,8 @@ llvm::Value* Utils::getValueFromPointerOffset(Utils::IRContext* context, llvm::V
 
 llvm::Value* Utils::getValueFromPointerOffsetBool(Utils::IRContext* context, llvm::Value* ptr, int offset,
                                               const std::string& name) {
-    auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt1Ty(context->module->getContext()), 0);
-    auto xOffset = llvm::ConstantInt::get(llvm::Type::getInt1Ty(context->module->getContext()), offset);
+    auto zeroOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), 0);
+    auto xOffset = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context->module->getContext()), offset);
     auto offsetPtr = context->Builder->CreateInBoundsGEP(ptr, {zeroOffset, xOffset}, "getPtr");
     return context->Builder->CreateLoad(offsetPtr, name);
 }
@@ -308,6 +304,11 @@ llvm::Value* Utils::getValueFromIndex(Utils::IRContext* context, llvm::Value* pt
 void Utils::setValueFromMatrixPtr(Utils::IRContext* context, llvm::Value* mPtr, llvm::Value* offset, llvm::Value* val) {
     auto* dataPtr = getValueFromPointerOffset(context, mPtr, 0, "dataPtr");
     insertValueAtPointerOffsetValue(context, dataPtr, offset, val, false);
+}
+
+void Utils::setValueFromMatrixPtrBool(Utils::IRContext* context, llvm::Value* mPtr, llvm::Value* offset, llvm::Value* val) {
+    auto* dataPtr = getValueFromPointerOffsetBool(context, mPtr, 0, "dataPtr");
+    insertValueAtPointerOffsetValue(context, dataPtr, offset, val, true);
 }
 
 llvm::AllocaInst* Utils::CreateEntryBlockAlloca(llvm::IRBuilder<>& Builder, const std::string& VarName,
