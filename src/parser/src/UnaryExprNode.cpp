@@ -87,8 +87,8 @@ llvm::Value* AST::UnaryExprNode::codeGen(Utils::IRContext* context) {
 
 void AST::UnaryExprNode::semanticPass(Utils::IRContext* context) {
     this->operand->semanticPass(context);
-    Typing::MatrixType operandType = TypeCheckUtils::extractMatrixType(this->operand);
-    Typing::PRIMITIVE primType = operandType.getPrimitiveType();
+    Typing::MatrixType* operandType = TypeCheckUtils::extractMatrixType(this->operand);
+    Typing::PRIMITIVE primType = operandType->getPrimitiveType();
     switch (this->op) {
         case AST::UNA_OPERATORS::NEG:
             TypeCheckUtils::assertNumericType(primType);
@@ -99,7 +99,7 @@ void AST::UnaryExprNode::semanticPass(Utils::IRContext* context) {
         case AST::UNA_OPERATORS::LNOT:
             TypeCheckUtils::assertLogicalType(primType);
     }
-    this->type = std::make_shared<Typing::Type>(operandType);
+    this->type = std::make_shared<Typing::Type>(*operandType);
 }
 
 /**
