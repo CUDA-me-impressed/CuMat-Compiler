@@ -49,3 +49,9 @@ cudaBLAS/CuMat-testBasic.cm
 cudaBLAS/CuMat-testBasic.cmProgram
 
 cudaBLAS/pythonoutput.cm
+
+cudaBLAS/numpytimes
+
+cudaBLAS/output
+
+cudaBLAS/data.txt

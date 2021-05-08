@@ -1,10 +1,10 @@
 import numpy as np
 import os
 
-n = 1000
+n = 20000
 data = ""
 for i in range (n*n):
-    data = data + str(1)
+    data = data + str(2)
     if i < ((n*n)-1):
         data = data + ","
 
