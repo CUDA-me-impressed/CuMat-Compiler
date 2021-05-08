@@ -1,11 +1,12 @@
 #include "TypeCheckingUtils.hpp"
 
 #include <iostream>
+#include <utility>
 
 #include "ExprASTNode.hpp"
 #include "Type.hpp"
 
-std::shared_ptr<Typing::Type> TypeCheckUtils::makeMatrixType(const std::vector<uint> dimensions,
+std::shared_ptr<Typing::Type> TypeCheckUtils::makeMatrixType(const std::vector<uint>& dimensions,
                                                              Typing::PRIMITIVE primType) {
     auto ty = Typing::MatrixType();
     ty.dimensions = dimensions;
@@ -16,17 +17,18 @@ std::shared_ptr<Typing::Type> TypeCheckUtils::makeMatrixType(const std::vector<u
 }
 
 std::shared_ptr<Typing::Type> TypeCheckUtils::makeCustomType(
-    std::string name, const std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>> attrs) {
+    std::string name, const std::vector<std::pair<std::string, std::shared_ptr<Typing::Type>>>& attrs) {
     auto ty = Typing::CustomType();
-    ty.name = name;
+    ty.name = std::move(name);
     ty.attributes = attrs;
     std::shared_ptr<Typing::Type> type = std::make_shared<Typing::Type>(ty);
     return type;
 }
 
-std::shared_ptr<Typing::Type> TypeCheckUtils::makeFunctionType(std::shared_ptr<Typing::Type> returnType, const std::vector<std::shared_ptr<Typing::Type>> params) {
+std::shared_ptr<Typing::Type> TypeCheckUtils::makeFunctionType(
+    std::shared_ptr<Typing::Type> returnType, const std::vector<std::shared_ptr<Typing::Type>>& params) {
     auto ty = Typing::FunctionType();
-    ty.returnType = returnType;
+    ty.returnType = std::move(returnType);
     ty.parameters = params;
     std::shared_ptr<Typing::Type> type = std::make_shared<Typing::Type>(ty);
     return type;
@@ -59,7 +61,7 @@ void TypeCheckUtils::assertNumericType(Typing::PRIMITIVE ty) {
 }
 
 void TypeCheckUtils::assertBooleanType(Typing::PRIMITIVE ty) {
-    if (not(ty == Typing::PRIMITIVE::BOOL)) {
+    if (ty != Typing::PRIMITIVE::BOOL) {
         std::string message = "Expected: bool";
         TypeCheckUtils::wrongTypeError(message, ty);
     }
@@ -80,8 +82,9 @@ std::string TypeCheckUtils::primToString(Typing::PRIMITIVE ty) {
     }
 }
 
-void TypeCheckUtils::wrongTypeError(std::string message, Typing::PRIMITIVE ty) {
-    std::cerr << "Wrong type encountered\n" << message << "\n"
+void TypeCheckUtils::wrongTypeError(const std::string& message, Typing::PRIMITIVE ty) {
+    std::cerr << "Wrong type encountered\n"
+              << message << "\n"
               << "Found: " << primToString(ty) << std::endl;
     std::exit(TypeCheckUtils::ErrorCodes::WRONG_TYPE);
 }
@@ -96,12 +99,12 @@ void TypeCheckUtils::noneError() {
     std::exit(TypeCheckUtils::ErrorCodes::NONE_ERROR);
 }
 
-void TypeCheckUtils::notDefinedError(std::string name) {
+void TypeCheckUtils::notDefinedError(const std::string& name) {
     std::cerr << "No matching definition found: " << name << std::endl;
     std::exit(TypeCheckUtils::ErrorCodes::NOT_DEFINED_ERROR);
 }
 
-void TypeCheckUtils::alreadyDefinedError(std::string name, bool var) {
+void TypeCheckUtils::alreadyDefinedError(const std::string& name, bool var) {
     if (var) {
         std::cerr << "Variable with same name already defined: " << name << std::endl;
     } else {
@@ -116,7 +119,7 @@ void TypeCheckUtils::decompError() {
 }
 
 void TypeCheckUtils::assertMatchingTypes(Typing::PRIMITIVE lhs, Typing::PRIMITIVE rhs) {
-    if (not(lhs == rhs)) {
+    if (lhs != rhs) {
         std::cerr << "Mismatched types: " << primToString(lhs) << ", " << primToString(rhs) << std::endl;
         std::exit(TypeCheckUtils::ErrorCodes::MISMATCH_CODE);
     }
@@ -147,12 +150,10 @@ void TypeCheckUtils::assertCompatibleTypes(Typing::PRIMITIVE lhs, Typing::PRIMIT
     }
 }
 
-Typing::MatrixType TypeCheckUtils::extractMatrixType(std::shared_ptr<AST::ExprNode> node) {
-    Typing::MatrixType exprType;
-    try {
-        exprType = std::get<Typing::MatrixType>(*node->type);
-    } catch (std::bad_cast& b) {
-        std::cout << "Caught: " << b.what();
+Typing::MatrixType* TypeCheckUtils::extractMatrixType(const std::shared_ptr<AST::ExprNode>& node) {
+    Typing::MatrixType* exprType = std::get_if<Typing::MatrixType>(node->type.get());
+    if (!exprType) {
+        throw std::runtime_error{"Found non-Matrix Type where MatrixType expected"};
     }
     return exprType;
 }
@@ -193,4 +194,5 @@ Typing::PRIMITIVE TypeCheckUtils::getHighestType(Typing::PRIMITIVE lhs, Typing::
         case Typing::PRIMITIVE::NONE:
             TypeCheckUtils::noneError();
     }
+    throw std::runtime_error{"Unexpected code path"};
 }

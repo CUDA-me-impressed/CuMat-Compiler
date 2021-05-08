@@ -14,14 +14,15 @@ def printAsCuMatMatrix(mat):
     file = file + ']'
     return file
 
-n = 1000
-dim = (n,n)
+sizes = [100,200,300,400,500,600,700,800,900,1000, 2000,3000,4000,5000,6000,7000,8000,9000]
 
-x = np.random.rand(n, n)
-print(x)
+for n in sizes:
+    dim = (n,n)
 
-time = timeit.timeit(
- lambda: np.matmul(x,x),
- number=10
-)
-print(f"{time} ms".format(time * 1000/ 10))
+    x = np.random.rand(n, n)
+
+    time = timeit.timeit(
+    lambda: np.matmul(x,x),
+    number=1
+    )
+    print(f"{time} s".format(time * 1000))
