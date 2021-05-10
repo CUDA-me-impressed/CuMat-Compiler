@@ -1,5 +1,6 @@
 #include "UnaryExprNode.hpp"
 
+#include <LiteralNode.hpp>
 #include <iostream>
 
 #include "CodeGenUtils.hpp"
@@ -125,5 +126,40 @@ void AST::UnaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
         if (auto inner = std::get_if<Typing::MatrixType>(&*operand->type)) {
             mt->dimensions = inner->dimensions;
         }
+    }
+}
+
+bool AST::UnaryExprNode::isConst() const noexcept {
+    if (this->op == NEG) {
+        if (this->operand->isConst()) {
+            return true;
+        }
+    }
+    return false;
+}
+std::vector<std::shared_ptr<AST::ExprNode>> AST::UnaryExprNode::constData(std::shared_ptr<AST::ExprNode>& me) const {
+    auto a = operand->constData(me);
+    if (this->op == NEG && this->operand->isConst()) {
+        std::vector<std::shared_ptr<AST::ExprNode>> negged{};
+        for (auto& i : a) {
+            Typing::MatrixType* exprType = std::get_if<Typing::MatrixType>(this->type.get());
+            if (!exprType) {
+                throw std::runtime_error{"Found non-Matrix Type where MatrixType expected"};
+            }
+            if (exprType->primType == Typing::PRIMITIVE::INT) {
+                auto value = std::dynamic_pointer_cast<AST::LiteralNode<int>>(i);
+                auto v = std::make_shared<AST::LiteralNode<int>>();
+                v->value = -value->value;
+                negged.push_back(v);
+            } else {
+                auto value = std::dynamic_pointer_cast<AST::LiteralNode<float>>(i);
+                auto v = std::make_shared<AST::LiteralNode<float>>();
+                v->value = -value->value;
+                negged.push_back(v);
+            }
+        }
+        return negged;
+    } else {
+        throw std::runtime_error("attempt to access constData on non-const node");
     }
 }

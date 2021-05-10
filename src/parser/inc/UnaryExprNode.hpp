@@ -23,5 +23,8 @@ class UnaryExprNode : public ExprNode {
         return std::string{};
     };
     void dimensionPass(Analysis::DimensionSymbolTable* nt) override;
+    [[nodiscard]] bool isConst() const noexcept override;
+    [[nodiscard]] std::vector<std::shared_ptr<AST::ExprNode>> constData(
+        std::shared_ptr<AST::ExprNode>& me) const override;
 };
 }  // namespace AST
