@@ -13,10 +13,10 @@ directorylist               : (directories+=directory DIRSEP)* ;
 directory                   : SLUG ;
 file                        : SLUG ;
 
-definitions                 : definition (EOL definition)* EOL? ;
+definitions                 : definition (EOL+ definition)* EOL* ;
 definition                  : funcdef | cmtypedef | assignment ;
 
-funcdef                     : FUNC signature EOL? block ;
+funcdef                     : FUNC signature EOL* block ;
 signature                   : typespec funcname (LPAR parameters RPAR)? ;
 parameters                  : (parameter (COMMA parameter)* )? ;
 parameter                   : typespec varname ;
@@ -24,13 +24,13 @@ typespec                    : cmtypename dimensionspec? ;
 dimensionspec               : LSQB dimension (COMMA dimension)* RSQB ;
 dimension                   : INT | STAR ;
 
-block                       : LBRA EOL? ((assignments+=assignment EOL)* RETURN expression EOL?)? RBRA ;
+block                       : LBRA EOL* ((assignments+=assignment EOL)* RETURN expression EOL*)? RBRA ;
 assignment                  : asstarget ASSIGN expression ;
 asstarget                   : varname | decomp;
 decomp                      : LSQB varname COLON asstarget RSQB ;
 
 expression                  : exp_logic | lambda | exp_if ;
-exp_if                      : IF EOL? expression EOL? THEN EOL? expression EOL? ELSE EOL? expression ;
+exp_if                      : IF EOL* expression EOL* THEN EOL* expression EOL* ELSE EOL* expression ;
 exp_logic                   : exp_comp (op_logic exp_comp)* ;
 exp_comp                    : exp_bit (op_comp exp_bit)* ;
 exp_bit                     : exp_sum (op_bit exp_sum)* ;
@@ -44,24 +44,24 @@ exp_not                     : op_not* exp_chain ;
 exp_chain                   : exp_func (op_chain exp_func)* ; // rtol
 exp_func                    : value args* ;
 
-op_logic                    : EOL? op=(LOR | LAND) EOL? ;
-op_comp                     : EOL? op=(LT | GT | LTE | GTE | EQ | NEQ) EOL? ;
-op_bit                      : EOL? op=(BAND | BOR) EOL? ;
-op_sum                      : EOL? op=(PLUS | MINUS) EOL? ;
-op_mult                     : EOL? op=(TIMES | STAR | DIV ) EOL? ;
-op_pow                      : EOL? (POW) EOL? ;
-op_mat                      : EOL? (MATM) EOL? ; // Dot product symbol??
-op_neg                      : EOL? (MINUS) ;
-op_not                      : EOL? (LNOT) ;
-op_bnot                     : EOL? (BNOT) ;
-op_chain                    : EOL? (CHAIN) EOL? ;
+op_logic                    : EOL* op=(LOR | LAND) EOL* ;
+op_comp                     : EOL* op=(LT | GT | LTE | GTE | EQ | NEQ) EOL* ;
+op_bit                      : EOL* op=(BAND | BOR) EOL* ;
+op_sum                      : EOL* op=(PLUS | MINUS) EOL* ;
+op_mult                     : EOL* op=(TIMES | STAR | DIV ) EOL* ;
+op_pow                      : EOL* (POW) EOL* ;
+op_mat                      : EOL* (MATM) EOL* ; // Dot product symbol??
+op_neg                      : EOL* (MINUS) ;
+op_not                      : EOL* (LNOT) ;
+op_bnot                     : EOL* (BNOT) ;
+op_chain                    : EOL* (CHAIN) EOL* ;
 
 lambda                      : LAMBDA LPAR parameters RPAR ARROW expression ;
 
 value                       : literal | LPAR expression RPAR | variable ;
 literal                     : matrixliteral | scalarliteral ;
-matrixliteral               : LSQB (EOL? rowliteral (dimensionLiteral)* EOL?)? RSQB ;
-dimensionLiteral            : BSLASH+ EOL? rowliteral EOL? ;
+matrixliteral               : LSQB (EOL* rowliteral (dimensionLiteral)* EOL*)? RSQB ;
+dimensionLiteral            : BSLASH+ EOL* rowliteral EOL* ;
 rowliteral                  : cols+=expression (COMMA cols+=expression)* ;
 scalarliteral               : stringliteral | numliteral ;
 stringliteral               : STRING ;
@@ -75,9 +75,9 @@ cmnamespace                 : (identifier DOT)+ ;
 
 args                        : LPAR (expression (COMMA expression)*)? RPAR ;
 
-cmtypedef                   : TYPE newtype attrblock EOL ;
-attrblock                   : LBRA EOL? attrs+=attr+ RBRA ;
-attr                        : attrname COLON typespec EOL ;
+cmtypedef                   : TYPE newtype attrblock EOL+ ;
+attrblock                   : LBRA EOL* attrs+=attr+ RBRA ;
+attr                        : attrname COLON typespec EOL+ ;
 
 cmtypename                  : typeidentifier | primitive ;
 varname                     : identifier ;
