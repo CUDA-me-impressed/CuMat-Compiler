@@ -709,15 +709,27 @@ void AST::BinaryExprNode::dimensionPass(Analysis::DimensionSymbolTable* nt) {
             auto* r = std::get_if<Typing::MatrixType>(this->rhs->type.get());
 
             if (t && l && r) {
+                if (l->rank == 1) {
+                    l->dimensions.push_back(1);
+                    l->rank = 2;
+                }
+                if (r->rank == 1) {
+                    r->dimensions.push_back(1);
+                    r->rank = 2;
+                }
                 if (l->rank > 2 || r->rank > 2) {
                     dimension_error("Matrix multiplication only defined on rank 2 variables", this);
                 } else {
-                    if (l->dimensions[1] != r->dimensions[0]) {
+                    if (r->dimensions[1] != l->dimensions[0]) {
                         dimension_error("Invalid matrix multiplication", this);
                     }
-                    t->dimensions = {l->dimensions[0], r->dimensions[1]};
+                    t->dimensions = {r->dimensions[0], l->dimensions[1]};
                     t->rank = 2;
                 }
+            }
+            if (t->dimensions[1] == 1) {
+                t->dimensions.pop_back();
+                t->rank = 1;
             }
             break;
         }
