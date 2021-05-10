@@ -143,6 +143,7 @@ void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
     Typing::MatrixType exprType;
     // Runs through all elements to check types and ranks
     for (auto& el : data) {
+        el->semanticPass(context);
         try {
             exprType = std::get<Typing::MatrixType>(*el->type);
         } catch (std::bad_cast b) {
@@ -154,12 +155,8 @@ void AST::MatrixNode::semanticPass(Utils::IRContext* context) {
         } else {
             sameType = sameType && (primType == prim);
         }
-        zeroRank = zeroRank && (exprType.rank == 0);
         if (!(sameType)) {
             std::cout << "All elements of matrix must be of same type";
-            std::exit(2);
-        } else if (!(zeroRank)) {
-            std::cout << "All elements of matrix must be scalars";
             std::exit(2);
         }
     }
