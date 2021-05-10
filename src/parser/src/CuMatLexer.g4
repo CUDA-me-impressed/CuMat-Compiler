@@ -1,6 +1,6 @@
 lexer grammar CuMatLexer;
 
-fragment NEWLINE            : '\r\n' | '\n' | '\r' | '\u000B' | '\u000C' | '\u0085' | '\u2028' | '\u2029' ;
+fragment NEWLINE            : ('# ' [a-zA-Z0-9 ]*)? ('\r\n' | '\n' | '\r' | '\u000B' | '\u000C' | '\u0085' | '\u2028' | '\u2029') ;
 fragment ALPHA              : [a-zA-Z] ;
 fragment POSDIGIT           : [1-9] ;
 fragment DIGIT              : '0' | POSDIGIT ;
@@ -23,7 +23,7 @@ RBRA                        : '}';
 COMMA                       : ',';
 DOT                         : '.';
 COLON                       : ':';
-BSLASH                      : '\\';
+BSLASH                      : '\\' | ';';
 TYPE                        : 'type';
 T_INT                       : 'int';
 T_FLOAT                     : 'float';
