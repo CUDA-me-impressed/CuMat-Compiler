@@ -14,7 +14,7 @@
  * Literals consist of the lowest form of data structure we can have within
  * CuMat and as such this section details the creation of these within memory
  * @tparam T
- * @param module
+ * @param moduleauto a = operand->constData(operand);
  * @param Builder
  * @param fp
  * @return

@@ -138,8 +138,9 @@ bool AST::UnaryExprNode::isConst() const noexcept {
     return false;
 }
 std::vector<std::shared_ptr<AST::ExprNode>> AST::UnaryExprNode::constData(std::shared_ptr<AST::ExprNode>& me) const {
-    auto a = operand->constData(me);
     if (this->op == NEG && this->operand->isConst()) {
+        auto oper = this->operand;
+        auto a = operand->constData(oper);
         std::vector<std::shared_ptr<AST::ExprNode>> negged{};
         for (auto& i : a) {
             Typing::MatrixType* exprType = std::get_if<Typing::MatrixType>(this->type.get());
@@ -150,11 +151,15 @@ std::vector<std::shared_ptr<AST::ExprNode>> AST::UnaryExprNode::constData(std::s
                 auto value = std::dynamic_pointer_cast<AST::LiteralNode<int>>(i);
                 auto v = std::make_shared<AST::LiteralNode<int>>();
                 v->value = -value->value;
+                v->semanticPass(nullptr);
+                v->dimensionPass(nullptr);
                 negged.push_back(v);
             } else {
                 auto value = std::dynamic_pointer_cast<AST::LiteralNode<float>>(i);
                 auto v = std::make_shared<AST::LiteralNode<float>>();
                 v->value = -value->value;
+                v->semanticPass(nullptr);
+                v->dimensionPass(nullptr);
                 negged.push_back(v);
             }
         }
